@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }}'s Friends — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content">
+    <div class="card">
+      <h2>{{ profile_user.username }}'s Friends ({{ friends|length }})</h2>
+    </div>
+    <div class="friend-list-grid">
+      {% for friend in friends %}
+      <div class="friend-card">
+        <a href="{% url 'accounts:profile' username=friend.username %}">
+          {% if friend.profile_picture %}
+          <img src="{{ friend.profile_picture.url }}" alt="{{ friend.username }}">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="{{ friend.username }}">
+          {% endif %}
+        </a>
+        <a href="{% url 'accounts:profile' username=friend.username %}" class="friend-card-name">
+          {{ friend.get_full_name|default:friend.username }}
+        </a>
+        {% if friend.friend_count %}
+        <p class="friend-card-mutual">{{ friend.friend_count }} mutual friends</p>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="empty-state" style="grid-column:1/-1;">
+        <h3>No friends yet</h3>
+        <p>When {{ profile_user.username }} makes friends, they'll appear here.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
+      {% endif %}
+      <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

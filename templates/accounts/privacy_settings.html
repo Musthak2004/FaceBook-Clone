@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Settings — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="card">
+      <h2>Privacy Settings</h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-checkbox">
+            {{ form.is_private }}
+            <span>
+              <strong>Private Account</strong>
+              <p class="text-muted" style="font-size:var(--font-size-sm);">
+                When your account is private, only friends can see your posts.
+              </p>
+            </span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

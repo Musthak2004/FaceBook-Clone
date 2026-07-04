@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:1128px;">
+    <div class="dashboard-header">
+      <h1>Admin Dashboard</h1>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon users">&#128101;</div>
+        <div class="stat-card-content">
+          <h3>{{ total_users }}</h3>
+          <p>Total Users</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon posts">&#128221;</div>
+        <div class="stat-card-content">
+          <h3>{{ total_posts }}</h3>
+          <p>Total Posts</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon comments">&#128172;</div>
+        <div class="stat-card-content">
+          <h3>{{ total_comments }}</h3>
+          <p>Total Comments</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon reports">&#128680;</div>
+        <div class="stat-card-content">
+          <h3>{{ pending_reports }}</h3>
+          <p>Pending Reports</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-layout">
+      <nav class="dashboard-nav">
+        <a href="{% url 'dashboard:dashboard_home' %}" class="dashboard-nav-item active">
+          <span class="dashboard-nav-item-icon">&#127968;</span> Overview
+        </a>
+        <a href="{% url 'dashboard:dashboard_users' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128101;</span> Users
+        </a>
+        <a href="{% url 'dashboard:dashboard_posts' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128221;</span> Posts
+        </a>
+        <a href="{% url 'dashboard:dashboard_reports' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128680;</span> Reports
+        </a>
+      </nav>
+
+      <div>
+        <div class="dashboard-table-wrapper">
+          <div class="dashboard-table-header">
+            <h2>Recent Users</h2>
+            <a href="{% url 'dashboard:dashboard_users' %}" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Posts</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in recent_users %}
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span>{{ u.username }}</span>
+                  </div>
+                </td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td>{{ u.post_count }}</td>
+                <td>{{ u.date_joined|date:"M j, Y" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

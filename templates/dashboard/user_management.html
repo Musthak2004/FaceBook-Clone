@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:1128px;">
+    <div class="dashboard-layout">
+      <nav class="dashboard-nav">
+        <a href="{% url 'dashboard:dashboard_home' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#127968;</span> Overview
+        </a>
+        <a href="{% url 'dashboard:dashboard_users' %}" class="dashboard-nav-item active">
+          <span class="dashboard-nav-item-icon">&#128101;</span> Users
+        </a>
+        <a href="{% url 'dashboard:dashboard_posts' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128221;</span> Posts
+        </a>
+        <a href="{% url 'dashboard:dashboard_reports' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128680;</span> Reports
+        </a>
+      </nav>
+
+      <div>
+        <div class="dashboard-table-wrapper">
+          <div class="dashboard-table-header">
+            <h2>All Users ({{ page_obj.paginator.count }})</h2>
+          </div>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Posts</th>
+                <th>Friends</th>
+                <th>Private</th>
+                <th>Joined</th>
+                <th>Staff</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span>{{ u.username }}</span>
+                  </div>
+                </td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td>{{ u.post_count }}</td>
+                <td>{{ u.friend_count }}</td>
+                <td>{% if u.is_private %}Yes{% else %}No{% endif %}</td>
+                <td>{{ u.date_joined|date:"M j, Y" }}</td>
+                <td>{% if u.is_staff %}&#10003;{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+          {% endif %}
+          <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

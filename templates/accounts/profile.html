@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content">
+    <div class="profile-container">
+      <!-- Cover Photo -->
+      <div class="profile-cover">
+        {% if profile_user.cover_photo %}
+        <img src="{{ profile_user.cover_photo.url }}" alt="Cover" class="profile-cover-image">
+        {% else %}
+        <div class="profile-cover-empty"></div>
+        {% endif %}
+
+        <div class="profile-info-row">
+          <div class="profile-avatar-wrapper">
+            {% if profile_user.profile_picture %}
+            <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
+                 class="profile-avatar-img">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="{{ profile_user.username }}"
+                 class="profile-avatar-img">
+            {% endif %}
+          </div>
+          <div class="profile-details">
+            <h1 class="profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+            <span class="profile-friend-count">{{ profile_user.friend_count }} friends</span>
+          </div>
+          <div class="profile-actions">
+            {% if is_own_profile %}
+            <a href="{% url 'accounts:profile_edit' username=user.username %}" class="btn btn-ghost">
+              &#9998; Edit Profile
+            </a>
+            {% elif friendship_status == 'none' %}
+            <button class="btn btn-primary" onclick="sendFriendRequest({{ profile_user.id }})">
+              &#10133; Add Friend
+            </button>
+            {% elif friendship_status == 'pending' %}
+            <button class="btn btn-ghost" disabled>&#9203; Request Sent</button>
+            {% elif friendship_status == 'accepted' %}
+            <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="btn btn-ghost">
+              &#128101; Friends
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="profile-tabs">
+          <a href="{% url 'accounts:profile' username=profile_user.username %}" class="profile-tab active">Posts</a>
+          <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="profile-tab">Friends</a>
+        </div>
+      </div>
+
+      <!-- Profile Content -->
+      <div class="profile-content">
+        <!-- Left Column: Intro -->
+        <div>
+          <div class="profile-intro">
+            <h3>Intro</h3>
+            {% if profile_user.bio %}
+            <p>{{ profile_user.bio }}</p>
+            {% endif %}
+            {% if profile_user.education %}
+            <div class="profile-intro-item">
+              <span class="intro-icon">&#127891;</span>
+              <span>{{ profile_user.education }}</span>
+            </div>
+            {% endif %}
+            {% if profile_user.work %}
+            <div class="profile-intro-item">
+              <span class="intro-icon">&#128188;</span>
+              <span>{{ profile_user.work }}</span>
+            </div>
+            {% endif %}
+            {% if profile_user.location %}
+            <div class="profile-intro-item">
+              <span class="intro-icon">&#128205;</span>
+              <span>{{ profile_user.location }}</span>
+            </div>
+            {% endif %}
+            {% if profile_user.website %}
+            <div class="profile-intro-item">
+              <span class="intro-icon">&#127760;</span>
+              <a href="{{ profile_user.website }}" target="_blank">{{ profile_user.website }}</a>
+            </div>
+            {% endif %}
+            <div class="profile-intro-item">
+              <span class="intro-icon">&#128197;</span>
+              <span>Joined {{ profile_user.date_joined|date:"F Y" }}</span>
+            </div>
+          </div>
+
+          <div class="profile-intro mt-4">
+            <h3>Photos</h3>
+            <div class="profile-photos-grid">
+              {% for post in posts %}
+                {% if post.images.all %}
+                  {% for img in post.images.all|slice:":3" %}
+                  <img src="{{ img.image.url }}" alt="Photo">
+                  {% endfor %}
+                {% endif %}
+              {% empty %}
+                <p style="grid-column:span 3;color:var(--text-muted);">No photos yet</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Posts -->
+        <div>
+          {% for post in posts %}
+          <div class="post-card">
+            <div class="post-header">
+              <div class="post-author">
+                {% if post.author.profile_picture %}
+                <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+                {% else %}
+                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+                {% endif %}
+                <div class="post-author-info">
+                  <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+                    {{ post.author.get_full_name|default:post.author.username }}
+                  </a>
+                  <span class="post-time">{{ post.created_at|timesince }} ago</span>
+                </div>
+              </div>
+            </div>
+            <div class="post-body">
+              <p class="post-content">{{ post.content }}</p>
+            </div>
+            {% if post.images.all %}
+            <div class="post-images">
+              {% for img in post.images.all %}
+              <img src="{{ img.image.url }}" alt="Post image">
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="post-stats">
+              <span>{{ post.total_likes }} reactions</span>
+              <span>{{ post.total_comments }} comments</span>
+            </div>
+            <div class="post-actions">
+              <button class="post-action post-action-like" data-post-id="{{ post.id }}">
+                &#128147; <span class="like-count">{{ post.total_likes }}</span>
+              </button>
+              <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action">
+                &#128172; Comment
+              </a>
+              <button class="post-action post-action-save" data-post-id="{{ post.id }}">
+                &#128190; Save
+              </button>
+            </div>
+          </div>
+          {% empty %}
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128221;</div>
+            <h3>No posts yet</h3>
+            <p>When {{ profile_user.username }} posts, you'll see it here.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendFriendRequest(userId) {
+  fetch('/friends/requests/send/' + userId + '/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.sent) {
+      showToast('Friend request sent!');
+      location.reload();
+    } else {
+      showToast(data.error || 'Could not send request');
+    }
+  });
+}
+</script>
+{% endblock %}

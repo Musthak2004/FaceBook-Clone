@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Report Management — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:1128px;">
+    <div class="dashboard-layout">
+      <nav class="dashboard-nav">
+        <a href="{% url 'dashboard:dashboard_home' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#127968;</span> Overview
+        </a>
+        <a href="{% url 'dashboard:dashboard_users' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128101;</span> Users
+        </a>
+        <a href="{% url 'dashboard:dashboard_posts' %}" class="dashboard-nav-item">
+          <span class="dashboard-nav-item-icon">&#128221;</span> Posts
+        </a>
+        <a href="{% url 'dashboard:dashboard_reports' %}" class="dashboard-nav-item active">
+          <span class="dashboard-nav-item-icon">&#128680;</span> Reports
+        </a>
+      </nav>
+
+      <div>
+        <div class="dashboard-table-wrapper">
+          <div class="dashboard-table-header">
+            <h2>Reports ({{ page_obj.paginator.count }})</h2>
+          </div>
+          {% for report in reports %}
+          <div class="report-card {% if report.is_resolved %}resolved{% endif %}">
+            <div class="report-card-header">
+              <span class="report-reason">Report by {{ report.reported_by.username }}</span>
+              <span class="text-muted" style="font-size:var(--font-size-sm);">
+                {{ report.created_at|timesince }} ago
+                {% if report.is_resolved %}
+                  &mdash; Resolved by {{ report.resolved_by.username }}
+                {% endif %}
+              </span>
+            </div>
+            <div class="report-content">
+              <p><strong>Reason:</strong> {{ report.reason }}</p>
+              {% if report.post %}
+              <p><strong>Post:</strong> {{ report.post.content|truncatewords:30 }}</p>
+              {% endif %}
+              {% if report.comment %}
+              <p><strong>Comment:</strong> {{ report.comment.content|truncatewords:20 }}</p>
+              {% endif %}
+            </div>
+            {% if not report.is_resolved %}
+            <div class="report-actions">
+              <form method="post" action="{% url 'dashboard:resolve_report' pk=report.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">Resolve</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <div class="empty-state">
+            <h3>No reports</h3>
+            <p>There are no pending reports to review.</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% if is_paginated %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+          {% endif %}
+          <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

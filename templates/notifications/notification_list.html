@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notifications — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="notification-page-header">
+      <h2>Notifications</h2>
+    </div>
+    <div class="notification-page-list">
+      {% for notification in notifications %}
+      <div class="notification-page-item {% if not notification.is_read %}unread{% endif %}">
+        <div class="notification-item-icon {{ notification.notification_type }}">
+          {% if notification.notification_type == 'friend_request' or notification.notification_type == 'friend_accept' %}
+            &#128101;
+          {% elif notification.notification_type == 'like' %}
+            &#128147;
+          {% elif notification.notification_type == 'comment' or notification.notification_type == 'reply' %}
+            &#128172;
+          {% else %}
+            &#128276;
+          {% endif %}
+        </div>
+        <div class="notification-item-content">
+          <div class="notification-item-text">
+            <strong>{{ notification.sender.username }}</strong>
+            {% if notification.notification_type == 'friend_request' %}
+              sent you a friend request
+            {% elif notification.notification_type == 'friend_accept' %}
+              accepted your friend request
+            {% elif notification.notification_type == 'like' %}
+              liked your post
+            {% elif notification.notification_type == 'comment' %}
+              commented on your post
+            {% elif notification.notification_type == 'reply' %}
+              replied to your comment
+            {% endif %}
+          </div>
+          <div class="notification-item-time">{{ notification.created_at|timesince }} ago</div>
+        </div>
+        {% if not notification.is_read %}
+        <div class="unread-dot"></div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-state-icon">&#128276;</div>
+        <h3>No notifications yet</h3>
+        <p>When someone interacts with your content, notifications will appear here.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

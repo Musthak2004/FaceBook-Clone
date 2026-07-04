@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ conversation.other_participant.get_full_name|default:conversation.other_participant.username }} — Messages{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:900px;">
+    <div class="messaging-container">
+      <div class="conversation-list">
+        <div class="conversation-list-header">
+          <h2>Chats</h2>
+          <a href="{% url 'messaging:conversation_list' %}" class="btn btn-ghost btn-sm">Back</a>
+        </div>
+        <div class="conversation-items">
+          {% for conv in user_conversations %}
+          <a href="{% url 'messaging:conversation_detail' pk=conv.pk %}"
+             class="conversation-item {% if conv.pk == conversation.pk %}active{% endif %}">
+            {% with other_conv=conv.other_participant %}
+              {% if other_conv.profile_picture %}
+              <img src="{{ other_conv.profile_picture.url }}" alt="" class="avatar">
+              {% else %}
+              <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+              {% endif %}
+              <div class="conversation-item-info">
+                <div class="conversation-item-name">
+                  {{ other_conv.get_full_name|default:other_conv.username }}
+                </div>
+                <div class="conversation-item-preview">
+                  {% if conv.last_message %}
+                    {{ conv.last_message.content|truncatechars:30 }}
+                  {% endif %}
+                </div>
+              </div>
+            {% endwith %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="chat-area">
+        {% with other=conversation.other_participant %}
+        <div class="chat-header">
+          {% if other.profile_picture %}
+          <img src="{{ other.profile_picture.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="chat-header-info">
+            <h3>
+              <a href="{% url 'accounts:profile' username=other.username %}">
+                {{ other.get_full_name|default:other.username }}
+              </a>
+            </h3>
+          </div>
+        </div>
+        {% endwith %}
+
+        <div class="messages-container"
+             data-conversation-id="{{ conversation.pk }}"
+             data-last-message-id="{{ conversation.last_message.id|default:0 }}">
+          {% for message in conversation.messages.all %}
+          <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+            <div class="message-bubble">
+              <div class="message-text">{{ message.content }}</div>
+              <div class="message-time">{{ message.created_at|date:"g:i A" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="message-input-area" data-conversation-id="{{ conversation.pk }}">
+          <button class="btn-icon" title="Add attachment">&#128206;</button>
+          <textarea class="message-input" placeholder="Type a message..." rows="1"></textarea>
+          <button class="message-send-btn" title="Send">&#10148;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

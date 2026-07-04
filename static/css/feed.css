@@ -1,0 +1,307 @@
+/* ============================================================
+   Feed — Post Cards, Feed Layout, Interactions
+   ============================================================ */
+
+.feed-container {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+/* ---- Create Post ---- */
+.create-post-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.create-post-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.create-post-input {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--border-radius-xl);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-secondary);
+  transition: background var(--transition-fast);
+}
+
+.create-post-input:hover {
+  background: var(--bg-tertiary);
+}
+
+.create-post-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-secondary);
+}
+
+.create-post-action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--border-radius-md);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: background var(--transition-fast);
+}
+
+.create-post-action:hover {
+  background: var(--bg-secondary);
+}
+
+/* ---- Post Card ---- */
+.post-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
+  animation: slideUp var(--transition-base);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4) 0;
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.post-author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-author-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.post-author-name:hover {
+  text-decoration: underline;
+}
+
+.post-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.post-visibility-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: var(--space-1);
+}
+
+.post-body {
+  padding: var(--space-3) var(--space-4);
+}
+
+.post-content {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.post-images {
+  margin: 0 calc(-1 * var(--space-4));
+  display: grid;
+  gap: 2px;
+}
+
+.post-images img {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.post-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.post-stats-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.reaction-icons {
+  display: flex;
+  align-items: center;
+}
+
+.reaction-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--border-radius-full);
+  border: 2px solid var(--bg-primary);
+  margin-right: -4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: var(--space-1) var(--space-4);
+  border-top: 1px solid var(--border-secondary);
+}
+
+.post-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  flex: 1;
+  padding: var(--space-2);
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.post-action:hover {
+  background: var(--bg-secondary);
+  text-decoration: none;
+}
+
+.post-action.liked {
+  color: var(--primary);
+}
+
+.post-action .action-icon {
+  font-size: var(--font-size-lg);
+}
+
+/* ---- Comment Section ---- */
+.comment-section {
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  border-top: 1px solid var(--border-secondary);
+}
+
+.comment-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.comment-form input {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--border-radius-xl);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.comment-form input:focus {
+  outline: none;
+  background: var(--bg-tertiary);
+}
+
+.comment-item {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.comment-content {
+  flex: 1;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-2) var(--space-3);
+}
+
+.comment-author {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.comment-text {
+  font-size: var(--font-size-base);
+  word-wrap: break-word;
+}
+
+.comment-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.comment-actions button {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.comment-actions button:hover {
+  text-decoration: underline;
+}
+
+.view-more-comments {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  margin-top: var(--space-1);
+  font-weight: var(--font-weight-semibold);
+}
+
+.view-more-comments:hover {
+  text-decoration: underline;
+}
+
+/* ---- Post Detail Page ---- */
+.post-detail-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+
+.post-detail-card .post-content {
+  font-size: var(--font-size-lg);
+}
+
+/* ---- Shared Post / Share Modal ---- */
+.share-modal textarea {
+  min-height: 120px;
+}
+
+/* ---- Saved Posts ---- */
+.saved-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}

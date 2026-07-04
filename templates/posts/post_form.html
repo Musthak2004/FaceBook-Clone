@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit Post{% else %}Create Post{% endif %} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="card">
+      <h2>{% if form.instance.pk %}Edit Post{% else %}Create Post{% endif %}</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Content</label>
+          {{ form.content }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Visibility</label>
+          {{ form.visibility }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Add Photos</label>
+          <input type="file" name="images" class="form-input" multiple accept="image/*">
+        </div>
+        <div class="form-checkbox mb-4">
+          {{ form.is_draft }}
+          <label for="{{ form.is_draft.id_for_label }}">Save as draft</label>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          {% if form.instance.pk %}Update{% else %}Post{% endif %}
+        </button>
+        <a href="{% url 'core:home' %}" class="btn btn-ghost">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

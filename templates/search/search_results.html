@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search: {{ query }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content">
+    <div class="card mb-4">
+      <form method="get" action="{% url 'search:search_results' %}" class="search-form">
+        <div class="flex items-center gap-2">
+          <input type="text" name="q" class="form-input" value="{{ query }}" placeholder="Search SocialNet..."
+                 style="flex:1;">
+          <input type="hidden" name="type" value="{{ search_type }}">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+      {% if query %}
+      <div class="search-tabs tabs mt-4">
+        <button class="tab {% if search_type == 'users' %}active{% endif %}" data-type="users">People</button>
+        <button class="tab {% if search_type == 'posts' %}active{% endif %}" data-type="posts">Posts</button>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if query %}
+    <div class="search-results">
+      {% if search_type == 'users' or search_type == 'all' %}
+        {% if user_results %}
+        <div class="card">
+          <h3 class="mb-4">People</h3>
+          {% for user_result in user_results %}
+          <div class="flex items-center justify-between p-2" style="border-bottom:1px solid var(--border-secondary);">
+            <div class="flex items-center gap-3">
+              {% if user_result.profile_picture %}
+              <img src="{{ user_result.profile_picture.url }}" alt="" class="avatar avatar-lg">
+              {% else %}
+              <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-lg">
+              {% endif %}
+              <div>
+                <a href="{% url 'accounts:profile' username=user_result.username %}" class="post-author-name">
+                  {{ user_result.get_full_name|default:user_result.username }}
+                </a>
+                <p class="text-muted" style="font-size:var(--font-size-sm);">{{ user_result.friend_count }} friends</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endif %}
+
+      {% if search_type == 'posts' or search_type == 'all' %}
+        {% if post_results %}
+        <div class="mt-4">
+          <h3 class="mb-4">Posts</h3>
+          {% for post in post_results %}
+          <div class="post-card">
+            <div class="post-header">
+              <div class="post-author">
+                {% if post.author.profile_picture %}
+                <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+                {% else %}
+                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+                {% endif %}
+                <div class="post-author-info">
+                  <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+                    {{ post.author.get_full_name|default:post.author.username }}
+                  </a>
+                  <span class="post-time">{{ post.created_at|timesince }} ago</span>
+                </div>
+              </div>
+            </div>
+            <div class="post-body">
+              <a href="{% url 'posts:post_detail' pk=post.pk %}" style="color:inherit;">
+                <p class="post-content">{{ post.content|truncatewords:50 }}</p>
+              </a>
+            </div>
+            <div class="post-stats">
+              <span>{{ post.total_likes }} reactions</span>
+              <span>{{ post.total_comments }} comments</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endif %}
+
+      {% if not user_results and not post_results %}
+      <div class="empty-state">
+        <div class="empty-state-icon">&#128269;</div>
+        <h3>No results found</h3>
+        <p>We couldn't find anything for "{{ query }}". Try different keywords.</p>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">&#128269;</div>
+      <h3>Search SocialNet</h3>
+      <p>Find people, posts, and more.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

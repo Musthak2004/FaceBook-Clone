@@ -1,0 +1,295 @@
+/* ============================================================
+   Profile — Cover Photo, Avatar, About, Tabs
+   ============================================================ */
+
+.profile-container {
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+/* ---- Cover Photo ---- */
+.profile-cover {
+  background: var(--bg-primary);
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.profile-cover-image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  background: var(--bg-tertiary);
+}
+
+.profile-cover-empty {
+  width: 100%;
+  height: 350px;
+  background: linear-gradient(135deg, var(--primary) 0%, #42b72a 100%);
+}
+
+.profile-info-row {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 var(--space-6);
+  margin-top: -40px;
+  position: relative;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  border: 4px solid var(--bg-primary);
+  border-radius: var(--border-radius-full);
+  margin-right: var(--space-4);
+}
+
+.profile-avatar-img {
+  width: 168px;
+  height: 168px;
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.profile-details {
+  flex: 1;
+  padding-bottom: var(--space-4);
+}
+
+.profile-name {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.profile-friend-count {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.profile-actions {
+  display: flex;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+}
+
+.profile-tabs {
+  display: flex;
+  padding: 0 var(--space-6);
+  border-top: 1px solid var(--border-secondary);
+  margin-top: var(--space-2);
+}
+
+.profile-tab {
+  padding: var(--space-4) var(--space-4);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--transition-fast);
+}
+
+.profile-tab:hover {
+  background: var(--bg-secondary);
+}
+
+.profile-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ---- Profile Content Grid ---- */
+.profile-content {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  margin-top: var(--space-4);
+}
+
+/* ---- Profile Sidebar (Intro) ---- */
+.profile-intro {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+
+.profile-intro h3 {
+  margin-bottom: var(--space-4);
+}
+
+.profile-intro-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+}
+
+.profile-intro-item .intro-icon {
+  width: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.profile-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.profile-photos-grid img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.profile-friends-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.profile-friend-item {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+}
+
+.profile-friend-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--space-1);
+}
+
+.profile-friend-item span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Profile Edit ---- */
+.profile-edit-form {
+  max-width: 600px;
+}
+
+.profile-edit-section {
+  margin-bottom: var(--space-6);
+}
+
+.profile-edit-section h3 {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.image-upload-area {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.image-upload-area:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.image-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.image-preview-cover {
+  width: 200px;
+  height: 100px;
+  border-radius: var(--border-radius-md);
+  object-fit: cover;
+}
+
+/* ---- Friend List Page ---- */
+.friend-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.friend-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.friend-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+  margin: 0 auto var(--space-2);
+}
+
+.friend-card-name {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.friend-card-mutual {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+/* Photos page filter */
+.profile-photos-filter {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+  .profile-info-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .profile-avatar-wrapper {
+    margin-right: 0;
+  }
+  .profile-actions {
+    justify-content: center;
+  }
+  .profile-cover-image,
+  .profile-cover-empty {
+    height: 200px;
+  }
+  .profile-avatar-img {
+    width: 120px;
+    height: 120px;
+  }
+  .profile-tabs {
+    overflow-x: auto;
+  }
+}

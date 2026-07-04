@@ -1,0 +1,126 @@
+/* ============================================================
+   Auth Pages — Login, Signup, Password Reset
+   ============================================================ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  padding: var(--space-4);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.auth-logo {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+  margin-bottom: var(--space-2);
+}
+
+.auth-header p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.auth-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  animation: slideUp var(--transition-base);
+}
+
+.auth-card h2 {
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.auth-card .btn {
+  margin-top: var(--space-2);
+}
+
+.auth-divider {
+  text-align: center;
+  margin: var(--space-4) 0;
+  position: relative;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-secondary);
+}
+
+.auth-divider span {
+  background: var(--bg-primary);
+  padding: 0 var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  position: relative;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.auth-footer a {
+  font-weight: var(--font-weight-semibold);
+}
+
+.auth-errors {
+  background: #fce4ec;
+  color: #c62828;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.auth-errors ul {
+  list-style: disc;
+  padding-left: var(--space-5);
+}
+
+.auth-errors li {
+  margin-bottom: var(--space-1);
+}
+
+.password-reset-help {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Password strength indicator */
+.password-strength {
+  height: 4px;
+  border-radius: var(--border-radius-sm);
+  margin-top: var(--space-1);
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.password-strength-bar {
+  height: 100%;
+  transition: all var(--transition-base);
+  border-radius: var(--border-radius-sm);
+}

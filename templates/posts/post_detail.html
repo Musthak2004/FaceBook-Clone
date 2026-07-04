@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="post-detail-card">
+      <div class="post-header">
+        <div class="post-author">
+          {% if post.author.profile_picture %}
+          <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+              {{ post.author.get_full_name|default:post.author.username }}
+            </a>
+            <span class="post-time">{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+        {% if post.author == user %}
+        <div class="dropdown">
+          <button class="btn-icon dropdown-toggle">&#8942;</button>
+          <div class="dropdown-menu">
+            <a href="{% url 'posts:post_update' pk=post.pk %}" class="dropdown-item">&#9998; Edit</a>
+            <a href="{% url 'posts:post_delete' pk=post.pk %}" class="dropdown-item" style="color:var(--danger);">
+              &#128465; Delete
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="post-body">
+        <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content }}</p>
+      </div>
+      {% if post.images.all %}
+      <div class="post-images">
+        {% for img in post.images.all %}
+        <img src="{{ img.image.url }}" alt="Post image">
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="post-stats">
+        <span>{{ post.total_likes }} reactions</span>
+        <span>{{ post.total_comments }} comments</span>
+      </div>
+      <div class="post-actions">
+        <button class="post-action post-action-like" data-post-id="{{ post.id }}">
+          &#128147; <span class="like-count">{{ post.total_likes }}</span>
+        </button>
+        <button class="post-action post-action-save" data-post-id="{{ post.id }}">
+          &#128190; Save
+        </button>
+      </div>
+
+      <!-- Comments -->
+      <div class="comment-section">
+        <form class="comment-form" data-post-id="{{ post.id }}" method="post">
+          {% csrf_token %}
+          {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}" alt="" class="avatar avatar-sm">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+          {% endif %}
+          <input type="text" name="content" placeholder="Write a comment..." required>
+        </form>
+
+        <div class="post-comments" data-post-id="{{ post.id }}">
+          {% for comment in comments %}
+          <div class="comment-item">
+            {% if comment.author.profile_picture %}
+            <img src="{{ comment.author.profile_picture.url }}" alt="" class="avatar avatar-sm">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+            {% endif %}
+            <div class="comment-content">
+              <div class="comment-author">{{ comment.author.username }}</div>
+              <div class="comment-text">{{ comment.content }}</div>
+              <div class="comment-actions">
+                <span>{{ comment.created_at|timesince }} ago</span>
+                {% if comment.author == user %}
+                <button onclick="deleteComment({{ comment.id }})">Delete</button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% for reply in comment.replies.all %}
+          <div class="comment-item" style="margin-left:48px;">
+            {% if reply.author.profile_picture %}
+            <img src="{{ reply.author.profile_picture.url }}" alt="" class="avatar avatar-sm">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+            {% endif %}
+            <div class="comment-content">
+              <div class="comment-author">{{ reply.author.username }}</div>
+              <div class="comment-text">{{ reply.content }}</div>
+              <div class="comment-actions">
+                <span>{{ reply.created_at|timesince }} ago</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteComment(commentId) {
+  if (!confirm('Delete this comment?')) return;
+  fetch('/comments/' + commentId + '/delete/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.deleted) location.reload();
+  });
+}
+</script>
+{% endblock %}
