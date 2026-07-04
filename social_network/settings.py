@@ -105,8 +105,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Authentication settings - following Chapter 7 pattern
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = 'core:home'
 
 # Email configuration
 # Uses console backend for development (per Chapter 11)
