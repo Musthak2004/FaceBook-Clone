@@ -124,14 +124,30 @@
 
 .post-images {
   margin: 0 calc(-1 * var(--space-4));
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
   display: grid;
   gap: 2px;
 }
 
-.post-images img {
+/* Single image — show full, uncropped, height-capped, centered */
+.post-images img:only-child {
   width: 100%;
-  max-height: 500px;
+  max-height: 480px;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  margin: 0 auto;
+}
+
+/* Multiple images — consistently cropped grid cells */
+.post-images img:not(:only-child) {
+  width: 100%;
+  height: 240px;
   object-fit: cover;
+  display: block;
   cursor: pointer;
 }
 
