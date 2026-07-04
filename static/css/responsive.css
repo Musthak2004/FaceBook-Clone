@@ -97,12 +97,8 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  /* Post Images */
-  .post-images img:only-child {
+  .post-images img {
     max-height: 320px;
-  }
-  .post-images img:not(:only-child) {
-    height: 160px;
   }
 
   /* Profile */
@@ -245,11 +241,8 @@
   .modal-header {
     padding: var(--space-3) var(--space-4);
   }
-  .post-images img:only-child {
+  .post-images img {
     max-height: 240px;
-  }
-  .post-images img:not(:only-child) {
-    height: 120px;
   }
   .notification-dropdown {
     width: 280px;
