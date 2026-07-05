@@ -9,6 +9,7 @@ import { initFeed } from './modules/feed.js';
 import { initMessaging } from './modules/messaging.js';
 import { initSearch } from './modules/search.js';
 import { initUpload } from './modules/upload.js';
+import { initPostGalleries } from './modules/gallery.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Global UI
@@ -23,4 +24,5 @@ document.addEventListener('DOMContentLoaded', function () {
   initMessaging();
   initSearch();
   initUpload();
+  initPostGalleries();
 });

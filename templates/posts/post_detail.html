@@ -37,9 +37,12 @@
         <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content|post_render }}</p>
       </div>
       {% if post.images.all %}
-      <div class="post-images">
+      <div class="post-images" data-images-count="{{ post.images.all|length }}">
         {% for img in post.images.all %}
-        <img src="{{ img.image.url }}" alt="Post image">
+        <img src="{{ img.image.url }}" alt="Post image"
+             class="gallery-image"
+             data-gallery-id="{{ post.id }}"
+             data-index="{{ forloop.counter0 }}">
         {% endfor %}
       </div>
       {% endif %}
