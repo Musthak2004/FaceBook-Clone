@@ -46,3 +46,14 @@ def process_post_content(sender, instance, created, **kwargs):
             )
             if created:
                 _push_notification(notification)
+
+    # --- Share notification ---
+    if instance.shared_post and instance.shared_post.author != instance.author:
+        notification, created = Notification.objects.get_or_create(
+            recipient=instance.shared_post.author,
+            sender=instance.author,
+            notification_type="share",
+            post=instance.shared_post,
+        )
+        if created:
+            _push_notification(notification)

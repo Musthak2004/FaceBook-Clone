@@ -10,6 +10,7 @@ class Notification(models.Model):
         ("comment", "Comment"),
         ("reply", "Reply"),
         ("mention", "Mention"),
+        ("share", "Share"),
     ]
 
     recipient = models.ForeignKey(

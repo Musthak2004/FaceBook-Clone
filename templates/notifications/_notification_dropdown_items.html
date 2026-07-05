@@ -24,6 +24,8 @@
         <strong>{{ notification.sender.username }}</strong> replied to your comment
       {% elif notification.notification_type == 'mention' %}
         <strong>{{ notification.sender.username }}</strong> mentioned you in a post
+      {% elif notification.notification_type == 'share' %}
+        <strong>{{ notification.sender.username }}</strong> shared your post
       {% else %}
         <strong>{{ notification.sender.username }}</strong> interacted with your post
       {% endif %}

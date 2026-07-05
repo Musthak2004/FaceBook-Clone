@@ -85,6 +85,22 @@ class PostSaveView(LoginRequiredMixin, View):
         return JsonResponse({"saved": True})
 
 
+class SharePostView(LoginRequiredMixin, View):
+    """AJAX endpoint to create a repost of an existing post."""
+
+    def post(self, request, *args, **kwargs):
+        original = get_object_or_404(Post, pk=self.kwargs["pk"])
+        content = request.POST.get("content", "").strip()
+        visibility = request.POST.get("visibility", "public")
+        post = Post.objects.create(
+            author=request.user,
+            content=content,
+            visibility=visibility,
+            shared_post=original,
+        )
+        return JsonResponse({"shared": True, "post_url": post.get_absolute_url()})
+
+
 class HashtagDetailView(LoginRequiredMixin, ListView):
     """Show all public/friends posts tagged with a given hashtag."""
 

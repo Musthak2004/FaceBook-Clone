@@ -121,6 +121,35 @@
   <!-- Main Content -->
   {% block content %}{% endblock %}
 
+  <!-- Share Modal -->
+  <div id="share-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <h3>Share</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <button class="btn btn-primary btn-block mb-2" id="share-repost-btn">
+          &#128257; Repost to timeline
+        </button>
+        <p class="text-muted" style="font-size:var(--font-size-sm);margin-bottom:var(--space-3);">
+          Add a comment to your repost (optional):
+        </p>
+        <textarea id="share-repost-content" class="form-input" rows="2"
+                  placeholder="Say something about this..."></textarea>
+        <select id="share-repost-visibility" class="form-input mt-2">
+          <option value="public">Public</option>
+          <option value="friends">Friends Only</option>
+          <option value="only_me">Only Me</option>
+        </select>
+        <div class="mt-2 flex gap-2">
+          <button class="btn btn-primary flex-1" id="share-repost-submit">Repost</button>
+          <button class="btn btn-ghost flex-1" id="share-copy-btn">&#128203; Copy link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript (ES module entry point) -->
   <script type="module" src="{% static 'js/app.js' %}"></script>
   {% block extra_js %}{% endblock %}

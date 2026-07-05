@@ -3,6 +3,7 @@
    ============================================================ */
 
 import { getCookie, showToast } from './utils.js';
+import { openModal, closeModal } from './ui.js';
 
 export function initLikeButtons() {
   document.querySelectorAll('.post-action-like').forEach(function (btn) {
@@ -171,10 +172,81 @@ export function initCreatePostModal() {
   }
 }
 
+export function initShareButtons() {
+  var csrftoken = getCookie('csrftoken');
+  var currentPostId = null;
+
+  // Show share modal
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.share-btn');
+    if (!btn) return;
+    var postId = btn.getAttribute('data-post-id');
+    var postUrl = btn.getAttribute('data-post-url');
+    currentPostId = postId;
+    var modal = document.getElementById('share-modal');
+    modal.dataset.sharePostId = postId;
+    modal.dataset.sharePostUrl = postUrl;
+    // Clear previous content
+    document.getElementById('share-repost-content').value = '';
+    openModal(modal);
+  });
+
+  // Repost submit
+  document.getElementById('share-repost-submit').addEventListener('click', function () {
+    var modal = document.getElementById('share-modal');
+    var postId = modal.dataset.sharePostId;
+    var content = document.getElementById('share-repost-content').value.trim();
+    var visibility = document.getElementById('share-repost-visibility').value;
+
+    var body = 'visibility=' + encodeURIComponent(visibility);
+    if (content) {
+      body += '&content=' + encodeURIComponent(content);
+    }
+
+    fetch('/posts/' + postId + '/share/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.shared) {
+          closeModal(modal);
+          showToast('Post shared to your timeline!');
+        }
+      })
+      .catch(function (err) { console.error('Share error:', err); });
+  });
+
+  // Copy link
+  document.getElementById('share-copy-btn').addEventListener('click', function () {
+    var modal = document.getElementById('share-modal');
+    var url = window.location.origin + modal.dataset.sharePostUrl;
+    navigator.clipboard.writeText(url).then(function () {
+      closeModal(modal);
+      showToast('Link copied to clipboard!');
+    }).catch(function () {
+      // Fallback for older browsers
+      var textarea = document.createElement('textarea');
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      closeModal(modal);
+      showToast('Link copied to clipboard!');
+    });
+  });
+}
+
 export function initFeed() {
   initLikeButtons();
   initSaveButtons();
   initCommentForms();
   initInfiniteScroll();
   initCreatePostModal();
+  initShareButtons();
 }

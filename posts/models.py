@@ -33,6 +33,9 @@ class Post(models.Model):
     )
     is_draft = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
+    shared_post = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="shares"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

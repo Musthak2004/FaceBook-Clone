@@ -331,3 +331,80 @@ class HashtagViewTests(TestCase):
         url = reverse("posts:hashtag_detail", kwargs={"slug": "python"})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+
+class SharePostTests(TestCase):
+    """Tests for the share/repost feature."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.other = User.objects.create_user("bob", password="pass123")
+        self.post = Post.objects.create(
+            author=self.other, content="Original post by bob"
+        )
+        self.client.login(username="alice", password="pass123")
+
+    def test_share_post_creates_repost(self):
+        """Sharing a post creates a new Post with shared_post pointing to original."""
+        url = reverse("posts:post_share", kwargs={"pk": self.post.pk})
+        response = self.client.post(url)
+        self.assertJSONEqual(
+            response.content, {"shared": True, "post_url": "/posts/2/"}
+        )
+        repost = Post.objects.exclude(pk=self.post.pk).get()
+        self.assertEqual(repost.author, self.user)
+        self.assertEqual(repost.shared_post, self.post)
+        self.assertEqual(repost.content, "")
+
+    def test_share_post_with_content(self):
+        """Sharing a post with optional commentary creates a repost with that content."""
+        url = reverse("posts:post_share", kwargs={"pk": self.post.pk})
+        response = self.client.post(
+            url, {"content": "Great post!", "visibility": "friends"}
+        )
+        self.assertEqual(response.status_code, 200)
+        repost = Post.objects.exclude(pk=self.post.pk).get()
+        self.assertEqual(repost.content, "Great post!")
+        self.assertEqual(repost.visibility, "friends")
+        self.assertEqual(repost.shared_post, self.post)
+
+    def test_share_post_creates_notification(self):
+        """Sharing another user's post creates a share notification."""
+        from notifications.models import Notification
+
+        url = reverse("posts:post_share", kwargs={"pk": self.post.pk})
+        self.client.post(url)
+        self.assertTrue(
+            Notification.objects.filter(
+                recipient=self.other,
+                sender=self.user,
+                notification_type="share",
+                post=self.post,
+            ).exists()
+        )
+
+    def test_share_own_post_no_notification(self):
+        """Sharing your own post does NOT create a share notification."""
+        from notifications.models import Notification
+
+        own_post = Post.objects.create(author=self.user, content="My own post")
+        url = reverse("posts:post_share", kwargs={"pk": own_post.pk})
+        self.client.post(url)
+        self.assertFalse(
+            Notification.objects.filter(
+                notification_type="share",
+            ).exists()
+        )
+
+    def test_share_view_requires_login(self):
+        """Unauthenticated users cannot access the share endpoint."""
+        self.client.logout()
+        url = reverse("posts:post_share", kwargs={"pk": self.post.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)  # Redirect to login
+
+    def test_share_nonexistent_post_returns_404(self):
+        """Sharing a non-existent post returns 404."""
+        url = reverse("posts:post_share", kwargs={"pk": 9999})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)

@@ -36,6 +36,27 @@
       <div class="post-body">
         <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content|post_render }}</p>
       </div>
+      {% if post.shared_post %}
+      <div class="shared-post-embed">
+        <div class="shared-post-header">
+          <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}">
+            <strong>{{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}</strong>
+          </a>
+          <span class="post-time">{{ post.shared_post.created_at|timesince }} ago</span>
+        </div>
+        <p class="shared-post-content">{{ post.shared_post.content|post_render }}</p>
+        {% if post.shared_post.images.all %}
+        <div class="post-images" data-images-count="{{ post.shared_post.images.all|length }}">
+          {% for img in post.shared_post.images.all %}
+          <img src="{{ img.image.url }}" alt="Post image"
+               class="gallery-image"
+               data-gallery-id="shared-{{ post.shared_post.id }}"
+               data-index="{{ forloop.counter0 }}">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
       {% if post.images.all %}
       <div class="post-images" data-images-count="{{ post.images.all|length }}">
         {% for img in post.images.all %}
@@ -56,6 +77,9 @@
         </button>
         <button class="post-action post-action-save" data-post-id="{{ post.id }}">
           &#128190; Save
+        </button>
+        <button class="post-action share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
+          &#128257; Share
         </button>
       </div>
 

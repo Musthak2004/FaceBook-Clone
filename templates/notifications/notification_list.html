@@ -21,6 +21,8 @@
             &#128172;
           {% elif notification.notification_type == 'mention' %}
             &#128221;
+          {% elif notification.notification_type == 'share' %}
+            &#128257;
           {% else %}
             &#128276;
           {% endif %}
@@ -40,6 +42,8 @@
               replied to your comment
             {% elif notification.notification_type == 'mention' %}
               mentioned you in a post
+            {% elif notification.notification_type == 'share' %}
+              shared your post
             {% endif %}
           </div>
           <div class="notification-item-time">{{ notification.created_at|timesince }} ago</div>
