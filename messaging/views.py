@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -93,6 +95,21 @@ class SendMessageView(LoginRequiredMixin, View):
                 sender=request.user,
                 content=content,
             )
+
+            # Broadcast via WebSocket
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"chat_{conversation.pk}",
+                {
+                    "type": "chat_message",
+                    "id": message.pk,
+                    "sender_id": request.user.id,
+                    "sender_username": request.user.username,
+                    "content": message.content,
+                    "created_at": message.created_at.isoformat(),
+                },
+            )
+
             return JsonResponse(
                 {
                     "sent": True,

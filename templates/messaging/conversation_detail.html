@@ -58,6 +58,7 @@
 
         <div class="messages-container"
              data-conversation-id="{{ conversation.pk }}"
+             data-websocket-url="/ws/chat/{{ conversation.pk }}/"
              data-last-message-id="{{ conversation.last_message.id|default:0 }}">
           {% for message in conversation.messages.all %}
           <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">

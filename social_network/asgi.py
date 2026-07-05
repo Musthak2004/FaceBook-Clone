@@ -16,13 +16,17 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "social_network.settings")
 django_asgi_app = get_asgi_application()
 
 # Import here to ensure Django is fully initialized
+from messaging import routing as messaging_routing  # noqa: E402
 from notifications import routing as notification_routing  # noqa: E402
 
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": AuthMiddlewareStack(
-            URLRouter(notification_routing.websocket_urlpatterns)
+            URLRouter(
+                notification_routing.websocket_urlpatterns
+                + messaging_routing.websocket_urlpatterns
+            )
         ),
     }
 )
