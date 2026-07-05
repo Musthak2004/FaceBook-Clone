@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static post_tags %}
+
+{% block title %}#{{ tag_name }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="card mb-4">
+      <h2>#{{ tag_name }}</h2>
+      <p class="text-muted">{{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }}</p>
+    </div>
+
+    {% for post in posts %}
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-author">
+          {% if post.author.profile_picture %}
+          <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+              {{ post.author.get_full_name|default:post.author.username }}
+            </a>
+            <span class="post-time">{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p class="post-content">{{ post.content|post_render }}</p>
+      </div>
+      {% if post.images.all %}
+      <div class="post-images">
+        {% for img in post.images.all %}
+        <img src="{{ img.image.url }}" alt="Post image">
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="post-stats">
+        <div class="post-stats-left">
+          <span>{{ post.total_likes }} reactions</span>
+        </div>
+        <span>{{ post.total_comments }} comments</span>
+      </div>
+      <div class="post-actions">
+        <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action">
+          &#128147; <span class="like-count">{{ post.total_likes }}</span>
+        </a>
+        <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action">
+          &#128172; Comment
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-state-icon">&#128269;</div>
+      <h3>No posts with #{{ tag_name }}</h3>
+      <p>Be the first to create a post with this hashtag!</p>
+    </div>
+    {% endfor %}
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

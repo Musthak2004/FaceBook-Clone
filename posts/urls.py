@@ -6,6 +6,7 @@ app_name = "posts"
 
 urlpatterns = [
     path("new/", views.PostCreateView.as_view(), name="post_create"),
+    path("tags/<slug:slug>/", views.HashtagDetailView.as_view(), name="hashtag_detail"),
     path("<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
     path("<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),

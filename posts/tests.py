@@ -1,10 +1,11 @@
-"""Tests for the posts app — CRUD, permissions, saved posts."""
+"""Tests for the posts app — CRUD, permissions, saved posts, hashtags, mentions."""
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from .models import Post, PostImage, SavedPost
+from .models import Post, PostImage, SavedPost, Tag
+from .utils import parse_hashtags, parse_mentions, render_content
 
 User = get_user_model()
 
@@ -169,3 +170,164 @@ class PostCRUDTests(TestCase):
     def test_post_author_property(self):
         post = Post.objects.create(author=self.user, content="Test")
         self.assertEqual(post.author, self.user)
+
+
+class HashtagParsingTests(TestCase):
+    """Tests for posts/utils.py parsing functions."""
+
+    def test_parse_hashtags_simple(self):
+        self.assertEqual(parse_hashtags("Hello #world"), {"world"})
+
+    def test_parse_hashtags_multiple(self):
+        self.assertEqual(
+            parse_hashtags("#django #python #test"), {"django", "python", "test"}
+        )
+
+    def test_parse_hashtags_case_normalized(self):
+        self.assertEqual(parse_hashtags("#Hello #WORLD"), {"hello", "world"})
+
+    def test_parse_hashtags_none(self):
+        self.assertEqual(parse_hashtags("No hashtags here"), set())
+
+    def test_parse_hashtags_adjacent_to_punctuation(self):
+        """Hashtags adjacent to punctuation should still be matched."""
+        self.assertEqual(
+            parse_hashtags("Check #django! and #python."), {"django", "python"}
+        )
+
+    def test_parse_hashtags_numeric(self):
+        self.assertEqual(parse_hashtags("#2024 #123"), {"2024", "123"})
+
+    def test_parse_hashtags_empty_string(self):
+        self.assertEqual(parse_hashtags(""), set())
+
+    def test_parse_mentions_simple(self):
+        self.assertEqual(parse_mentions("Hello @alice"), {"alice"})
+
+    def test_parse_mentions_multiple(self):
+        self.assertEqual(
+            parse_mentions("@alice @bob @charlie"), {"alice", "bob", "charlie"}
+        )
+
+    def test_parse_mentions_none(self):
+        self.assertEqual(parse_mentions("No mentions here"), set())
+
+    def test_parse_mentions_empty_string(self):
+        self.assertEqual(parse_mentions(""), set())
+
+    def test_render_content_escapes_html(self):
+        """XSS vectors must be escaped."""
+        result = render_content("<script>alert('xss')</script>")
+        self.assertNotIn("<script>", result)
+        self.assertIn("&lt;script&gt;", result)
+
+    def test_render_content_hashtag_link(self):
+        """#tag should become a clickable link."""
+        result = render_content("#python")
+        self.assertIn('<a href="', result)
+        self.assertIn('class="hashtag"', result)
+        self.assertIn("#python", result)
+
+    def test_render_content_mention_link(self):
+        """@alice should link to alice's profile if alice exists."""
+        User.objects.create_user("alice", password="pass123")
+        result = render_content("Hello @alice")
+        self.assertIn('<a href="', result)
+        self.assertIn('class="mention"', result)
+        self.assertIn("@alice", result)
+
+    def test_render_content_unknown_mention(self):
+        """@nonexistent should stay as plain text."""
+        result = render_content("Hello @nonexistentuser")
+        self.assertNotIn('<a href="', result)
+        self.assertIn("@nonexistentuser", result)
+
+    def test_render_content_empty(self):
+        self.assertEqual(render_content(""), "")
+        self.assertEqual(render_content(None), "")
+
+
+class HashtagSignalTests(TestCase):
+    """Tests that post_save signals properly parse hashtags and create mention notifications."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.other = User.objects.create_user("bob", password="pass123")
+
+    def test_post_save_creates_tags(self):
+        post = Post.objects.create(
+            author=self.user, content="Learning #django and #python"
+        )
+        tags = Tag.objects.filter(posts=post)
+        self.assertEqual(tags.count(), 2)
+        self.assertIn(Tag.objects.get(name="django"), tags)
+        self.assertIn(Tag.objects.get(name="python"), tags)
+
+    def test_post_save_creates_mention_notification(self):
+        from notifications.models import Notification
+
+        post = Post.objects.create(
+            author=self.user, content="Hello @bob check this out!"
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                recipient=self.other,
+                sender=self.user,
+                notification_type="mention",
+                post=post,
+            ).exists()
+        )
+
+    def test_post_save_does_not_mention_self(self):
+        from notifications.models import Notification
+
+        Post.objects.create(author=self.user, content="Feeling great @alice")
+        self.assertFalse(
+            Notification.objects.filter(
+                notification_type="mention",
+            ).exists()
+        )
+
+    def test_post_save_no_hashtags_or_mentions(self):
+        Post.objects.create(author=self.user, content="Just a regular post")
+        self.assertEqual(Tag.objects.count(), 0)
+
+    def test_post_save_duplicate_tags(self):
+        """Same hashtag used twice should create only one Tag."""
+        Post.objects.create(
+            author=self.user, content="#python is great #python is fast"
+        )
+        self.assertEqual(Tag.objects.count(), 1)
+
+
+class HashtagViewTests(TestCase):
+    """Tests for the hashtag detail page."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+
+    def test_hashtag_detail_requires_login(self):
+        url = reverse("posts:hashtag_detail", kwargs={"slug": "python"})
+        response = self.client.get(url)
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+    def test_hashtag_detail_shows_matching_posts(self):
+        self.client.login(username="alice", password="pass123")
+        Post.objects.create(author=self.user, content="#python is awesome")
+        url = reverse("posts:hashtag_detail", kwargs={"slug": "python"})
+        response = self.client.get(url)
+        self.assertContains(response, "#python")
+
+    def test_hashtag_detail_excludes_drafts(self):
+        self.client.login(username="alice", password="pass123")
+        Post.objects.create(author=self.user, content="#draftpost", is_draft=True)
+        url = reverse("posts:hashtag_detail", kwargs={"slug": "draftpost"})
+        response = self.client.get(url)
+        self.assertContains(response, "No posts")
+
+    def test_hashtag_detail_case_insensitive(self):
+        self.client.login(username="alice", password="pass123")
+        Post.objects.create(author=self.user, content="#Python")
+        url = reverse("posts:hashtag_detail", kwargs={"slug": "python"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

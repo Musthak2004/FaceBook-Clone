@@ -2,7 +2,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, View
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    UpdateView,
+    DeleteView,
+    View,
+)
 
 from .forms import PostForm
 from .models import Post, PostImage, SavedPost
@@ -76,3 +83,24 @@ class PostSaveView(LoginRequiredMixin, View):
             saved.delete()
             return JsonResponse({"saved": False})
         return JsonResponse({"saved": True})
+
+
+class HashtagDetailView(LoginRequiredMixin, ListView):
+    """Show all public/friends posts tagged with a given hashtag."""
+
+    template_name = "posts/hashtag_detail.html"
+    context_object_name = "posts"
+    paginate_by = 10
+
+    def get_queryset(self):
+        slug = self.kwargs["slug"]
+        return (
+            Post.objects.filter(tags__name__iexact=slug, is_draft=False)
+            .select_related("author")
+            .prefetch_related("images", "reactions")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tag_name"] = self.kwargs["slug"]
+        return context

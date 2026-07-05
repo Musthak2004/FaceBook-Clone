@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static post_tags %}
 
 {% block title %}Post — SocialNet{% endblock %}
 
@@ -34,7 +34,7 @@
         {% endif %}
       </div>
       <div class="post-body">
-        <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content }}</p>
+        <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content|post_render }}</p>
       </div>
       {% if post.images.all %}
       <div class="post-images">
@@ -78,7 +78,7 @@
             {% endif %}
             <div class="comment-content">
               <div class="comment-author">{{ comment.author.username }}</div>
-              <div class="comment-text">{{ comment.content }}</div>
+              <div class="comment-text">{{ comment.content|post_render }}</div>
               <div class="comment-actions">
                 <span>{{ comment.created_at|timesince }} ago</span>
                 {% if comment.author == user %}
@@ -96,9 +96,10 @@
             {% endif %}
             <div class="comment-content">
               <div class="comment-author">{{ reply.author.username }}</div>
-              <div class="comment-text">{{ reply.content }}</div>
+              <div class="comment-text">{{ reply.content|post_render }}</div>
               <div class="comment-actions">
                 <span>{{ reply.created_at|timesince }} ago</span>
+              </div>
               </div>
             </div>
           </div>

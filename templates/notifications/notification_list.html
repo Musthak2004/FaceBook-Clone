@@ -19,6 +19,8 @@
             &#128147;
           {% elif notification.notification_type == 'comment' or notification.notification_type == 'reply' %}
             &#128172;
+          {% elif notification.notification_type == 'mention' %}
+            &#128221;
           {% else %}
             &#128276;
           {% endif %}
@@ -36,6 +38,8 @@
               commented on your post
             {% elif notification.notification_type == 'reply' %}
               replied to your comment
+            {% elif notification.notification_type == 'mention' %}
+              mentioned you in a post
             {% endif %}
           </div>
           <div class="notification-item-time">{{ notification.created_at|timesince }} ago</div>
