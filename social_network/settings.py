@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "messaging.apps.MessagingConfig",
     "search.apps.SearchConfig",
     "dashboard.apps.DashboardConfig",
+    "groups.apps.GroupsConfig",
     "api.apps.ApiConfig",
 ]
 

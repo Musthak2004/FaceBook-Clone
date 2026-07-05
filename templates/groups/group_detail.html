@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="post-detail-card">
+      <div class="post-header">
+        <div class="post-author">
+          {% if group.cover %}
+          <img src="{{ group.cover.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <h3>{{ group.name }}</h3>
+            <span class="post-time">{{ group.member_count }} member{{ group.member_count|pluralize }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p>{{ group.description }}</p>
+        <p class="post-time">Created {{ group.created_at|date:"F j, Y" }} by
+          <a href="{% url 'accounts:profile' username=group.admin.username %}">{{ group.admin.username }}</a>
+        </p>
+      </div>
+      <div class="post-actions">
+        <button class="post-action" id="group-toggle-btn" data-group-id="{{ group.pk }}">
+          {% if is_member %}
+            &#10060; Leave Group
+          {% else %}
+            &#10133; Join Group
+          {% endif %}
+        </button>
+      </div>
+    </div>
+
+    {% if is_member %}
+    <div class="create-post-card mt-4">
+      <form id="group-post-form" data-group-id="{{ group.pk }}">
+        {% csrf_token %}
+        <textarea name="content" class="form-input" rows="2" placeholder="Write something to {{ group.name }}..."></textarea>
+        <button type="submit" class="btn btn-primary btn-block mt-2">Post</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% for post in posts %}
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-author">
+          {% if post.author.profile_picture %}
+          <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+              {{ post.author.get_full_name|default:post.author.username }}
+            </a>
+            <span class="post-time">{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p class="post-content">{{ post.content }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-state-icon">&#128221;</div>
+      <h3>No posts yet</h3>
+      <p>Be the first to post in this group!</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  var csrfToken = getCookie('csrftoken');
+
+  // Join/Leave toggle
+  var toggleBtn = document.getElementById('group-toggle-btn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      var groupId = this.getAttribute('data-group-id');
+      fetch('/groups/' + groupId + '/toggle/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.is_member !== undefined) {
+          toggleBtn.textContent = data.is_member ? '❌ Leave Group' : '➕ Join Group';
+          location.reload();
+        }
+      });
+    });
+  }
+
+  // Group post creation
+  var postForm = document.getElementById('group-post-form');
+  if (postForm) {
+    postForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var groupId = this.getAttribute('data-group-id');
+      var content = this.querySelector('textarea').value.trim();
+      if (!content) return;
+
+      fetch('/groups/' + groupId + '/post/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'content=' + encodeURIComponent(content),
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.created) {
+          location.reload();
+        }
+      });
+    });
+  }
+})();
+</script>
+{% endblock %}

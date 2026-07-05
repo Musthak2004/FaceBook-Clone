@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Groups — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:680px;">
+    <div class="flex items-center justify-between mb-4">
+      <h2>Groups</h2>
+      <a href="{% url 'groups:group_create' %}" class="btn btn-primary">&#43; Create Group</a>
+    </div>
+
+    {% for group in groups %}
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-author">
+          {% if group.cover %}
+          <img src="{{ group.cover.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <a href="{% url 'groups:group_detail' pk=group.pk %}" class="post-author-name">
+              {{ group.name }}
+            </a>
+            <span class="post-time">{{ group.member_count }} member{{ group.member_count|pluralize }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p>{{ group.description|truncatechars:200 }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-state-icon">&#128101;</div>
+      <h3>No groups yet</h3>
+      <p>Create the first group or join an existing one!</p>
+    </div>
+    {% endfor %}
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
