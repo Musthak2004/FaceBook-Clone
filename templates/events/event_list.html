@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Events — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:700px;">
+    <div class="flex items-center justify-between mb-4">
+      <h2>Events</h2>
+      <a href="{% url 'events:create' %}" class="btn btn-primary">+ Create Event</a>
+    </div>
+
+    {% if events %}
+      {% for event in events %}
+      <div class="card mb-3">
+        <div class="card-body flex gap-3">
+          {% if event.cover %}
+          <img src="{{ event.cover.url }}" alt="{{ event.title }}"
+               style="width:120px;height:90px;object-fit:cover;border-radius:var(--radius);">
+          {% endif %}
+          <div class="flex-1">
+            <h3 class="mb-1">
+              <a href="{{ event.get_absolute_url }}" class="text-inherit">{{ event.title }}</a>
+            </h3>
+            <p class="text-muted" style="font-size:var(--font-size-sm);">
+              &#128197; {{ event.date|date:"F j, Y — g:i A" }}
+            </p>
+            {% if event.location %}
+            <p class="text-muted" style="font-size:var(--font-size-sm);">
+              &#128205; {{ event.location }}
+            </p>
+            {% endif %}
+            <p class="text-muted" style="font-size:var(--font-size-sm);">
+              &#128100; {{ event.attendee_count }} attending &middot;
+              Created by <a href="{% url 'accounts:profile' username=event.creator.username %}">{{ event.creator.username }}</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <div class="card-body" style="text-align:center;color:var(--text-muted);padding:48px 16px;">
+          <p>No events yet. <a href="{% url 'events:create' %}">Create the first one!</a></p>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if is_paginated %}
+    <div class="pagination mt-3">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-ghost">&laquo; Previous</a>
+      {% endif %}
+      <span class="px-3" style="align-self:center;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="btn btn-ghost">Next &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

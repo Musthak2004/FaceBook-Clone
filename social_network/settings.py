@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "search.apps.SearchConfig",
     "dashboard.apps.DashboardConfig",
     "groups.apps.GroupsConfig",
+    "events.apps.EventsConfig",
     "api.apps.ApiConfig",
 ]
 

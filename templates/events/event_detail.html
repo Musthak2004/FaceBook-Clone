@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:700px;">
+    <div class="card">
+      {% if event.cover %}
+      <img src="{{ event.cover.url }}" alt="{{ event.title }}"
+           style="width:100%;max-height:300px;object-fit:cover;border-radius:var(--radius) var(--radius) 0 0;">
+      {% endif %}
+      <div class="card-body">
+        <div class="flex items-center justify-between mb-3">
+          <h2>{{ event.title }}</h2>
+          {% if event.creator == user %}
+          <div class="flex gap-2">
+            <a href="{% url 'events:edit' pk=event.pk %}" class="btn btn-ghost btn-sm">&#9998; Edit</a>
+            <a href="{% url 'events:delete' pk=event.pk %}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Delete this event?')">&#128465; Delete</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3" style="color:var(--text-muted);">
+          <p>&#128197; {{ event.date|date:"F j, Y — g:i A" }}</p>
+          {% if event.location %}
+          <p>&#128205; {{ event.location }}</p>
+          {% endif %}
+          <p>&#128100; Created by <a href="{% url 'accounts:profile' username=event.creator.username %}">{{ event.creator.username }}</a></p>
+        </div>
+
+        {% if event.description %}
+        <div class="mb-3">
+          <p style="white-space:pre-wrap;">{{ event.description }}</p>
+        </div>
+        {% endif %}
+
+        <!-- RSVP Buttons -->
+        <div class="flex gap-2 mb-3" id="rsvp-buttons"
+             data-event-id="{{ event.pk }}"
+             data-csrf="{{ csrf_token }}">
+          <button class="rsvp-btn btn btn-sm {% if user_attendance.status == 'going' %}btn-primary{% else %}btn-ghost{% endif %}"
+                  data-status="going">&#9989; Going</button>
+          <button class="rsvp-btn btn btn-sm {% if user_attendance.status == 'maybe' %}btn-primary{% else %}btn-ghost{% endif %}"
+                  data-status="maybe">&#128200; Maybe</button>
+          <button class="rsvp-btn btn btn-sm {% if user_attendance.status == 'not_going' %}btn-danger{% else %}btn-ghost{% endif %}"
+                  data-status="not_going">&#10060; Not Going</button>
+        </div>
+
+        <!-- Attendees -->
+        <div>
+          <h4>Attendees (<span id="attendee-count">{{ event.attendee_count }}</span>)</h4>
+          <div class="flex flex-wrap gap-2 mt-2">
+            {% for attendee in going_attendees %}
+            <a href="{% url 'accounts:profile' username=attendee.user.username %}" class="flex items-center gap-1"
+               style="text-decoration:none;color:var(--text);">
+              {% if attendee.user.profile_picture %}
+              <img src="{{ attendee.user.profile_picture.url }}" alt="" class="avatar avatar-xs">
+              {% endif %}
+              <span style="font-size:var(--font-size-sm);">{{ attendee.user.username }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <a href="{% url 'events:list' %}" class="btn btn-ghost">&laquo; Back to Events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const rsvpContainer = document.getElementById('rsvp-buttons');
+  if (!rsvpContainer) return;
+  const eventId = rsvpContainer.dataset.eventId;
+  const csrf = rsvpContainer.dataset.csrf;
+
+  document.querySelectorAll('.rsvp-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const status = this.dataset.status;
+      fetch(`/events/${eventId}/rsvp/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf,
+        },
+        body: JSON.stringify({ status: status }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('attendee-count').textContent = data.attendee_count;
+          document.querySelectorAll('.rsvp-btn').forEach(b => {
+            b.classList.remove('btn-primary', 'btn-danger');
+            b.classList.add('btn-ghost');
+          });
+          if (data.status === 'going') {
+            document.querySelector('.rsvp-btn[data-status="going"]').classList.remove('btn-ghost');
+            document.querySelector('.rsvp-btn[data-status="going"]').classList.add('btn-primary');
+          } else if (data.status === 'maybe') {
+            document.querySelector('.rsvp-btn[data-status="maybe"]').classList.remove('btn-ghost');
+            document.querySelector('.rsvp-btn[data-status="maybe"]').classList.add('btn-primary');
+          } else if (data.status === 'removed') {
+            // all ghost
+          }
+        });
+    });
+  });
+});
+</script>
+{% endblock %}
