@@ -4,6 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Inline script to prevent flash of wrong theme -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <title>{% block title %}Social Network{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.ico' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
@@ -76,6 +85,11 @@
         <a href="{% url 'messaging:conversation_list' %}" class="nav-link">
           &#128172;
         </a>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="nav-link" style="font-size:18px;">
+          🌙 Night
+        </button>
 
         <!-- Profile Dropdown -->
         <div class="dropdown">

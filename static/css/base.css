@@ -343,3 +343,210 @@ small {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   Dark Mode — [data-theme="dark"] overrides
+   ============================================================ */
+
+[data-theme="dark"] {
+  --primary: #2684ff;
+  --primary-hover: #4a9eff;
+  --primary-light: #1a2a3a;
+  --secondary: #42b72a;
+  --secondary-hover: #54cc3a;
+  --danger: #f02849;
+  --danger-hover: #ff3b5a;
+  --warning: #f0ad4e;
+  --info: #5bc0de;
+
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --text-muted: #6c6f78;
+  --text-link: #2684ff;
+
+  --bg-primary: #242526;
+  --bg-secondary: #18191a;
+  --bg-tertiary: #3a3b3c;
+  --bg-hover: #3a3b3c;
+
+  --border-primary: #3e4042;
+  --border-secondary: #3e4042;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .nav {
+  background: #242526;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .nav-logo {
+  color: var(--primary);
+}
+
+[data-theme="dark"] .nav-link,
+[data-theme="dark"] .dropdown-item {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-link:hover,
+[data-theme="dark"] .dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .nav-search input {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-search input::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .dropdown-menu {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .notification-dropdown {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .post-card,
+[data-theme="dark"] .create-post-card,
+[data-theme="dark"] .post-detail-card {
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+[data-theme="dark"] .form-input {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .form-input:focus {
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .alert {
+  background: var(--bg-primary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .post-action {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .post-action:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .shared-post-embed {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .btn-ghost {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-ghost:hover {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .profile-header {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .profile-info-card {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .profile-nav {
+  border-top: 1px solid var(--border-secondary);
+}
+
+[data-theme="dark"] .pagination a,
+[data-theme="dark"] .pagination span {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .pagination span.current {
+  background: var(--primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .notification-item:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .conversation-card:hover,
+[data-theme="dark"] .message-card {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .messages-container {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .message-bubble {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .message-bubble.sent {
+  background: var(--primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .group-card,
+[data-theme="dark"] .event-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .story-avatar {
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .friend-request-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

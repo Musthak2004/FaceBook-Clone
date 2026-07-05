@@ -74,6 +74,30 @@ export function initMobileNav() {
   }
 }
 
+export function initTheme() {
+  var toggle = document.getElementById('theme-toggle');
+  if (!toggle) return;
+
+  var current = localStorage.getItem('theme') || 'light';
+  applyTheme(current);
+
+  toggle.addEventListener('click', function () {
+    var next = document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'light'
+      : 'dark';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  var toggle = document.getElementById('theme-toggle');
+  if (toggle) {
+    toggle.textContent = theme === 'dark' ? '☀️ Day' : '🌙 Night';
+  }
+}
+
 export function initAjaxForms() {
   var csrftoken = getCookie('csrftoken');
   document.addEventListener('click', function (e) {
