@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, View
 
 from accounts.models import CustomUser
@@ -10,18 +9,18 @@ from .models import Conversation, Message
 
 class ConversationListView(LoginRequiredMixin, ListView):
     model = Conversation
-    template_name = 'messaging/conversation_list.html'
-    context_object_name = 'conversations'
+    template_name = "messaging/conversation_list.html"
+    context_object_name = "conversations"
 
     def get_queryset(self):
         return Conversation.objects.filter(
             participants=self.request.user
-        ).prefetch_related('participants')
+        ).prefetch_related("participants")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Annotate each conversation with the other participant
-        conversations = context['conversations']
+        conversations = context["conversations"]
         for conv in conversations:
             conv.other_participant = conv.participants.exclude(
                 pk=self.request.user.pk
@@ -31,28 +30,30 @@ class ConversationListView(LoginRequiredMixin, ListView):
 
 class NewConversationView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        username = self.kwargs['username']
+        username = self.kwargs["username"]
         other_user = get_object_or_404(CustomUser, username=username)
         if request.user == other_user:
-            return redirect('messaging:conversation_list')
+            return redirect("messaging:conversation_list")
 
         # Check for existing conversation
-        conversations = Conversation.objects.filter(
-            participants=request.user
-        ).filter(participants=other_user)
+        conversations = Conversation.objects.filter(participants=request.user).filter(
+            participants=other_user
+        )
 
         if conversations.exists():
-            return redirect('messaging:conversation_detail', pk=conversations.first().pk)
+            return redirect(
+                "messaging:conversation_detail", pk=conversations.first().pk
+            )
 
         conversation = Conversation.objects.create()
         conversation.participants.add(request.user, other_user)
-        return redirect('messaging:conversation_detail', pk=conversation.pk)
+        return redirect("messaging:conversation_detail", pk=conversation.pk)
 
 
 class ConversationDetailView(LoginRequiredMixin, DetailView):
     model = Conversation
-    template_name = 'messaging/conversation_detail.html'
-    context_object_name = 'conversation'
+    template_name = "messaging/conversation_detail.html"
+    context_object_name = "conversation"
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user)
@@ -61,9 +62,9 @@ class ConversationDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         conversation = self.get_object()
         # Mark messages as read
-        Message.objects.filter(
-            conversation=conversation, is_read=False
-        ).exclude(sender=self.request.user).update(is_read=True)
+        Message.objects.filter(conversation=conversation, is_read=False).exclude(
+            sender=self.request.user
+        ).update(is_read=True)
         # Annotate the conversation with the other participant
         conversation.other_participant = conversation.participants.exclude(
             pk=self.request.user.pk
@@ -71,30 +72,32 @@ class ConversationDetailView(LoginRequiredMixin, DetailView):
         # Annotate sidebar conversations
         conversations = Conversation.objects.filter(
             participants=self.request.user
-        ).prefetch_related('participants')
+        ).prefetch_related("participants")
         for conv in conversations:
             conv.other_participant = conv.participants.exclude(
                 pk=self.request.user.pk
             ).first()
-        context['user_conversations'] = conversations
+        context["user_conversations"] = conversations
         return context
 
 
 class SendMessageView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         conversation = get_object_or_404(
-            Conversation, pk=self.kwargs['pk'], participants=request.user
+            Conversation, pk=self.kwargs["pk"], participants=request.user
         )
-        content = request.POST.get('content', '').strip()
+        content = request.POST.get("content", "").strip()
         if content:
             message = Message.objects.create(
                 conversation=conversation,
                 sender=request.user,
                 content=content,
             )
-            return JsonResponse({
-                'sent': True,
-                'content': message.content,
-                'created_at': message.created_at.isoformat(),
-            })
-        return JsonResponse({'error': 'Content is required'}, status=400)
+            return JsonResponse(
+                {
+                    "sent": True,
+                    "content": message.content,
+                    "created_at": message.created_at.isoformat(),
+                }
+            )
+        return JsonResponse({"error": "Content is required"}, status=400)

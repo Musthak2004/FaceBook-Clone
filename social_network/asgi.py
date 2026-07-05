@@ -1,16 +1,28 @@
 """
 ASGI config for social_network project.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
+Exposes both the WSGI and ASGI applications.
+Uses Django Channels for WebSocket support.
 """
 
 import os
 
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'social_network.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "social_network.settings")
 
-application = get_asgi_application()
+django_asgi_app = get_asgi_application()
+
+# Import here to ensure Django is fully initialized
+from notifications import routing as notification_routing  # noqa: E402
+
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+        "websocket": AuthMiddlewareStack(
+            URLRouter(notification_routing.websocket_urlpatterns)
+        ),
+    }
+)

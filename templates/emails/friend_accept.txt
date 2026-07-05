@@ -1,0 +1,9 @@
+Hi {{ recipient.username }},
+
+{{ sender.username }} accepted your friend request on SocialNet.
+
+Visit their profile:
+{{ site_url }}{% url 'accounts:profile' username=sender.username %}
+
+—
+SocialNet

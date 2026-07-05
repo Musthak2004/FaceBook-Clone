@@ -5,6 +5,6 @@ from .models import Friendship
 
 @admin.register(Friendship)
 class FriendshipAdmin(admin.ModelAdmin):
-    list_display = ('id', 'from_user', 'to_user', 'status', 'created_at')
-    list_filter = ('status', 'created_at')
-    search_fields = ('from_user__username', 'to_user__username')
+    list_display = ("id", "from_user", "to_user", "status", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("from_user__username", "to_user__username")

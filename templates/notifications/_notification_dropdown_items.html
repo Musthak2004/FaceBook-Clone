@@ -1,0 +1,46 @@
+{% load static %}
+{% for notification in notifications|slice:":10" %}
+<div class="notification-item {% if not notification.is_read %}unread{% endif %}"
+     data-notification-id="{{ notification.id }}"
+     data-href="{% if notification.post %}{% url 'posts:post_detail' pk=notification.post.pk %}{% else %}{% url 'notifications:notification_list' %}{% endif %}">
+  <div class="notification-item-avatar">
+    {% if notification.sender and notification.sender.profile_picture %}
+    <img src="{{ notification.sender.profile_picture.url }}" alt="" class="avatar avatar-sm">
+    {% else %}
+    <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+    {% endif %}
+  </div>
+  <div class="notification-item-content">
+    <div class="notification-item-text">
+      {% if notification.notification_type == 'friend_request' %}
+        <strong>{{ notification.sender.username }}</strong> sent you a friend request
+      {% elif notification.notification_type == 'friend_accept' %}
+        <strong>{{ notification.sender.username }}</strong> accepted your friend request
+      {% elif notification.notification_type == 'like' %}
+        <strong>{{ notification.sender.username }}</strong> liked your post
+      {% elif notification.notification_type == 'comment' %}
+        <strong>{{ notification.sender.username }}</strong> commented on your post
+      {% elif notification.notification_type == 'reply' %}
+        <strong>{{ notification.sender.username }}</strong> replied to your comment
+      {% else %}
+        <strong>{{ notification.sender.username }}</strong> interacted with your post
+      {% endif %}
+    </div>
+    <div class="notification-item-time">{{ notification.created_at|timesince }} ago</div>
+  </div>
+  {% if not notification.is_read %}
+  <span class="unread-dot"></span>
+  {% endif %}
+</div>
+{% empty %}
+<div class="notification-item" style="justify-content:center;padding:24px;color:var(--text-muted);">
+  No notifications yet
+</div>
+{% endfor %}
+
+{% if notifications.count > 10 %}
+<div class="dropdown-divider"></div>
+<a href="{% url 'notifications:notification_list' %}" class="dropdown-item" style="justify-content:center;color:var(--primary);font-weight:600;">
+  See all notifications
+</a>
+{% endif %}

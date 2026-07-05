@@ -2,12 +2,11 @@
    Main JavaScript — Navigation, Dropdowns, Modals, Utils
    ============================================================ */
 
-// DOM Ready
+// DOM Ready — notification polling moved to notifications.js (WebSocket)
 document.addEventListener('DOMContentLoaded', function () {
   initDropdowns();
   initModals();
   initMobileNav();
-  initNotificationPolling();
 });
 
 /* ---- Dropdowns ---- */
@@ -83,31 +82,6 @@ function initMobileNav() {
       document.querySelector('.nav-links').classList.toggle('show');
     });
   }
-}
-
-/* ---- Notification Polling ---- */
-function initNotificationPolling() {
-  var badge = document.querySelector('.notification-badge');
-  if (!badge) return;
-
-  function pollNotifications() {
-    var url = badge.getAttribute('data-poll-url') || '/notifications/';
-    fetch(url + '?count=1')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        var count = data.unread_count || 0;
-        if (count > 0) {
-          badge.textContent = count > 99 ? '99+' : count;
-          badge.classList.remove('hidden');
-        } else {
-          badge.classList.add('hidden');
-        }
-      })
-      .catch(function () { /* Silently fail */ });
-  }
-
-  // Poll every 30 seconds
-  setInterval(pollNotifications, 30000);
 }
 
 /* ---- Utility Functions ---- */

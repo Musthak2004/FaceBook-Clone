@@ -1,12 +1,95 @@
 /* ============================================================
-   Notifications JavaScript — Dropdown, Mark Read, Polling
+   Notifications JavaScript — WebSocket, Dropdown, Mark Read
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
+  initNotificationWebSocket();
   initNotificationDropdown();
   initMarkRead();
   initMarkAllRead();
 });
+
+/* ---- WebSocket Connection ---- */
+let notificationSocket = null;
+
+function initNotificationWebSocket() {
+  var badge = document.querySelector('.notification-badge');
+  if (!badge) return;
+
+  var wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  var wsUrl = wsScheme + '://' + window.location.host + '/ws/notifications/';
+
+  function connect() {
+    notificationSocket = new WebSocket(wsUrl);
+
+    notificationSocket.onopen = function () {
+      console.debug('Notification WebSocket connected');
+    };
+
+    notificationSocket.onmessage = function (e) {
+      try {
+        var data = JSON.parse(e.data);
+
+        if (data.type === 'notification') {
+          // Update badge
+          updateBadge(data.unread_count);
+          // Show a brief toast for real-time feedback
+          showToast(data.message);
+        } else if (data.type === 'unread_count') {
+          updateBadge(data.count);
+        }
+      } catch (err) {
+        console.error('Notification WS error:', err);
+      }
+    };
+
+    notificationSocket.onclose = function () {
+      console.debug('Notification WebSocket disconnected');
+      // Fall back to polling if WS fails
+      setTimeout(startPollingFallback, 5000);
+    };
+
+    notificationSocket.onerror = function () {
+      notificationSocket.close();
+    };
+  }
+
+  connect();
+}
+
+/* ---- Polling Fallback ---- */
+let pollInterval = null;
+
+function startPollingFallback() {
+  if (pollInterval) return;
+  var badge = document.querySelector('.notification-badge');
+  if (!badge) return;
+
+  function poll() {
+    var url = badge.getAttribute('data-poll-url') || '/notifications/';
+    fetch(url + '?count=1')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        updateBadge(data.unread_count || 0);
+      })
+      .catch(function () {});
+  }
+
+  pollInterval = setInterval(poll, 30000);
+}
+
+/* ---- Update Badge ---- */
+function updateBadge(count) {
+  var badge = document.querySelector('.notification-badge');
+  if (!badge) return;
+
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
 
 /* ---- Notification Dropdown Toggle ---- */
 function initNotificationDropdown() {
@@ -21,13 +104,11 @@ function initNotificationDropdown() {
 
     dropdown.classList.toggle('show');
 
-    // Fetch notifications
     if (dropdown.classList.contains('show')) {
       fetchNotifications();
     }
   });
 
-  // Close on outside click
   document.addEventListener('click', function (e) {
     if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
       dropdown.classList.remove('show');
@@ -49,7 +130,7 @@ function fetchNotifications() {
         list.innerHTML = data.html;
       }
     })
-    .catch(function () { /* Silently fail */ });
+    .catch(function () {});
 }
 
 /* ---- Mark Single Notification as Read ---- */
@@ -75,13 +156,20 @@ function initMarkRead() {
             item.classList.remove('unread');
             var dot = item.querySelector('.unread-dot');
             if (dot) dot.remove();
-            updateBadgeCount(-1);
+            // Notify WebSocket
+            if (notificationSocket && notificationSocket.readyState === WebSocket.OPEN) {
+              notificationSocket.send(JSON.stringify({
+                type: 'mark_read',
+                notification_id: parseInt(notificationId),
+              }));
+            } else {
+              updateBadgeDelta(-1);
+            }
           }
         })
-        .catch(function () { /* Silently fail */ });
+        .catch(function () {});
     }
 
-    // Navigate to notification link if has one
     var link = item.getAttribute('data-href');
     if (link) {
       window.location.href = link;
@@ -109,16 +197,21 @@ function initMarkAllRead() {
             var dot = item.querySelector('.unread-dot');
             if (dot) dot.remove();
           });
-          var badge = document.querySelector('.notification-badge');
-          if (badge) badge.classList.add('hidden');
+          // Notify WebSocket
+          if (notificationSocket && notificationSocket.readyState === WebSocket.OPEN) {
+            notificationSocket.send(JSON.stringify({ type: 'mark_all_read' }));
+          } else {
+            var badge = document.querySelector('.notification-badge');
+            if (badge) badge.classList.add('hidden');
+          }
         }
       })
-      .catch(function () { /* Silently fail */ });
+      .catch(function () {});
   });
 }
 
-/* ---- Update Badge Count ---- */
-function updateBadgeCount(delta) {
+/* ---- Delta update for fallback ---- */
+function updateBadgeDelta(delta) {
   var badge = document.querySelector('.notification-badge');
   if (!badge) return;
 

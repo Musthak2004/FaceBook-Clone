@@ -9,28 +9,30 @@ from .models import Reaction
 
 class PostLikeView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        post = get_object_or_404(Post, pk=self.kwargs['pk'])
-        reaction_type = request.POST.get('reaction_type', 'like')
+        post = get_object_or_404(Post, pk=self.kwargs["pk"])
+        reaction_type = request.POST.get("reaction_type", "like")
 
         reaction, created = Reaction.objects.get_or_create(
-            user=request.user,
-            post=post,
-            defaults={'reaction_type': reaction_type}
+            user=request.user, post=post, defaults={"reaction_type": reaction_type}
         )
 
         if not created:
             if reaction.reaction_type == reaction_type:
                 reaction.delete()
-                return JsonResponse({
-                    'liked': False,
-                    'total_likes': post.reactions.count(),
-                })
+                return JsonResponse(
+                    {
+                        "liked": False,
+                        "total_likes": post.reactions.count(),
+                    }
+                )
             else:
                 reaction.reaction_type = reaction_type
                 reaction.save()
 
-        return JsonResponse({
-            'liked': True,
-            'total_likes': post.reactions.count(),
-            'reaction_type': reaction_type,
-        })
+        return JsonResponse(
+            {
+                "liked": True,
+                "total_likes": post.reactions.count(),
+                "reaction_type": reaction_type,
+            }
+        )
