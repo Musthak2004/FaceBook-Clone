@@ -23,6 +23,7 @@ urlpatterns = [
     path("events/", include("events.urls")),
     path("stories/", include("stories.urls")),
     path("reports/", include("reports.urls")),
+    path("pages/", include("pages.urls")),
 ]
 
 # Serve media files during development (per book's pattern)

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page.name }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:680px;">
+    <!-- Page Header -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      {% if page.cover %}
+      <img src="{{ page.cover.url }}" alt="" style="width:100%;height:300px;object-fit:cover;display:block;">
+      {% else %}
+      <div style="width:100%;height:200px;background:var(--bg-tertiary);"></div>
+      {% endif %}
+      <div style="padding:var(--space-4);position:relative;">
+        <div style="margin-top:-60px;margin-bottom:var(--space-3);display:flex;align-items:flex-end;gap:var(--space-4);">
+          <div>
+            {% if page.profile_picture %}
+            <img src="{{ page.profile_picture.url }}" alt="{{ page.name }}" style="width:100px;height:100px;border:4px solid var(--bg-primary);border-radius:50%;object-fit:cover;box-shadow:var(--shadow-md);">
+            {% else %}
+            <div style="width:100px;height:100px;border:4px solid var(--bg-primary);border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;box-shadow:var(--shadow-md);">
+              {{ page.name|first }}
+            </div>
+            {% endif %}
+          </div>
+          <div style="flex:1;padding-top:var(--space-6);">
+            <h2>{{ page.name }}</h2>
+            <div class="text-muted" style="font-size:var(--font-size-sm);">
+              {{ page.get_category_display }} &middot;
+              <span id="follower-count">{{ page.follower_count }}</span> follower{{ page.follower_count|pluralize }} &middot;
+              {{ page.post_count }} post{{ page.post_count|pluralize }}
+            </div>
+          </div>
+          <div style="padding-top:var(--space-6);">
+            {% if is_admin %}
+            <a href="{% url 'pages:update' pk=page.pk %}" class="btn btn-ghost">&#9998; Edit</a>
+            {% elif user.is_authenticated %}
+            <button id="follow-btn" class="btn {% if is_following %}btn-ghost{% else %}btn-primary{% endif %}"
+                    data-page-id="{{ page.pk }}">
+              {% if is_following %}&#10003; Following{% else %}+ Follow{% endif %}
+            </button>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if page.description %}
+        <p class="text-secondary" style="margin-bottom:var(--space-2);">{{ page.description }}</p>
+        {% endif %}
+
+        {% if page.website %}
+        <div style="font-size:var(--font-size-sm);">
+          &#128279; <a href="{{ page.website }}" target="_blank" rel="noopener">{{ page.website }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Admin: Create Post -->
+    {% if is_admin %}
+    <div class="card">
+      <h4>Post an Update</h4>
+      <form id="page-post-form" data-page-id="{{ page.pk }}">
+        {% csrf_token %}
+        <div class="form-group">
+          <textarea name="content" class="form-input" rows="3" placeholder="Share an update with your followers…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Post</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Page Posts -->
+    <h4 class="mb-3" style="padding:0 var(--space-1);">Updates</h4>
+
+    {% for post in posts %}
+    <div class="post-card page-post" data-post-id="{{ post.pk }}">
+      <div class="post-header">
+        <div class="post-author">
+          {% if page.profile_picture %}
+          <img src="{{ page.profile_picture.url }}" alt="" class="avatar">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          {% endif %}
+          <div class="post-author-info">
+            <span class="post-author-name">{{ page.name }}</span>
+            <span class="post-time">{{ post.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p class="post-content">{{ post.content }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card text-center" style="padding:var(--space-6);">
+      <div style="font-size:36px;margin-bottom:var(--space-3);">&#128240;</div>
+      <p class="text-secondary">No updates yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Follow/Unfollow
+  var followBtn = document.getElementById('follow-btn');
+  if (followBtn) {
+    followBtn.addEventListener('click', function () {
+      var pageId = this.getAttribute('data-page-id');
+      var csrfToken = (function () {
+        var v = '; ' + document.cookie;
+        var p = v.split('; csrftoken=');
+        return p.length === 2 ? p.pop().split(';').shift() : null;
+      })();
+
+      fetch('/pages/' + pageId + '/follow/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.is_following !== undefined) {
+            followBtn.textContent = data.is_following ? '✓ Following' : '+ Follow';
+            followBtn.className = 'btn ' + (data.is_following ? 'btn-ghost' : 'btn-primary');
+            var countEl = document.getElementById('follower-count');
+            if (countEl) countEl.textContent = data.follower_count;
+          }
+        })
+        .catch(function (err) { console.error('Follow error:', err); });
+    });
+  }
+
+  // Page post form
+  var postForm = document.getElementById('page-post-form');
+  if (postForm) {
+    postForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var pageId = this.getAttribute('data-page-id');
+      var content = this.querySelector('textarea[name="content"]').value.trim();
+      if (!content) return;
+      var csrfToken = (function () {
+        var v = '; ' + document.cookie;
+        var p = v.split('; csrftoken=');
+        return p.length === 2 ? p.pop().split(';').shift() : null;
+      })();
+
+      fetch('/pages/' + pageId + '/post/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'content=' + encodeURIComponent(content),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.created) {
+            // Reload to show new post
+            location.reload();
+          }
+        })
+        .catch(function (err) { console.error('Post error:', err); });
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Create Page{% endif %} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="card">
+      <h2>{% if object %}Edit Page{% else %}Create a Page{% endif %}</h2>
+      <p class="text-secondary mb-4">
+        {% if object %}
+        Update your page's information.
+        {% else %}
+        Create a page for your business, organization, or community.
+        {% endif %}
+      </p>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+          <span class="form-help">{{ field.help_text }}</span>
+          {% endif %}
+          {% if field.errors %}
+          <div class="text-danger" style="font-size:var(--font-size-sm);">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            {% if object %}Save Changes{% else %}Create Page{% endif %}
+          </button>
+          <a href="{% if object %}{% url 'pages:detail' pk=object.pk %}{% else %}{% url 'pages:list' %}{% endif %}" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
