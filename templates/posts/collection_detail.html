@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static post_tags %}
+
+{% block title %}{{ collection.name }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:700px;">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2>&#128193; {{ collection.name }}</h2>
+        {% if collection.description %}
+        <p class="text-muted">{{ collection.description }}</p>
+        {% endif %}
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'posts:saved_posts' %}" class="btn btn-ghost">&laquo; All Saved</a>
+        <button class="btn btn-danger btn-sm" onclick="deleteCollection({{ collection.id }})">&#128465; Delete</button>
+      </div>
+    </div>
+
+    {% if saved_posts %}
+      {% for saved in saved_posts %}
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-author">
+            {% if saved.post.author.profile_picture %}
+            <img src="{{ saved.post.author.profile_picture.url }}" alt="" class="avatar">
+            {% endif %}
+            <div class="post-author-info">
+              <a href="{% url 'accounts:profile' username=saved.post.author.username %}" class="post-author-name">
+                {{ saved.post.author.get_full_name|default:saved.post.author.username }}
+              </a>
+              <span class="post-time">{{ saved.post.created_at|timesince }} ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-body">
+          <p class="post-content">{{ saved.post.content|post_render }}</p>
+        </div>
+        {% if saved.post.images.all %}
+        <div class="post-images" data-images-count="{{ saved.post.images.all|length }}">
+          {% for img in saved.post.images.all %}
+          <img src="{{ img.image.url }}" alt="" class="gallery-image"
+               data-gallery-id="saved-{{ saved.post.id }}"
+               data-index="{{ forloop.counter0 }}">
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="post-actions">
+          <a href="{{ saved.post.get_absolute_url }}" class="post-action">&#128172; View Post</a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:48px;color:var(--text-muted);">
+          <p>No posts in this collection yet.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteCollection(id) {
+  if (!confirm('Delete this collection? Posts inside will not be deleted.')) return;
+  fetch('/posts/collections/' + id + '/delete/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': (function(){ var v='; '+document.cookie; var p=v.split('; csrftoken='); return p.length===2?p.pop().split(';').shift():null; })(),
+    },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.deleted) window.location.href = '/posts/saved/';
+  });
+}
+</script>
+{% endblock %}

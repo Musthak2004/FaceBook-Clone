@@ -12,7 +12,7 @@ from django.views.generic import (
 )
 
 from .forms import PostForm
-from .models import Post, PostImage, SavedPost
+from .models import Post, PostImage, SavedCollection, SavedPost
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -78,11 +78,82 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class PostSaveView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=self.kwargs["pk"])
-        saved, created = SavedPost.objects.get_or_create(user=request.user, post=post)
-        if not created:
-            saved.delete()
+        collection_id = request.POST.get("collection_id") or request.GET.get(
+            "collection_id"
+        )
+
+        existing = SavedPost.objects.filter(user=request.user, post=post).first()
+        if existing:
+            existing.delete()
             return JsonResponse({"saved": False})
+
+        collection = None
+        if collection_id:
+            collection = get_object_or_404(
+                SavedCollection, pk=collection_id, user=request.user
+            )
+
+        SavedPost.objects.create(user=request.user, post=post, collection=collection)
         return JsonResponse({"saved": True})
+
+
+class SavedPostListView(LoginRequiredMixin, ListView):
+    """Show saved posts grouped by collection."""
+
+    template_name = "posts/saved_posts.html"
+    context_object_name = "saved_posts"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return (
+            SavedPost.objects.filter(user=self.request.user)
+            .select_related("post__author", "collection")
+            .prefetch_related("post__images")
+        )
+
+
+class CollectionCreateView(LoginRequiredMixin, CreateView):
+    """Create a new collection for saving posts."""
+
+    model = SavedCollection
+    fields = ["name", "description"]
+    template_name = "posts/collection_form.html"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("posts:saved_posts")
+
+
+class CollectionDetailView(LoginRequiredMixin, DetailView):
+    """Show posts in a collection."""
+
+    model = SavedCollection
+    template_name = "posts/collection_detail.html"
+    context_object_name = "collection"
+
+    def get_queryset(self):
+        return SavedCollection.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["saved_posts"] = self.object.saved_posts.select_related(
+            "post__author"
+        ).prefetch_related("post__images")
+        return context
+
+
+class CollectionDeleteView(LoginRequiredMixin, View):
+    """AJAX endpoint to delete a collection."""
+
+    def post(self, request, *args, **kwargs):
+        collection = get_object_or_404(
+            SavedCollection, pk=self.kwargs["pk"], user=request.user
+        )
+        collection.delete()
+        return JsonResponse({"deleted": True})
 
 
 class SharePostView(LoginRequiredMixin, View):

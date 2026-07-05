@@ -66,11 +66,42 @@ class PostImage(models.Model):
         return f"Image for Post {self.post.id}"
 
 
+class SavedCollection(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_collections",
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "name")
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.user}'s collection: {self.name}"
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+
+        return reverse("posts:collection_detail", kwargs={"pk": self.pk})
+
+
 class SavedPost(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_posts"
     )
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_by")
+    collection = models.ForeignKey(
+        SavedCollection,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="saved_posts",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

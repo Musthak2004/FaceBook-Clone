@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}New Collection — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:500px;">
+    <div class="post-detail-card">
+      <h2>&#128193; New Collection</h2>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <p class="text-danger" style="font-size:var(--font-size-sm);">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-block">Create Collection</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static post_tags %}
+
+{% block title %}Saved Posts — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:700px;">
+    <div class="flex items-center justify-between mb-4">
+      <h2>&#128190; Saved Posts</h2>
+      <a href="{% url 'posts:collection_create' %}" class="btn btn-primary">+ New Collection</a>
+    </div>
+
+    <!-- Collections -->
+    {% regroup saved_posts by collection as collection_groups %}
+
+    {% if collection_groups %}
+      {% for group in collection_groups %}
+      <div class="card mb-3">
+        <div class="card-header flex items-center justify-between">
+          <h4>
+            {% if group.grouper %}
+            <a href="{% url 'posts:collection_detail' pk=group.grouper.pk %}" class="text-inherit">
+              &#128193; {{ group.grouper.name }}
+            </a>
+            {% else %}
+            <span>&#128196; Uncategorized</span>
+            {% endif %}
+          </h4>
+          <span class="text-muted" style="font-size:var(--font-size-sm);">
+            {{ group.list|length }} post{{ group.list|length|pluralize }}
+          </span>
+        </div>
+        <div class="card-body">
+          {% for saved in group.list|slice:":5" %}
+          <div class="flex items-center gap-3 mb-2">
+            {% if saved.post.images.all %}
+            <img src="{{ saved.post.images.first.image.url }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius);">
+            {% endif %}
+            <div class="flex-1">
+              <a href="{{ saved.post.get_absolute_url }}" class="text-inherit">{{ saved.post.content|truncatewords:15 }}</a>
+              <p class="text-muted" style="font-size:var(--font-size-sm);">{{ saved.post.author.username }} &middot; {{ saved.created_at|timesince }} ago</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% elif saved_posts %}
+      {% for saved in saved_posts %}
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-author">
+            {% if saved.post.author.profile_picture %}
+            <img src="{{ saved.post.author.profile_picture.url }}" alt="" class="avatar">
+            {% endif %}
+            <div class="post-author-info">
+              <a href="{% url 'accounts:profile' username=saved.post.author.username %}" class="post-author-name">
+                {{ saved.post.author.get_full_name|default:saved.post.author.username }}
+              </a>
+              <span class="post-time">{{ saved.post.created_at|timesince }} ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-body">
+          <p class="post-content">{{ saved.post.content|post_render }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:48px;color:var(--text-muted);">
+          <p style="font-size:48px;">&#128190;</p>
+          <h3>No saved posts yet</h3>
+          <p>Click the Save button on any post to add it here.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
