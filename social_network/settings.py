@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "channels",
     "rest_framework",
+    "drf_spectacular",
     # Local apps
     "accounts.apps.AccountsConfig",
     "core.apps.CoreConfig",
@@ -207,6 +208,21 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# drf-spectacular API documentation settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SocialNet API",
+    "DESCRIPTION": "REST API for the SocialNet Facebook clone platform. Features include posts, comments, reactions, messaging, authentication, and user profiles.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Rate limiting

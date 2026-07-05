@@ -21,12 +21,20 @@ class ConversationListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Annotate each conversation with the other participant
-        conversations = context["conversations"]
+        # Evaluate queryset so annotations persist
+        conversations = list(context["conversations"])
         for conv in conversations:
             conv.other_participant = conv.participants.exclude(
                 pk=self.request.user.pk
             ).first()
+        context["conversations"] = conversations
+        # Also set other_participant on the conversation itself if in context
+        if "conversation" in context:
+            context["conversation"].other_participant = (
+                context["conversation"]
+                .participants.exclude(pk=self.request.user.pk)
+                .first()
+            )
         return context
 
 
@@ -62,19 +70,20 @@ class ConversationDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        conversation = self.get_object()
-        # Mark messages as read
-        Message.objects.filter(conversation=conversation, is_read=False).exclude(
+        # Mark messages as read for the recipient
+        Message.objects.filter(conversation=self.object, is_read=False).exclude(
             sender=self.request.user
         ).update(is_read=True)
-        # Annotate the conversation with the other participant
-        conversation.other_participant = conversation.participants.exclude(
+        # Annotate main conversation with other participant
+        self.object.other_participant = self.object.participants.exclude(
             pk=self.request.user.pk
         ).first()
-        # Annotate sidebar conversations
-        conversations = Conversation.objects.filter(
-            participants=self.request.user
-        ).prefetch_related("participants")
+        # Annotate sidebar conversations (evaluate list to preserve annotations)
+        conversations = list(
+            Conversation.objects.filter(
+                participants=self.request.user
+            ).prefetch_related("participants")
+        )
         for conv in conversations:
             conv.other_participant = conv.participants.exclude(
                 pk=self.request.user.pk

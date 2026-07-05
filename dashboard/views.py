@@ -16,7 +16,7 @@ class StaffRequiredMixin(UserPassesTestMixin):
     def handle_no_permission(self):
         from django.shortcuts import redirect
 
-        return redirect("home")
+        return redirect("core:home")
 
 
 class DashboardHomeView(StaffRequiredMixin, TemplateView):
