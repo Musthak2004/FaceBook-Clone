@@ -92,7 +92,22 @@ def _push_notification(notification):
 
 
 def _create_notification(**kwargs):
-    """Create a notification and push it via WebSocket."""
+    """Create a notification and push it via WebSocket.
+
+    Respects the recipient's notification preferences — if they've opted
+    out of this notification_type, it is silently skipped.
+    """
+    notification_type = kwargs.get("notification_type")
+    recipient = kwargs.get("recipient")
+
+    # Check recipient's preferences before creating the notification
+    if recipient and notification_type:
+        from .models import NotificationPreference
+
+        prefs = NotificationPreference.get_or_create_for_user(recipient)
+        if not prefs.is_enabled(notification_type):
+            return None, False
+
     notification, created = Notification.objects.get_or_create(**kwargs)
     if created:
         _push_notification(notification)
@@ -114,18 +129,11 @@ def create_friendship_notification(sender, instance, created, **kwargs):
 def create_friend_accept_notification(sender, instance, **kwargs):
     """Create notification when a friend request is accepted."""
     if instance.status == "accepted" and not kwargs.get("created", False):
-        existing = Notification.objects.filter(
+        _create_notification(
             recipient=instance.from_user,
             sender=instance.to_user,
             notification_type="friend_accept",
-        ).exists()
-        if not existing:
-            notification = Notification.objects.create(
-                recipient=instance.from_user,
-                sender=instance.to_user,
-                notification_type="friend_accept",
-            )
-            _push_notification(notification)
+        )
 
 
 @receiver(post_save, sender=Reaction)

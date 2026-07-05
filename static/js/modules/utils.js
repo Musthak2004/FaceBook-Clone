@@ -23,11 +23,21 @@ export function csrfSafeMethod(method) {
  * Show a brief toast notification.
  */
 export function showToast(message) {
-  var toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(function () { toast.remove(); }, 3000);
+  var toast = document.getElementById('toast-container');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-container';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  var el = document.createElement('div');
+  el.className = 'toast show';
+  el.textContent = message;
+  toast.appendChild(el);
+  setTimeout(function () {
+    el.classList.remove('show');
+    setTimeout(function () { el.remove(); }, 300);
+  }, 2800);
 }
 
 /**

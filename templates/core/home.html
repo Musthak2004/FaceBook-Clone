@@ -95,6 +95,50 @@
         </div>
       </div>
 
+      <!-- Skeleton Loading (shown only during initial render before JS hides it) -->
+      <div class="skeleton-feed" id="skeleton-feed">
+        <div class="skeleton-post">
+          <div class="skeleton-post-header">
+            <div class="skeleton skeleton-circle skeleton-avatar"></div>
+            <div>
+              <div class="skeleton skeleton-text skeleton-text-lg"></div>
+              <div class="skeleton skeleton-text skeleton-text-sm"></div>
+            </div>
+          </div>
+          <div class="skeleton-post-body">
+            <div class="skeleton skeleton-text" style="width:100%;"></div>
+            <div class="skeleton skeleton-text" style="width:85%;"></div>
+            <div class="skeleton skeleton-text" style="width:60%;"></div>
+          </div>
+          <div class="skeleton skeleton-image"></div>
+          <div class="skeleton-post-actions">
+            <div class="skeleton skeleton-post-action"></div>
+            <div class="skeleton skeleton-post-action"></div>
+            <div class="skeleton skeleton-post-action"></div>
+          </div>
+        </div>
+        <div class="skeleton-post">
+          <div class="skeleton-post-header">
+            <div class="skeleton skeleton-circle skeleton-avatar"></div>
+            <div>
+              <div class="skeleton skeleton-text skeleton-text-lg"></div>
+              <div class="skeleton skeleton-text skeleton-text-sm"></div>
+            </div>
+          </div>
+          <div class="skeleton-post-body">
+            <div class="skeleton skeleton-text" style="width:100%;"></div>
+            <div class="skeleton skeleton-text" style="width:80%;"></div>
+            <div class="skeleton skeleton-text" style="width:55%;"></div>
+          </div>
+          <div class="skeleton skeleton-image skeleton-image-short"></div>
+          <div class="skeleton-post-actions">
+            <div class="skeleton skeleton-post-action"></div>
+            <div class="skeleton skeleton-post-action"></div>
+            <div class="skeleton skeleton-post-action"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Feed Posts -->
       {% for post in posts %}
       <div class="post-card">

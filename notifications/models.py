@@ -38,3 +38,37 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.notification_type} for {self.recipient.username}"
+
+
+class NotificationPreference(models.Model):
+    """Per-user toggle for each notification type."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notification_preferences",
+    )
+    friend_request = models.BooleanField(default=True)
+    friend_accept = models.BooleanField(default=True)
+    like = models.BooleanField(default=True)
+    comment = models.BooleanField(default=True)
+    reply = models.BooleanField(default=True)
+    mention = models.BooleanField(default=True)
+    share = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Notification Preference"
+        verbose_name_plural = "Notification Preferences"
+
+    def __str__(self):
+        return f"Preferences for {self.user.username}"
+
+    def is_enabled(self, notification_type):
+        """Check if the given notification type is enabled."""
+        return getattr(self, notification_type, True)
+
+    @classmethod
+    def get_or_create_for_user(cls, user):
+        """Get existing preferences or create default ones (all enabled)."""
+        prefs, _ = cls.objects.get_or_create(user=user)
+        return prefs

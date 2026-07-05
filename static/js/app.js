@@ -12,6 +12,7 @@ import { initUpload } from './modules/upload.js';
 import { initPostGalleries } from './modules/gallery.js';
 import { initStories } from './modules/stories.js';
 import { initHeartbeat } from './modules/online.js';
+import { initFormLoadingStates } from './modules/loading.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Global UI
@@ -30,4 +31,5 @@ document.addEventListener('DOMContentLoaded', function () {
   initPostGalleries();
   initStories();
   initHeartbeat();
+  initFormLoadingStates();
 });

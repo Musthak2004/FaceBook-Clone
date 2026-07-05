@@ -5,6 +5,48 @@
 import { getCookie, showToast } from './utils.js';
 import { openModal, closeModal } from './ui.js';
 
+export function initSkeletonRemoval() {
+  var skeleton = document.getElementById('skeleton-feed');
+  if (skeleton) {
+    // Fade out and remove skeleton once the page is ready
+    skeleton.style.transition = 'opacity 0.3s ease';
+    skeleton.style.opacity = '0';
+    setTimeout(function () {
+      skeleton.remove();
+    }, 350);
+  }
+}
+
+/**
+ * Add loading state to a button during async operations.
+ * Returns a cleanup function to restore the button.
+ */
+function setButtonLoading(btn) {
+  btn.classList.add('btn-loading');
+  btn.disabled = true;
+  return function () {
+    btn.classList.remove('btn-loading');
+    btn.disabled = false;
+  };
+}
+
+/**
+ * Handle image loading placeholders.
+ */
+export function initImageLoading() {
+  document.querySelectorAll('.post-images img, .post-card img.avatar, .create-post-card img.avatar').forEach(function (img) {
+    if (img.complete) return;
+    img.classList.add('loading');
+    img.addEventListener('load', function () {
+      img.classList.remove('loading');
+      img.classList.add('loaded');
+    });
+    img.addEventListener('error', function () {
+      img.classList.remove('loading');
+    });
+  });
+}
+
 export function initLikeButtons() {
   document.querySelectorAll('.post-action-like').forEach(function (btn) {
     btn.addEventListener('click', function (e) {
@@ -41,6 +83,7 @@ export function initSaveButtons() {
       e.preventDefault();
       var postId = this.getAttribute('data-post-id');
       var csrfToken = getCookie('csrftoken');
+      var cleanup = setButtonLoading(this);
 
       fetch('/posts/' + postId + '/save/', {
         method: 'POST',
@@ -56,7 +99,8 @@ export function initSaveButtons() {
             showToast('Post unsaved');
           }
         })
-        .catch(function (err) { console.error('Save error:', err); });
+        .catch(function (err) { console.error('Save error:', err); })
+        .finally(function () { cleanup(); });
     });
   });
 }
@@ -113,24 +157,34 @@ export function initInfiniteScroll() {
     return;
   }
 
+  // Create loading indicator
+  var loadEl = document.createElement('div');
+  loadEl.className = 'infinite-scroll-loading hidden';
+  loadEl.innerHTML = '<div class="spinner"></div><span>Loading more posts…</span>';
+  sentinel.parentNode.insertBefore(loadEl, sentinel);
+
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting && !loading) {
         loading = true;
+        loadEl.classList.remove('hidden');
         page++;
-        var url = window.location.pathname + '?page=' + page;
+        var url = window.location.pathname + '?page=' + page + '&_=' + Date.now();
 
         fetch(url, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
         })
           .then(function (r) { return r.text(); })
           .then(function (html) {
+            loadEl.classList.add('hidden');
             var temp = document.createElement('div');
             temp.innerHTML = html;
             var newPosts = temp.querySelector('.feed-container');
             if (newPosts) {
               var container = document.querySelector('.feed-container');
               container.insertAdjacentHTML('beforeend', newPosts.innerHTML);
+              // Re-bind images in newly loaded posts
+              initImageLoading();
             }
             loading = false;
 
@@ -139,7 +193,10 @@ export function initInfiniteScroll() {
               sentinel.classList.add('hidden');
             }
           })
-          .catch(function () { loading = false; });
+          .catch(function () {
+            loadEl.classList.add('hidden');
+            loading = false;
+          });
       }
     });
   });
@@ -211,10 +268,12 @@ export function initShareButtons() {
 
   // Repost submit
   document.getElementById('share-repost-submit').addEventListener('click', function () {
+    var btn = this;
     var modal = document.getElementById('share-modal');
     var postId = modal.dataset.sharePostId;
     var content = document.getElementById('share-repost-content').value.trim();
     var visibility = document.getElementById('share-repost-visibility').value;
+    var cleanup = setButtonLoading(btn);
 
     var body = 'visibility=' + encodeURIComponent(visibility);
     if (content) {
@@ -234,9 +293,12 @@ export function initShareButtons() {
         if (data.shared) {
           closeModal(modal);
           showToast('Post shared to your timeline!');
+        } else {
+          showToast(data.error || 'Failed to share post');
         }
       })
-      .catch(function (err) { console.error('Share error:', err); });
+      .catch(function (err) { console.error('Share error:', err); })
+      .finally(function () { cleanup(); });
   });
 
   // Copy link
@@ -324,6 +386,8 @@ export function initPollVoting() {
 }
 
 export function initFeed() {
+  initSkeletonRemoval();
+  initImageLoading();
   initLikeButtons();
   initSaveButtons();
   initCommentForms();

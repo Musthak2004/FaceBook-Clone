@@ -2,9 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.views.generic import ListView, View
+from django.urls import reverse_lazy
+from django.views.generic import ListView, UpdateView, View
 
-from .models import Notification
+from .models import Notification, NotificationPreference
 
 
 class NotificationListView(LoginRequiredMixin, ListView):
@@ -52,3 +53,23 @@ class MarkAllReadView(LoginRequiredMixin, View):
             is_read=True
         )
         return JsonResponse({"read_all": True})
+
+
+class NotificationPreferencesView(LoginRequiredMixin, UpdateView):
+    """View for users to toggle which notification types they receive."""
+
+    model = NotificationPreference
+    template_name = "notifications/preferences.html"
+    fields = [
+        "friend_request",
+        "friend_accept",
+        "like",
+        "comment",
+        "reply",
+        "mention",
+        "share",
+    ]
+    success_url = reverse_lazy("notifications:preferences")
+
+    def get_object(self, queryset=None):
+        return NotificationPreference.get_or_create_for_user(self.request.user)

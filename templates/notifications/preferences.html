@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Preferences — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <div class="card">
+      <h2>Notification Preferences</h2>
+      <p class="text-secondary mb-4">
+        Choose which types of notifications you'd like to receive.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label class="form-checkbox">
+            {{ field }}
+            <span>
+              <strong>{{ field.label }}</strong>
+            </span>
+          </label>
+          {% if field.errors %}
+          <div class="text-danger" style="font-size:var(--font-size-sm);">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Save Preferences</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Email Notifications</h3>
+      <p class="text-secondary">
+        Email notifications are sent for important events like friend requests.
+        You can configure your email address in
+        <a href="{% url 'accounts:account_settings' %}">Account Settings</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

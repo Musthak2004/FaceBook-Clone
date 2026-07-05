@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="{% static 'css/search.css' %}">
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
   <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+  <link rel="stylesheet" href="{% static 'css/loading.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 <body{% if user.is_authenticated %} data-user-id="{{ user.id }}"{% endif %}>
@@ -113,6 +114,9 @@
             </a>
             <a href="{% url 'accounts:account_settings' %}" class="dropdown-item">
               &#9881; Settings
+            </a>
+            <a href="{% url 'notifications:preferences' %}" class="dropdown-item">
+              &#128276; Notification Preferences
             </a>
             {% if user.is_staff %}
             <div class="dropdown-divider"></div>
