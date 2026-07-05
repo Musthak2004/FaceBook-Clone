@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Email Verified — SocialNet{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card text-center">
+      <h2>✅ Email Verified</h2>
+      <p>Your email has been verified. You can now use all features of SocialNet.</p>
+      <a href="{% url 'core:home' %}" class="btn btn-primary mt-4">Go to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

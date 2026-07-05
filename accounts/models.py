@@ -13,6 +13,7 @@ class CustomUser(AbstractUser):
     location = models.CharField(max_length=255, blank=True)
     website = models.URLField(blank=True)
     is_private = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
     friends = models.ManyToManyField(
         "self",
         through="friendships.Friendship",

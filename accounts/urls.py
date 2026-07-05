@@ -33,4 +33,14 @@ urlpatterns = [
         views.SecuritySettingsView.as_view(),
         name="security_settings",
     ),
+    path(
+        "verify/<str:token>/",
+        views.VerifyEmailView.as_view(),
+        name="verify_email",
+    ),
+    path(
+        "resend-verification/",
+        views.ResendVerificationView.as_view(),
+        name="resend_verification",
+    ),
 ]

@@ -1,8 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.generic import (
     CreateView,
     DetailView,
@@ -48,6 +49,78 @@ class SignUpView(CreateView):
                 self.request, "Too many signup attempts. Please try again in a minute."
             )
         return super().form_invalid(form)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Send verification email
+        if self.object.email:
+            from .utils import send_verification_email
+
+            try:
+                send_verification_email(self.request, self.object)
+            except Exception:
+                pass  # Email failure shouldn't block signup
+        return response
+
+
+class VerifyEmailView(TemplateView):
+    """Verify email address using a signed token."""
+
+    template_name = "accounts/verification_failed.html"
+
+    def get(self, request, *args, **kwargs):
+        token = self.kwargs.get("token")
+        from .utils import verify_token
+
+        user_id = verify_token(token)
+        if user_id is None:
+            return self.render_to_context(
+                {"error": "The verification link is invalid or has expired."}
+            )
+
+        from .models import CustomUser
+
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+        except CustomUser.DoesNotExist:
+            return self.render_to_context({"error": "User not found."})
+
+        if user.is_email_verified:
+            from django.shortcuts import redirect
+
+            return redirect("core:home")
+
+        user.is_email_verified = True
+        user.save(update_fields=["is_email_verified"])
+
+        from django.shortcuts import render
+
+        return render(request, "accounts/verification_done.html")
+
+
+class ResendVerificationView(LoginRequiredMixin, View):
+    """Resend verification email to the logged-in user."""
+
+    def get(self, request):
+        if request.user.is_email_verified:
+            from django.contrib import messages
+
+            messages.info(request, "Your email is already verified.")
+        else:
+            from .utils import send_verification_email
+
+            try:
+                send_verification_email(request, request.user)
+                from django.contrib import messages
+
+                messages.success(request, "Verification email sent. Check your inbox.")
+            except Exception:
+                from django.contrib import messages
+
+                messages.error(
+                    request, "Failed to send verification email. Try again later."
+                )
+        return redirect("accounts:account_settings")
 
 
 class ProfileDetailView(DetailView):
