@@ -25,6 +25,9 @@ class Reaction(models.Model):
     class Meta:
         unique_together = ("user", "post")
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["post", "reaction_type"]),
+        ]
 
     def __str__(self):
         return f"{self.user.username} {self.reaction_type} Post {self.post.id}"

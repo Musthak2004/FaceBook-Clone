@@ -1,0 +1,36 @@
+<div class="suggestions-card">
+  <div class="suggestions-header">
+    <h3>People You May Know</h3>
+    <a href="{% url 'friendships:suggestions' %}" class="suggestions-see-all">See All</a>
+  </div>
+  <div class="suggestions-list">
+    {% for suggestion in friend_suggestions %}
+    <div class="suggestion-item" data-user-id="{{ suggestion.id }}">
+      <div class="suggestion-avatar">
+        {% if suggestion.profile_picture %}
+        <img src="{{ suggestion.profile_picture.url }}" alt="{{ suggestion.username }}" class="avatar">
+        {% else %}
+        <img src="/static/images/default-avatar.svg" alt="{{ suggestion.username }}" class="avatar">
+        {% endif %}
+      </div>
+      <div class="suggestion-info">
+        <a href="{% url 'accounts:profile' username=suggestion.username %}" class="suggestion-name">
+          {{ suggestion.get_full_name|default:suggestion.username }}
+        </a>
+        {% if suggestion.mutual_count > 0 %}
+        <span class="suggestion-mutual">{{ suggestion.mutual_count }} mutual friend{{ suggestion.mutual_count|pluralize }}</span>
+        {% else %}
+        <span class="suggestion-mutual">{{ suggestion.location|default:"" }}</span>
+        {% endif %}
+      </div>
+      <button class="btn btn-sm btn-primary add-friend-btn" data-user-id="{{ suggestion.id }}">
+        + Add
+      </button>
+    </div>
+    {% empty %}
+    <div class="suggestion-empty">
+      <p class="text-muted">No suggestions right now.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>

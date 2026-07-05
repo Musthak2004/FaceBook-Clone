@@ -227,3 +227,18 @@ SPECTACULAR_SETTINGS = {
 
 # Rate limiting
 RATELIMIT_ENABLE = config("RATELIMIT_ENABLE", default=True, cast=bool)
+
+# Cache — local memory for dev, Redis for production
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+if config("REDIS_URL", default=None):
+    CACHES["default"] = {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+    }

@@ -16,6 +16,9 @@ class PageListView(LoginRequiredMixin, ListView):
     context_object_name = "pages"
     paginate_by = 20
 
+    def get_queryset(self):
+        return Page.objects.all().select_related("admin")
+
 
 class PageCreateView(LoginRequiredMixin, CreateView):
     """Create a new page (creator becomes admin)."""

@@ -1,16 +1,18 @@
 {% extends "base.html" %}
-{% load static post_tags %}
+{% load cache static post_tags %}
 
 {% block title %}Home — SocialNet{% endblock %}
 
 {% block content %}
 <div class="main-wrapper">
-  <div class="main-content">
-    <div class="feed-container">
-      <!-- Stories Row -->
+  <div class="main-content" style="display:flex;gap:var(--space-6);align-items:flex-start;">
+    <div class="feed-container" style="flex:1;max-width:680px;">
+      <!-- Stories Row (cached 5 min) -->
+      {% cache 300 stories_row request.user.id %}
       <div id="stories-container">
         {% include "stories/stories_row.html" %}
       </div>
+      {% endcache %}
 
       <!-- Create Post -->
       <div class="create-post-card">
@@ -254,6 +256,11 @@
       {% endif %}
 
       <div class="infinite-scroll-sentinel"></div>
+    </div>
+
+    <!-- Right Sidebar: Friend Suggestions -->
+    <div class="right-sidebar" style="width:300px;flex-shrink:0;position:sticky;top:var(--nav-height, 60px);">
+      {% include "core/_friend_suggestions.html" %}
     </div>
   </div>
 </div>

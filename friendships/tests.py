@@ -208,3 +208,103 @@ class FriendshipViewTests(TestCase):
         response = self.client.post(url)
         # get_or_create returns existing (from_user, to_user) pair
         self.assertEqual(response.status_code, 400)
+
+
+class FriendSuggestionTests(TestCase):
+    """Tests for the friend suggestion algorithm and view."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.friend = User.objects.create_user("bob", password="pass123")
+        self.other_friend = User.objects.create_user("frank", password="pass123")
+        self.mutual1 = User.objects.create_user("carol", password="pass123")
+        self.mutual2 = User.objects.create_user("dave", password="pass123")
+        self.stranger = User.objects.create_user("eve", password="pass123")
+
+        # alice has 2 friends: bob and frank
+        Friendship.objects.create(
+            from_user=self.user, to_user=self.friend, status="accepted"
+        )
+        Friendship.objects.create(
+            from_user=self.user, to_user=self.other_friend, status="accepted"
+        )
+
+        # carol is friends with bob AND with frank → 2 mutual friends with alice
+        Friendship.objects.create(
+            from_user=self.friend, to_user=self.mutual1, status="accepted"
+        )
+        Friendship.objects.create(
+            from_user=self.other_friend, to_user=self.mutual1, status="accepted"
+        )
+
+        # dave is only friends with bob → 1 mutual friend with alice
+        Friendship.objects.create(
+            from_user=self.friend, to_user=self.mutual2, status="accepted"
+        )
+
+        # eve has no connections to alice or alice's friends
+
+    def test_suggestions_excludes_self(self):
+        suggestions = Friendship.get_suggestions(self.user)
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertNotIn(self.user.id, suggestion_ids)
+
+    def test_suggestions_excludes_existing_friends(self):
+        suggestions = Friendship.get_suggestions(self.user)
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertNotIn(self.friend.id, suggestion_ids)
+
+    def test_suggestions_includes_strangers(self):
+        suggestions = Friendship.get_suggestions(self.user)
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertIn(self.stranger.id, suggestion_ids)
+
+    def test_suggestions_ordered_by_mutual_count(self):
+        """Carol (mutual=2 via bob+frank) should rank higher than dave (mutual=1 via bob)."""
+        suggestions = list(Friendship.get_suggestions(self.user, limit=10))
+        # Both should be present
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertIn(self.mutual1.id, suggestion_ids)
+        self.assertIn(self.mutual2.id, suggestion_ids)
+        # Carol should appear before dave (more mutual friends)
+        carol_pos = suggestion_ids.index(self.mutual1.id)
+        dave_pos = suggestion_ids.index(self.mutual2.id)
+        self.assertLess(carol_pos, dave_pos)
+
+    def test_suggestions_excludes_pending_requests(self):
+        """Users with pending requests to/from the user should be excluded."""
+        Friendship.objects.create(
+            from_user=self.user, to_user=self.stranger, status="pending"
+        )
+        suggestions = Friendship.get_suggestions(self.user)
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertNotIn(self.stranger.id, suggestion_ids)
+
+    def test_suggestions_excludes_blocked_users(self):
+        Friendship.objects.create(
+            from_user=self.user, to_user=self.stranger, status="blocked"
+        )
+        suggestions = Friendship.get_suggestions(self.user)
+        suggestion_ids = [u.id for u in suggestions]
+        self.assertNotIn(self.stranger.id, suggestion_ids)
+
+    def test_suggestion_list_view_requires_login(self):
+        url = reverse("friendships:suggestions")
+        self.client.logout()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_suggestion_list_view_shows_suggestions(self):
+        self.client.login(username="alice", password="pass123")
+        url = reverse("friendships:suggestions")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("suggestions", response.context)
+        self.assertContains(response, "eve")
+
+    def test_suggestion_list_view_shows_friend_count(self):
+        self.client.login(username="alice", password="pass123")
+        url = reverse("friendships:suggestions")
+        response = self.client.get(url)
+        self.assertIn("friend_count", response.context)
+        self.assertEqual(response.context["friend_count"], 2)

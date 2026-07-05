@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import ListView
 
-from accounts.models import CustomUser
 from friendships.models import Friendship
 from posts.models import PollVote, Post
 from stories.models import Story
@@ -41,22 +40,19 @@ class HomeFeedView(LoginRequiredMixin, ListView):
             .prefetch_related(
                 "images", "reactions", "comments", "poll", "poll__options"
             )
-            .distinct()
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        friend_ids = Friendship.get_friends(user)
-        context["friend_suggestions"] = CustomUser.objects.exclude(
-            id__in=friend_ids
-        ).exclude(id=user.id)[:5]
+        context["friend_suggestions"] = Friendship.get_suggestions(user, limit=5)
         context["stories_grouped"] = Story.stories_grouped_by_user()
 
         # Collect which posts the user has voted on
+        post_ids = [p.id for p in context["posts"]]
         voted_poll_ids = set(
             PollVote.objects.filter(
-                user=user, option__poll__post__in=context["posts"]
+                user=user, option__poll__post_id__in=post_ids
             ).values_list("option__poll_id", flat=True)
         )
         context["voted_poll_ids"] = voted_poll_ids

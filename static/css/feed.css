@@ -820,3 +820,116 @@
 .story-nav-btn:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* ============================================================
+   Friend Suggestions Sidebar
+   ============================================================ */
+.suggestions-card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-3);
+}
+
+.suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.suggestions-header h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.suggestions-see-all {
+  font-size: var(--font-size-sm);
+  color: var(--primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.suggestions-see-all:hover {
+  text-decoration: underline;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.suggestion-item + .suggestion-item {
+  border-top: 1px solid var(--border-secondary);
+}
+
+.suggestion-avatar .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.suggestion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-name:hover {
+  text-decoration: underline;
+}
+
+.suggestion-mutual {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.add-friend-btn {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  padding: var(--space-1) var(--space-3);
+}
+
+.suggestion-empty {
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* ---- Find Friends Page ---- */
+.find-friends-page {
+  max-width: 600px;
+  margin: var(--space-6) auto;
+  padding: 0 var(--space-4);
+}
+
+.find-friends-page h1 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--space-4);
+}
+
+.suggestions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.suggestions-grid .suggestion-item {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-3);
+}

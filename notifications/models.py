@@ -14,7 +14,10 @@ class Notification(models.Model):
     ]
 
     recipient = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        db_index=True,
     )
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -23,7 +26,9 @@ class Notification(models.Model):
         blank=True,
         related_name="sent_notifications",
     )
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    notification_type = models.CharField(
+        max_length=20, choices=NOTIFICATION_TYPES, db_index=True
+    )
     post = models.ForeignKey(
         "posts.Post", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -35,6 +40,9 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["recipient", "is_read", "-created_at"]),
+        ]
 
     def __str__(self):
         return f"{self.notification_type} for {self.recipient.username}"

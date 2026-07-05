@@ -36,6 +36,8 @@ class SearchResultsView(LoginRequiredMixin, ListView):
         return (
             Post.objects.filter(Q(content__icontains=query) & Q(is_draft=False))
             .filter(Q(visibility="public") | Q(author=self.request.user))
+            .select_related("author")
+            .prefetch_related("images")
             .distinct()
         )
 

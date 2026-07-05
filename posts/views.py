@@ -61,7 +61,11 @@ class PostDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["comments"] = self.object.comments.filter(parent=None)
+        context["comments"] = (
+            self.object.comments.filter(parent=None)
+            .select_related("author")
+            .prefetch_related("replies__author")
+        )
         context["is_saved"] = SavedPost.objects.filter(
             user=self.request.user, post=self.object
         ).exists()

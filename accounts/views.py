@@ -135,7 +135,11 @@ class ProfileDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
-        context["posts"] = profile_user.posts.filter(is_draft=False)[:10]
+        context["posts"] = (
+            profile_user.posts.filter(is_draft=False)
+            .select_related("author")
+            .prefetch_related("images")[:10]
+        )
         if self.request.user.is_authenticated:
             status = Friendship.friend_status(self.request.user, profile_user)
             context["friendship_status"] = status

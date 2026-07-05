@@ -18,6 +18,9 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["post", "created_at"]),
+        ]
 
     def __str__(self):
         return self.content[:50]

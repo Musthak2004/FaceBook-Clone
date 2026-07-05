@@ -112,6 +112,22 @@ class BlockUserView(LoginRequiredMixin, View):
         return JsonResponse({"blocked": True})
 
 
+class FriendSuggestionListView(LoginRequiredMixin, ListView):
+    """Show a full page of friend suggestions ordered by mutual friends."""
+
+    template_name = "friendships/friend_suggestions.html"
+    context_object_name = "suggestions"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Friendship.get_suggestions(self.request.user, limit=100)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["friend_count"] = len(Friendship.get_friends(self.request.user))
+        return context
+
+
 class UnblockUserView(LoginRequiredMixin, View):
     """Unblock a previously blocked user."""
 

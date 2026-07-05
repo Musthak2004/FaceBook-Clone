@@ -29,9 +29,9 @@ class Post(models.Model):
     )
     content = models.TextField()
     visibility = models.CharField(
-        max_length=20, choices=VISIBILITY_CHOICES, default="public"
+        max_length=20, choices=VISIBILITY_CHOICES, default="public", db_index=True
     )
-    is_draft = models.BooleanField(default=False)
+    is_draft = models.BooleanField(default=False, db_index=True)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
     shared_post = models.ForeignKey(
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="shares"
@@ -41,6 +41,9 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["visibility", "is_draft", "-created_at"]),
+        ]
 
     def __str__(self):
         return self.content[:50]
@@ -163,6 +166,9 @@ class SavedPost(models.Model):
     class Meta:
         unique_together = ("user", "post")
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "-created_at"]),
+        ]
 
     def __str__(self):
         return f"{self.user} saved Post {self.post.id}"

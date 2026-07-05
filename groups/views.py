@@ -18,6 +18,9 @@ class GroupListView(LoginRequiredMixin, ListView):
     context_object_name = "groups"
     paginate_by = 20
 
+    def get_queryset(self):
+        return Group.objects.all().select_related("admin")
+
 
 class GroupCreateView(LoginRequiredMixin, CreateView):
     """Create a new group (creator becomes admin)."""
