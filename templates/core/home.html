@@ -42,31 +42,32 @@
             <button class="modal-close">&times;</button>
           </div>
           <div class="modal-body">
-            <form id="create-post-form" method="post" action="{% url 'posts:post_create' %}" enctype="multipart/form-data">
+            <form id="create-post-form" method="post" action="{% url 'posts:post_create' %}" enctype="multipart/form-data" aria-label="Create a new post">
               {% csrf_token %}
               <div class="flex items-center gap-2 mb-4">
                 {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="" class="avatar">
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}'s avatar" class="avatar">
                 {% else %}
-                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="{{ user.username }}'s avatar" class="avatar">
                 {% endif %}
                 <strong>{{ user.get_full_name|default:user.username }}</strong>
               </div>
               <div class="form-group">
-                <textarea name="content" class="form-input" rows="4"
+                <label for="post-content-input" class="form-label sr-only">Post content</label>
+                <textarea id="post-content-input" name="content" class="form-input" rows="4"
                           placeholder="What's on your mind?"></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label">Visibility</label>
-                <select name="visibility" class="form-input">
+                <label for="post-visibility-select" class="form-label">Visibility</label>
+                <select id="post-visibility-select" name="visibility" class="form-input">
                   <option value="public">Public</option>
                   <option value="friends">Friends Only</option>
                   <option value="only_me">Only Me</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Add Photos</label>
-                <input type="file" name="images" class="form-input" multiple accept="image/*">
+                <label for="post-images-input" class="form-label">Add Photos</label>
+                <input id="post-images-input" type="file" name="images" class="form-input" multiple accept="image/*">
               </div>
               <div class="image-preview-container flex flex-wrap gap-2 mt-2"></div>
 
@@ -100,9 +101,9 @@
         <div class="post-header">
           <div class="post-author online-indicator" data-user-id="{{ post.author.id }}">
             {% if post.author.profile_picture %}
-            <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+            <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.username }}'s avatar" class="avatar">
             {% else %}
-            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+            <img src="{% static 'images/default-avatar.svg' %}" alt="{{ post.author.username }}'s avatar" class="avatar">
             {% endif %}
             <span class="online-dot{% if not post.author.is_online %} offline{% endif %}"></span>
             <div class="post-author-info">
@@ -128,7 +129,7 @@
           {% if post.shared_post.images.all %}
           <div class="post-images" data-images-count="{{ post.shared_post.images.all|length }}">
             {% for img in post.shared_post.images.all %}
-            <img src="{{ img.image.url }}" alt="Post image"
+            <img src="{{ img.image.url }}" alt="Photo shared by {{ post.shared_post.author.username }}"
                  class="gallery-image"
                  data-gallery-id="shared-{{ post.shared_post.id }}"
                  data-index="{{ forloop.counter0 }}">
@@ -140,7 +141,7 @@
         {% if post.images.all %}
         <div class="post-images" data-images-count="{{ post.images.all|length }}">
           {% for img in post.images.all %}
-          <img src="{{ img.image.url }}" alt="Post image"
+          <img src="{{ img.image.url }}" alt="Photo shared by {{ post.author.username }}"
                class="gallery-image"
                data-gallery-id="{{ post.id }}"
                data-index="{{ forloop.counter0 }}">

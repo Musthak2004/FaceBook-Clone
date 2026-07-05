@@ -28,53 +28,56 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body{% if user.is_authenticated %} data-user-id="{{ user.id }}"{% endif %}>
+  <!-- Skip to content (accessibility) -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   {% if user.is_authenticated %}
   <!-- Navigation -->
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <div class="flex items-center">
-        <a href="{% url 'core:home' %}" class="nav-logo">SocialNet</a>
-        <div class="nav-search">
+        <a href="{% url 'core:home' %}" class="nav-logo" aria-label="SocialNet Home">SocialNet</a>
+        <div class="nav-search" role="search">
           <form action="{% url 'search:search_results' %}" method="GET">
-            <span class="nav-search-icon">&#128269;</span>
+            <span class="nav-search-icon" aria-hidden="true">&#128269;</span>
             <input type="text" name="q" class="form-input" placeholder="Search SocialNet"
-                   value="{{ request.GET.q }}">
+                   value="{{ request.GET.q }}" aria-label="Search SocialNet">
           </form>
           <div class="live-search-results hidden"></div>
         </div>
       </div>
 
-      <div class="nav-links">
-        <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+      <div class="nav-links" role="menubar" aria-label="Navigation links">
+        <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" role="menuitem" aria-label="Home">
           &#127968;
         </a>
-        <a href="{% url 'friendships:friend_requests' %}" class="nav-link">
+        <a href="{% url 'friendships:friend_requests' %}" class="nav-link" role="menuitem" aria-label="Friend requests">
           &#128101;
         </a>
-        <a href="{% url 'groups:group_list' %}" class="nav-link">
+        <a href="{% url 'groups:group_list' %}" class="nav-link" role="menuitem">
           &#128101; Groups
         </a>
-        <a href="{% url 'events:list' %}" class="nav-link">
+        <a href="{% url 'events:list' %}" class="nav-link" role="menuitem">
           &#128197; Events
         </a>
-        <a href="{% url 'posts:trending_tags' %}" class="nav-link">
+        <a href="{% url 'posts:trending_tags' %}" class="nav-link" role="menuitem">
           # Trending
         </a>
       </div>
 
-      <div class="nav-right">
+      <div class="nav-right" role="toolbar" aria-label="Account tools">
         <!-- Notifications -->
         <div class="dropdown">
-          <a href="#" class="nav-link notification-toggle">
+          <a href="#" class="nav-link notification-toggle" aria-label="Notifications">
             &#128276;
             {% if unread_notifications_count > 0 %}
-            <span class="notification-badge">{{ unread_notifications_count }}</span>
+            <span class="notification-badge" aria-label="{{ unread_notifications_count }} unread notifications">{{ unread_notifications_count }}</span>
             {% endif %}
           </a>
-          <div class="notification-dropdown">
+          <div class="notification-dropdown" aria-live="polite">
             <div class="notification-dropdown-header">
               <h3>Notifications</h3>
-              <span class="mark-all-read">Mark all as read</span>
+              <span class="mark-all-read" role="button" tabindex="0" aria-label="Mark all notifications as read">Mark all as read</span>
             </div>
             <div class="notification-dropdown-list">
               <div style="padding:16px;text-align:center;color:var(--text-muted);">
@@ -85,12 +88,12 @@
         </div>
 
         <!-- Messages -->
-        <a href="{% url 'messaging:conversation_list' %}" class="nav-link">
+        <a href="{% url 'messaging:conversation_list' %}" class="nav-link" aria-label="Messages">
           &#128172;
         </a>
 
         <!-- Theme Toggle -->
-        <button id="theme-toggle" class="nav-link" style="font-size:18px;">
+        <button id="theme-toggle" class="nav-link" aria-label="Toggle dark mode" style="font-size:18px;">
           🌙 Night
         </button>
 
@@ -134,7 +137,7 @@
   <!-- Messages / Alerts -->
   {% if messages %}
   <div class="main-wrapper" style="padding-top:0;">
-    <div class="main-content" style="max-width:600px;margin:0 auto;">
+    <div class="main-content" style="max-width:600px;margin:0 auto;" role="alert" aria-live="polite">
       {% for message in messages %}
       <div class="alert alert-{{ message.tags }}">{{ message }}</div>
       {% endfor %}
@@ -143,7 +146,9 @@
   {% endif %}
 
   <!-- Main Content -->
-  {% block content %}{% endblock %}
+  <div id="main-content" role="main">
+    {% block content %}{% endblock %}
+  </div>
 
   <!-- Share Modal -->
   <div id="share-modal" class="modal-overlay hidden">
