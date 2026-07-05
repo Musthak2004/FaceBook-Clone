@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -12,7 +13,7 @@ from django.views.generic import (
 )
 
 from .forms import PostForm
-from .models import Post, PostImage, SavedCollection, SavedPost
+from .models import Post, PostImage, SavedCollection, SavedPost, Tag
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -191,3 +192,17 @@ class HashtagDetailView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["tag_name"] = self.kwargs["slug"]
         return context
+
+
+class TrendingTagsView(LoginRequiredMixin, ListView):
+    """Show trending hashtags ordered by usage count."""
+
+    template_name = "posts/trending_tags.html"
+    context_object_name = "tags"
+
+    def get_queryset(self):
+        return (
+            Tag.objects.annotate(post_count=Count("posts"))
+            .filter(post_count__gt=0)
+            .order_by("-post_count")[:50]
+        )

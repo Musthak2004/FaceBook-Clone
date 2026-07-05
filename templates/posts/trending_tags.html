@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Trending Hashtags — SocialNet{% endblock %}
+
+{% block content %}
+<div class="main-wrapper">
+  <div class="main-content" style="max-width:600px;">
+    <h2 class="mb-4">&#128200; Trending Hashtags</h2>
+
+    {% if tags %}
+    <div class="card">
+      <div class="card-body">
+        {% for tag in tags %}
+        <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border-secondary);">
+          <a href="{% url 'posts:hashtag_detail' slug=tag.name %}" style="font-size:var(--font-size-lg);font-weight:var(--font-weight-semibold);">
+            #{{ tag.name }}
+          </a>
+          <span class="text-muted" style="font-size:var(--font-size-sm);">
+            {{ tag.post_count }} post{{ tag.post_count|pluralize }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:48px;color:var(--text-muted);">
+        <p style="font-size:48px;">#</p>
+        <h3>No hashtags yet</h3>
+        <p>Hashtags will appear here as people use them in posts.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
