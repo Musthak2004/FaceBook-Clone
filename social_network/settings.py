@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "dashboard.apps.DashboardConfig",
     "groups.apps.GroupsConfig",
     "events.apps.EventsConfig",
+    "stories.apps.StoriesConfig",
     "api.apps.ApiConfig",
 ]
 

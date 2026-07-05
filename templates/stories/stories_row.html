@@ -1,0 +1,71 @@
+<div class="stories-row">
+  {% for user, stories in stories_grouped.items %}
+  <div class="story-circle" data-username="{{ user.username }}"
+       data-user-id="{{ user.id }}"
+       data-stories='[
+         {% for s in stories %}
+         {"id": {{ s.id }}, "image_url": "{{ s.image.url }}", "caption": "{{ s.caption|escapejs }}"}{% if not forloop.last %},{% endif %}
+         {% endfor %}
+       ]'>
+    {% if user.profile_picture %}
+    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="story-avatar">
+    {% else %}
+    <img src="/static/images/default-avatar.svg" alt="{{ user.username }}" class="story-avatar">
+    {% endif %}
+    <span class="story-username">{{ user.first_name|default:user.username }}</span>
+  </div>
+  {% empty %}
+  <div class="story-circle add-story" id="add-story-btn">
+    <div class="story-add-icon">+</div>
+    <span class="story-username">Add Story</span>
+  </div>
+  {% endfor %}
+  {% if stories_grouped %}
+  <div class="story-circle add-story" id="add-story-btn">
+    <div class="story-add-icon">+</div>
+    <span class="story-username">Add Story</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Story Viewer Overlay -->
+<div id="story-viewer" class="story-viewer hidden">
+  <div class="story-viewer-header">
+    <div class="story-viewer-user">
+      <img id="story-viewer-avatar" src="" alt="" class="avatar avatar-sm">
+      <span id="story-viewer-username"></span>
+    </div>
+    <button id="story-viewer-close" class="story-viewer-close">&times;</button>
+  </div>
+  <div class="story-viewer-progress" id="story-progress-bar"></div>
+  <img id="story-viewer-image" src="" alt="Story">
+  <div class="story-viewer-caption" id="story-viewer-caption"></div>
+  <div class="story-viewer-nav">
+    <button id="story-prev" class="story-nav-btn">&#8249;</button>
+    <button id="story-next" class="story-nav-btn">&#8250;</button>
+  </div>
+</div>
+
+<!-- Story Upload Modal -->
+<div id="story-upload-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>Add Story</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="story-upload-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Choose Image</label>
+          <input type="file" name="image" class="form-input" accept="image/*" required id="story-image-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Caption (optional)</label>
+          <input type="text" name="caption" class="form-input" placeholder="Add a caption...">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Upload Story</button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from accounts.models import CustomUser
 from friendships.models import Friendship
 from posts.models import Post
+from stories.models import Story
 
 
 class HomeFeedView(LoginRequiredMixin, ListView):
@@ -35,4 +36,5 @@ class HomeFeedView(LoginRequiredMixin, ListView):
         context["friend_suggestions"] = CustomUser.objects.exclude(
             id__in=friend_ids
         ).exclude(id=user.id)[:5]
+        context["stories_grouped"] = Story.stories_grouped_by_user()
         return context

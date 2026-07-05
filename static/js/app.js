@@ -10,6 +10,7 @@ import { initMessaging } from './modules/messaging.js';
 import { initSearch } from './modules/search.js';
 import { initUpload } from './modules/upload.js';
 import { initPostGalleries } from './modules/gallery.js';
+import { initStories } from './modules/stories.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Global UI
@@ -25,4 +26,5 @@ document.addEventListener('DOMContentLoaded', function () {
   initSearch();
   initUpload();
   initPostGalleries();
+  initStories();
 });
