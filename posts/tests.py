@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from .models import Post, PostImage, SavedPost, Tag
+from .models import Poll, PollOption, PollVote, Post, PostImage, SavedPost, Tag
 from .utils import parse_hashtags, parse_mentions, render_content
 
 User = get_user_model()
@@ -408,3 +408,194 @@ class SharePostTests(TestCase):
         url = reverse("posts:post_share", kwargs={"pk": 9999})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
+
+
+class PollModelTests(TestCase):
+    """Tests for Poll, PollOption, and PollVote models."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.post = Post.objects.create(author=self.user, content="Poll post")
+        self.poll = Poll.objects.create(post=self.post, question="Best framework?")
+        self.opt1 = PollOption.objects.create(poll=self.poll, text="Django")
+        self.opt2 = PollOption.objects.create(poll=self.poll, text="FastAPI")
+
+    def test_poll_creation(self):
+        self.assertEqual(self.poll.question, "Best framework?")
+        self.assertEqual(self.poll.post, self.post)
+        self.assertFalse(self.poll.is_closed)
+
+    def test_poll_str(self):
+        self.assertEqual(str(self.poll), "Best framework?")
+
+    def test_poll_total_votes_initially_zero(self):
+        self.assertEqual(self.poll.total_votes, 0)
+
+    def test_poll_option_creation(self):
+        self.assertEqual(self.opt1.text, "Django")
+        self.assertEqual(self.opt2.text, "FastAPI")
+
+    def test_poll_option_vote_count(self):
+        PollVote.objects.create(option=self.opt1, user=self.user)
+        self.assertEqual(self.opt1.vote_count, 1)
+        self.assertEqual(self.opt2.vote_count, 0)
+
+    def test_poll_vote_unique_together(self):
+        PollVote.objects.create(option=self.opt1, user=self.user)
+        with self.assertRaises(Exception):
+            PollVote.objects.create(option=self.opt1, user=self.user)
+
+    def test_poll_vote_switching(self):
+        """User can delete old vote and vote on a different option."""
+        PollVote.objects.create(option=self.opt1, user=self.user)
+        self.assertEqual(self.opt1.vote_count, 1)
+        PollVote.objects.filter(option=self.opt1, user=self.user).delete()
+        PollVote.objects.create(option=self.opt2, user=self.user)
+        self.assertEqual(self.opt1.vote_count, 0)
+        self.assertEqual(self.opt2.vote_count, 1)
+
+    def test_poll_closed_blocks_new_votes(self):
+        """Once a poll is closed, no option should accept new votes."""
+        self.poll.is_closed = True
+        self.poll.save()
+        # The view layer checks is_closed, but model-level creation is still allowed
+        # (enforcement is in the view). This just tests model state.
+        self.assertTrue(self.poll.is_closed)
+
+
+class PollVoteViewTests(TestCase):
+    """Tests for the PollVoteView AJAX endpoint."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.other = User.objects.create_user("bob", password="pass123")
+        self.post = Post.objects.create(author=self.user, content="Poll post")
+        self.poll = Poll.objects.create(post=self.post, question="Best language?")
+        self.opt_py = PollOption.objects.create(poll=self.poll, text="Python")
+        self.opt_js = PollOption.objects.create(poll=self.poll, text="JavaScript")
+        self.client.login(username="alice", password="pass123")
+
+    def test_vote_on_poll(self):
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {"option_id": self.opt_py.pk})
+        data = response.json()
+        self.assertTrue(data["voted"])
+        self.assertEqual(data["option_id"], self.opt_py.pk)
+        self.assertEqual(data["total_votes"], 1)
+        self.assertTrue(
+            PollVote.objects.filter(option=self.opt_py, user=self.user).exists()
+        )
+
+    def test_vote_switches_option(self):
+        """Voting on a different option removes the old vote."""
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        self.client.post(url, {"option_id": self.opt_py.pk})
+        self.client.post(url, {"option_id": self.opt_js.pk})
+        self.assertEqual(PollVote.objects.filter(user=self.user).count(), 1)
+        self.assertTrue(
+            PollVote.objects.filter(option=self.opt_js, user=self.user).exists()
+        )
+        self.assertFalse(
+            PollVote.objects.filter(option=self.opt_py, user=self.user).exists()
+        )
+
+    def test_vote_on_closed_poll_returns_error(self):
+        self.poll.is_closed = True
+        self.poll.save()
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {"option_id": self.opt_py.pk})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("closed", response.json()["error"])
+
+    def test_vote_without_option_id_returns_error(self):
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("No option", response.json()["error"])
+
+    def test_vote_on_nonexistent_option_returns_404(self):
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {"option_id": 9999})
+        self.assertEqual(response.status_code, 404)
+
+    def test_vote_requires_login(self):
+        self.client.logout()
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {"option_id": self.opt_py.pk})
+        self.assertEqual(response.status_code, 302)
+
+    def test_vote_returns_option_data(self):
+        """Response should include all options with counts and percentages."""
+        # Have another user vote first
+        PollVote.objects.create(option=self.opt_py, user=self.other)
+        url = reverse("posts:poll_vote", kwargs={"pk": self.post.pk})
+        response = self.client.post(url, {"option_id": self.opt_js.pk})
+        data = response.json()
+        self.assertEqual(len(data["options"]), 2)
+        for opt in data["options"]:
+            self.assertIn("id", opt)
+            self.assertIn("text", opt)
+            self.assertIn("vote_count", opt)
+            self.assertIn("percentage", opt)
+        # After voting JS, opt_py has 1 vote (50%), opt_js has 1 vote (50%)
+        opt_py_data = [o for o in data["options"] if o["id"] == self.opt_py.pk][0]
+        opt_js_data = [o for o in data["options"] if o["id"] == self.opt_js.pk][0]
+        self.assertEqual(opt_py_data["vote_count"], 1)
+        self.assertEqual(opt_js_data["vote_count"], 1)
+        self.assertEqual(opt_py_data["percentage"], 50)
+        self.assertEqual(opt_js_data["percentage"], 50)
+        self.assertEqual(data["total_votes"], 2)
+
+
+class PollCreateWithPostTests(TestCase):
+    """Tests that polls can be created alongside posts via the form."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("alice", password="pass123")
+        self.client.login(username="alice", password="pass123")
+
+    def test_create_post_with_poll(self):
+        url = reverse("posts:post_create")
+        response = self.client.post(
+            url,
+            {
+                "content": "My poll post",
+                "visibility": "public",
+                "poll_question": "Best color?",
+                "poll_options": "Red\nBlue\nGreen",
+            },
+        )
+        self.assertRedirects(response, reverse("posts:post_detail", kwargs={"pk": 1}))
+        post = Post.objects.get(pk=1)
+        self.assertIsNotNone(post.poll)
+        self.assertEqual(post.poll.question, "Best color?")
+        self.assertEqual(post.poll.options.count(), 3)
+
+    def test_create_post_without_poll(self):
+        url = reverse("posts:post_create")
+        response = self.client.post(
+            url,
+            {
+                "content": "Just a regular post",
+                "visibility": "public",
+            },
+        )
+        self.assertRedirects(response, reverse("posts:post_detail", kwargs={"pk": 1}))
+        post = Post.objects.get(pk=1)
+        self.assertIsNone(getattr(post, "poll", None))
+
+    def test_create_post_with_invalid_poll_options(self):
+        """Single option should not create a poll."""
+        url = reverse("posts:post_create")
+        response = self.client.post(
+            url,
+            {
+                "content": "Poll with one option",
+                "visibility": "public",
+                "poll_question": "Yes or no?",
+                "poll_options": "Maybe",
+            },
+        )
+        self.assertEqual(response.status_code, 200)  # Form re-renders with error
+        self.assertIn("Add at least 2 options", response.content.decode())
+        self.assertEqual(Post.objects.count(), 0)

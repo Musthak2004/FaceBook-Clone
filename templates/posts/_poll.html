@@ -1,0 +1,28 @@
+{% if poll %}
+<div class="post-poll" data-poll-id="{{ poll.id }}" data-post-id="{{ post.id }}">
+  <h4 class="poll-question">{{ poll.question }}</h4>
+  {% if poll.is_closed %}
+    <p class="text-muted" style="font-size:var(--font-size-sm);margin-bottom:var(--space-2);">This poll is closed.</p>
+  {% endif %}
+  <div class="poll-options">
+    {% for option in poll.options.all %}
+      {% with vote_count=option.vote_count total=poll.total_votes %}
+        {% widthratio vote_count total 100 as pct_int %}
+        <button class="poll-option" data-option-id="{{ option.pk }}"
+                data-votes="{{ vote_count }}" data-pct="{{ pct_int }}"
+                {% if already_voted or poll.is_closed %}disabled{% endif %}>
+          <span class="poll-option-text">{{ option.text }}</span>
+          <span class="poll-option-bar" style="width:{{ pct_int }}%;"></span>
+          <span class="poll-option-pct">{{ pct_int }}%</span>
+        </button>
+      {% endwith %}
+    {% endfor %}
+  </div>
+  <div class="poll-footer">
+    <span class="poll-total-votes" data-total="{{ poll.total_votes }}">{{ poll.total_votes }} vote{{ poll.total_votes|pluralize }}</span>
+    {% if already_voted and not poll.is_closed %}
+      <span class="text-muted" style="font-size:var(--font-size-xs);">You voted</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

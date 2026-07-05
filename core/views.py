@@ -4,7 +4,7 @@ from django.views.generic import ListView
 
 from accounts.models import CustomUser
 from friendships.models import Friendship
-from posts.models import Post
+from posts.models import PollVote, Post
 from stories.models import Story
 
 
@@ -38,7 +38,9 @@ class HomeFeedView(LoginRequiredMixin, ListView):
             .exclude(author__id__in=blocked_users)
             .filter(is_draft=False)
             .select_related("author")
-            .prefetch_related("images", "reactions", "comments")
+            .prefetch_related(
+                "images", "reactions", "comments", "poll", "poll__options"
+            )
             .distinct()
         )
 
@@ -50,4 +52,12 @@ class HomeFeedView(LoginRequiredMixin, ListView):
             id__in=friend_ids
         ).exclude(id=user.id)[:5]
         context["stories_grouped"] = Story.stories_grouped_by_user()
+
+        # Collect which posts the user has voted on
+        voted_poll_ids = set(
+            PollVote.objects.filter(
+                user=user, option__poll__post__in=context["posts"]
+            ).values_list("option__poll_id", flat=True)
+        )
+        context["voted_poll_ids"] = voted_poll_ids
         return context

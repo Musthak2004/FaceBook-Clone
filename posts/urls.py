@@ -13,6 +13,7 @@ urlpatterns = [
     path("<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),
     path("<int:pk>/save/", views.PostSaveView.as_view(), name="post_save"),
     path("<int:pk>/share/", views.SharePostView.as_view(), name="post_share"),
+    path("<int:pk>/vote/", views.PollVoteView.as_view(), name="poll_vote"),
     path("saved/", views.SavedPostListView.as_view(), name="saved_posts"),
     path(
         "collections/create/",

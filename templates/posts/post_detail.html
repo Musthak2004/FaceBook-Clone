@@ -67,6 +67,11 @@
         {% endfor %}
       </div>
       {% endif %}
+      {% with poll=post.poll %}
+        {% if poll %}
+          {% include "posts/_poll.html" with poll=poll already_voted=user_voted %}
+        {% endif %}
+      {% endwith %}
       <div class="post-stats">
         <span>{{ post.total_likes }} reactions</span>
         <span>{{ post.total_comments }} comments</span>

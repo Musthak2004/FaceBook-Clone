@@ -242,6 +242,69 @@ export function initShareButtons() {
   });
 }
 
+export function initPollVoting() {
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.poll-option:not(:disabled)');
+    if (!btn) return;
+
+    var optionId = btn.getAttribute('data-option-id');
+    var pollEl = btn.closest('.post-poll');
+    var pollId = pollEl.getAttribute('data-poll-id');
+    var csrfToken = getCookie('csrftoken');
+
+    fetch('/posts/' + pollId + '/vote/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'option_id=' + encodeURIComponent(optionId),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.voted) {
+          // Disable all options
+          pollEl.querySelectorAll('.poll-option').forEach(function (opt) {
+            opt.disabled = true;
+          });
+
+          // Update bars and percentages
+          data.options.forEach(function (opt) {
+            var optBtn = pollEl.querySelector(
+              '.poll-option[data-option-id="' + opt.id + '"]'
+            );
+            if (!optBtn) return;
+            optBtn.setAttribute('data-votes', opt.vote_count);
+            optBtn.setAttribute('data-pct', opt.percentage);
+            optBtn.querySelector('.poll-option-pct').textContent = opt.percentage + '%';
+            optBtn.querySelector('.poll-option-bar').style.width = opt.percentage + '%';
+          });
+
+          // Update total votes
+          var footer = pollEl.querySelector('.poll-total-votes');
+          if (footer) {
+            footer.textContent = data.total_votes + ' vote' + (data.total_votes !== 1 ? 's' : '');
+            footer.setAttribute('data-total', data.total_votes);
+          }
+
+          // Show "You voted"
+          var footerEl = pollEl.querySelector('.poll-footer');
+          var youVoted = footerEl.querySelector('.you-voted');
+          if (!youVoted) {
+            var span = document.createElement('span');
+            span.className = 'text-muted you-voted';
+            span.style.cssText = 'font-size:var(--font-size-xs);';
+            span.textContent = 'You voted';
+            footerEl.appendChild(span);
+          }
+
+          showToast('Vote recorded!');
+        }
+      })
+      .catch(function (err) { console.error('Poll vote error:', err); });
+  });
+}
+
 export function initFeed() {
   initLikeButtons();
   initSaveButtons();
@@ -249,4 +312,5 @@ export function initFeed() {
   initInfiniteScroll();
   initCreatePostModal();
   initShareButtons();
+  initPollVoting();
 }

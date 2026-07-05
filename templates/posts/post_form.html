@@ -21,6 +21,20 @@
           <label class="form-label">Add Photos</label>
           <input type="file" name="images" class="form-input" multiple accept="image/*">
         </div>
+        {% if not form.instance.pk %}
+        <div class="form-group">
+          <label class="form-label">{{ form.poll_question.label }}</label>
+          {{ form.poll_question }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ form.poll_options.label }}</label>
+          {{ form.poll_options }}
+          <span class="form-help">{{ form.poll_options.help_text }}</span>
+          {% if form.poll_options.errors %}
+            <div class="form-error">{{ form.poll_options.errors }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
         <div class="form-checkbox mb-4">
           {{ form.is_draft }}
           <label for="{{ form.is_draft.id_for_label }}">Save as draft</label>

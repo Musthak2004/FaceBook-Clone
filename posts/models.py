@@ -66,6 +66,62 @@ class PostImage(models.Model):
         return f"Image for Post {self.post.id}"
 
 
+class Poll(models.Model):
+    """A poll attached to a post (one poll per post)."""
+
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name="poll")
+    question = models.CharField(max_length=255)
+    is_closed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question
+
+    @property
+    def total_votes(self):
+        return PollVote.objects.filter(option__poll=self).count()
+
+
+class PollOption(models.Model):
+    """An option/choice within a poll."""
+
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="options")
+    text = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.text
+
+    @property
+    def vote_count(self):
+        return PollVote.objects.filter(option=self).count()
+
+    @property
+    def percentage(self, total=None):
+        if total is None:
+            total = self.poll.total_votes
+        if total == 0:
+            return 0
+        return round(self.vote_count / total * 100)
+
+
+class PollVote(models.Model):
+    """A user's vote for a poll option."""
+
+    option = models.ForeignKey(
+        PollOption, on_delete=models.CASCADE, related_name="votes"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="poll_votes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("option", "user")
+
+    def __str__(self):
+        return f"{self.user} voted for {self.option}"
+
+
 class SavedCollection(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

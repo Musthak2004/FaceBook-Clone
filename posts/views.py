@@ -13,7 +13,16 @@ from django.views.generic import (
 )
 
 from .forms import PostForm
-from .models import Post, PostImage, SavedCollection, SavedPost, Tag
+from .models import (
+    Poll,
+    PollOption,
+    PollVote,
+    Post,
+    PostImage,
+    SavedCollection,
+    SavedPost,
+    Tag,
+)
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -28,6 +37,17 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         images = self.request.FILES.getlist("images")
         for img in images:
             PostImage.objects.create(post=self.object, image=img)
+        # Handle poll creation
+        poll_question = form.cleaned_data.get("poll_question", "").strip()
+        poll_options_raw = form.cleaned_data.get("poll_options", "").strip()
+        if poll_question and poll_options_raw:
+            options = [
+                line.strip() for line in poll_options_raw.split("\n") if line.strip()
+            ]
+            if len(options) >= 2:
+                poll = Poll.objects.create(post=self.object, question=poll_question)
+                for opt_text in options:
+                    PollOption.objects.create(poll=poll, text=opt_text)
         return response
 
     def get_success_url(self):
@@ -45,6 +65,14 @@ class PostDetailView(LoginRequiredMixin, DetailView):
         context["is_saved"] = SavedPost.objects.filter(
             user=self.request.user, post=self.object
         ).exists()
+
+        # Poll context
+        poll = getattr(self.object, "poll", None)
+        if poll:
+            context["poll"] = poll
+            context["user_voted"] = PollVote.objects.filter(
+                option__poll=poll, user=self.request.user
+            ).exists()
         return context
 
 
@@ -205,4 +233,48 @@ class TrendingTagsView(LoginRequiredMixin, ListView):
             Tag.objects.annotate(post_count=Count("posts"))
             .filter(post_count__gt=0)
             .order_by("-post_count")[:50]
+        )
+
+
+class PollVoteView(LoginRequiredMixin, View):
+    """AJAX endpoint to vote on a poll option."""
+
+    def post(self, request, *args, **kwargs):
+        option_id = request.POST.get("option_id")
+        if not option_id:
+            return JsonResponse({"error": "No option specified."}, status=400)
+
+        option = get_object_or_404(PollOption, pk=option_id)
+        poll = option.poll
+
+        if poll.is_closed:
+            return JsonResponse({"error": "This poll is closed."}, status=400)
+
+        # Remove any existing vote by this user on this poll
+        PollVote.objects.filter(option__poll=poll, user=request.user).delete()
+
+        # Create the new vote
+        PollVote.objects.create(option=option, user=request.user)
+
+        total_votes = poll.total_votes
+        options_data = []
+        for opt in poll.options.all():
+            opt_count = opt.vote_count
+            pct = round(opt_count / total_votes * 100) if total_votes > 0 else 0
+            options_data.append(
+                {
+                    "id": opt.pk,
+                    "text": opt.text,
+                    "vote_count": opt_count,
+                    "percentage": pct,
+                }
+            )
+
+        return JsonResponse(
+            {
+                "voted": True,
+                "option_id": int(option_id),
+                "total_votes": total_votes,
+                "options": options_data,
+            }
         )

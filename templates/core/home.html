@@ -69,6 +69,25 @@
                 <input type="file" name="images" class="form-input" multiple accept="image/*">
               </div>
               <div class="image-preview-container flex flex-wrap gap-2 mt-2"></div>
+
+              <!-- Poll -->
+              <details class="poll-toggle mb-3" style="cursor:pointer;">
+                <summary class="text-muted" style="font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);">
+                  &#128202; Add Poll
+                </summary>
+                <div class="mt-2" style="padding:var(--space-3);background:var(--bg-secondary);border-radius:var(--border-radius-md);">
+                  <div class="form-group">
+                    <label class="form-label">Question</label>
+                    <input type="text" name="poll_question" class="form-input" placeholder="What do you want to ask?">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Options</label>
+                    <textarea name="poll_options" class="form-input" rows="3" placeholder="One option per line"></textarea>
+                    <span class="form-help">Each line is a poll option (min 2, max 10)</span>
+                  </div>
+                </div>
+              </details>
+
               <button type="submit" class="btn btn-primary btn-block btn-lg">Post</button>
             </form>
           </div>
@@ -127,6 +146,15 @@
           {% endfor %}
         </div>
         {% endif %}
+        {% with poll=post.poll %}
+          {% if poll %}
+            {% if poll.id in voted_poll_ids %}
+              {% include "posts/_poll.html" with poll=poll already_voted=True %}
+            {% else %}
+              {% include "posts/_poll.html" with poll=poll already_voted=False %}
+            {% endif %}
+          {% endif %}
+        {% endwith %}
         <div class="post-stats">
           <div class="post-stats-left">
             <span>{{ post.total_likes }} reactions</span>
