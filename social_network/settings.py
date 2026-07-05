@@ -4,6 +4,7 @@ Following best practices from "Django for Beginners" by William S. Vincent.
 """
 
 from pathlib import Path
+import dj_database_url
 from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,18 +82,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "social_network.wsgi.application"
 
 # Database
-# Uses SQLite for local development (per book's approach)
-# Configure DATABASE_URL env var for MySQL in production
+# SQLite by default; set DATABASE_URL env var for PostgreSQL in production
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
-
-# MySQL configuration (uncomment and set DATABASE_URL for production)
-# import dj_database_url
-# DATABASES = {'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")}
 
 # Custom user model - following Chapter 8 best practices
 AUTH_USER_MODEL = "accounts.CustomUser"
@@ -156,12 +149,21 @@ INTERNAL_IPS = [
 # Django Channels
 ASGI_APPLICATION = "social_network.asgi.application"
 
-# In-memory channel layer for development
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
+# Channel layer — Redis in production, in-memory for dev
+REDIS_URL = config("REDIS_URL", default=None)
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [REDIS_URL]},
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 
 # REST Framework
 REST_FRAMEWORK = {
