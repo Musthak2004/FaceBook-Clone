@@ -18,6 +18,7 @@ urlpatterns = [
     path("messages/", include("messaging.urls")),
     path("search/", include("search.urls")),
     path("dashboard/", include("dashboard.urls")),
+    path("api/", include("api.urls")),
 ]
 
 # Serve media files during development (per book's pattern)
