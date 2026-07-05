@@ -43,4 +43,9 @@ urlpatterns = [
         views.ResendVerificationView.as_view(),
         name="resend_verification",
     ),
+    path(
+        "heartbeat/",
+        views.HeartbeatView.as_view(),
+        name="heartbeat",
+    ),
 ]

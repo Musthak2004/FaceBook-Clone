@@ -188,6 +188,24 @@ export function initShareButtons() {
     modal.dataset.sharePostUrl = postUrl;
     // Clear previous content
     document.getElementById('share-repost-content').value = '';
+
+    // Build absolute URL from relative post URL
+    var absoluteUrl = window.location.origin + postUrl;
+    var encodedUrl = encodeURIComponent(absoluteUrl);
+    var shareText = encodeURIComponent('Check this out on SocialNet');
+
+    // Configure external share links
+    document.getElementById('share-twitter').href =
+      'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + encodedUrl;
+    document.getElementById('share-facebook').href =
+      'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl;
+    document.getElementById('share-linkedin').href =
+      'https://www.linkedin.com/sharing/share-offsite/?url=' + encodedUrl;
+    document.getElementById('share-whatsapp').href =
+      'https://wa.me/?text=' + shareText + '%20' + encodedUrl;
+    document.getElementById('share-email').href =
+      'mailto:?subject=' + shareText + '&body=' + encodedUrl;
+
     openModal(modal);
   });
 

@@ -16,7 +16,7 @@
         {% endif %}
 
         <div class="profile-info-row">
-          <div class="profile-avatar-wrapper">
+          <div class="profile-avatar-wrapper online-indicator" data-user-id="{{ profile_user.id }}">
             {% if profile_user.profile_picture %}
             <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
                  class="profile-avatar-img">
@@ -24,6 +24,7 @@
             <img src="{% static 'images/default-avatar.svg' %}" alt="{{ profile_user.username }}"
                  class="profile-avatar-img">
             {% endif %}
+            <span class="online-dot{% if not profile_user.is_online %} offline{% endif %}"></span>
           </div>
           <div class="profile-details">
             <h1 class="profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>

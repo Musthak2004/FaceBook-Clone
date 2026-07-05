@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import (
@@ -202,3 +204,29 @@ class PrivacySettingsView(LoginRequiredMixin, UpdateView):
 
 class SecuritySettingsView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/security_settings.html"
+
+
+class HeartbeatView(LoginRequiredMixin, View):
+    """AJAX endpoint for clients to signal activity. Returns online friends."""
+
+    def post(self, request):
+        CustomUser.objects.filter(pk=request.user.pk).update(last_seen=timezone.now())
+        request.user.last_seen = timezone.now()
+
+        # Return IDs of online friends (for UI badge updates)
+        friend_ids = Friendship.get_friends(request.user)
+        online_friends = (
+            CustomUser.objects.filter(
+                id__in=friend_ids,
+                last_seen__gte=timezone.now() - timezone.timedelta(minutes=5),
+            ).values_list("id", flat=True)
+            if friend_ids
+            else []
+        )
+        return JsonResponse(
+            {
+                "status": "ok",
+                "user_id": request.user.id,
+                "online_friends": list(online_friends),
+            }
+        )

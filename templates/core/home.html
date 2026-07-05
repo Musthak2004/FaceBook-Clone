@@ -98,12 +98,13 @@
       {% for post in posts %}
       <div class="post-card">
         <div class="post-header">
-          <div class="post-author">
+          <div class="post-author online-indicator" data-user-id="{{ post.author.id }}">
             {% if post.author.profile_picture %}
             <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
             {% else %}
             <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
             {% endif %}
+            <span class="online-dot{% if not post.author.is_online %} offline{% endif %}"></span>
             <div class="post-author-info">
               <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
                 {{ post.author.get_full_name|default:post.author.username }}

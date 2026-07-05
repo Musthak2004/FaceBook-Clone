@@ -378,6 +378,31 @@ small {
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+/* ---- Online Status ---- */
+.online-indicator {
+  position: relative;
+  display: inline-flex;
+}
+
+.online-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #31a24c;
+  border: 2px solid var(--bg-primary);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.online-dot.offline {
+  background: var(--text-muted);
+}
+
+[data-theme="dark"] .online-dot {
+  border-color: #242526;
+}
+
 [data-theme="dark"] .nav {
   background: #242526;
   border-bottom: 1px solid var(--border-primary);

@@ -11,6 +11,7 @@ import { initSearch } from './modules/search.js';
 import { initUpload } from './modules/upload.js';
 import { initPostGalleries } from './modules/gallery.js';
 import { initStories } from './modules/stories.js';
+import { initHeartbeat } from './modules/online.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Global UI
@@ -28,4 +29,5 @@ document.addEventListener('DOMContentLoaded', function () {
   initUpload();
   initPostGalleries();
   initStories();
+  initHeartbeat();
 });
