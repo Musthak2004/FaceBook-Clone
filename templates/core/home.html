@@ -147,6 +147,9 @@
           <button class="post-action share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
             &#128257; Share
           </button>
+          <button class="post-action report-btn" data-post-id="{{ post.id }}" data-post-author="{{ post.author.id }}" style="margin-left:auto;">
+            &#128681;
+          </button>
         </div>
       </div>
       {% empty %}
@@ -180,4 +183,71 @@
     </div>
   </div>
 </div>
+
+<!-- Report Modal -->
+<div id="report-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>&#128681; Report</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted mb-3">Why are you reporting this post?</p>
+      <div class="form-group" id="report-reason-group">
+        <select id="report-reason" class="form-input">
+          <option value="spam">Spam</option>
+          <option value="harassment">Harassment or bullying</option>
+          <option value="hate_speech">Hate speech</option>
+          <option value="nudity">Nudity or sexual content</option>
+          <option value="violence">Violence or harmful content</option>
+          <option value="misinformation">False information</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <textarea id="report-description" class="form-input" rows="3" placeholder="Additional details (optional)"></textarea>
+      </div>
+      <button id="report-submit-btn" class="btn btn-danger btn-block">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.report-btn');
+  if (!btn) return;
+  e.preventDefault();
+  var postId = btn.dataset.postId;
+  var modal = document.getElementById('report-modal');
+  var submitBtn = document.getElementById('report-submit-btn');
+  modal.classList.remove('hidden');
+
+  submitBtn._postId = postId;
+  submitBtn.onclick = function() {
+    var reason = document.getElementById('report-reason').value;
+    var desc = document.getElementById('report-description').value;
+    fetch('/reports/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': (function(){ var v='; '+document.cookie; var p=v.split('; csrftoken='); return p.length===2?p.pop().split(';').shift():null; })(),
+      },
+      body: JSON.stringify({ model: 'posts.post', object_id: parseInt(postId), reason: reason, description: desc }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        modal.classList.add('hidden');
+        document.getElementById('report-description').value = '';
+        alert('Report submitted. Our team will review it.');
+      } else {
+        alert(data.error || 'Failed to submit report.');
+      }
+    });
+  };
+});
+</script>
 {% endblock %}

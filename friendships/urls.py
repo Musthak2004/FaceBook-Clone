@@ -20,4 +20,6 @@ urlpatterns = [
         name="reject_request",
     ),
     path("remove/<int:pk>/", views.RemoveFriendView.as_view(), name="remove_friend"),
+    path("block/<int:pk>/", views.BlockUserView.as_view(), name="block_user"),
+    path("unblock/<int:pk>/", views.UnblockUserView.as_view(), name="unblock_user"),
 ]

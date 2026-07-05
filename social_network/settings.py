@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "groups.apps.GroupsConfig",
     "events.apps.EventsConfig",
     "stories.apps.StoriesConfig",
+    "reports.apps.ReportsConfig",
     "api.apps.ApiConfig",
 ]
 

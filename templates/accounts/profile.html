@@ -45,6 +45,11 @@
               &#128101; Friends
             </a>
             {% endif %}
+            {% if not is_own_profile %}
+            <button class="btn btn-ghost text-danger" onclick="blockUser({{ profile_user.id }})" style="color:var(--danger);">
+              &#128683; Block
+            </button>
+            {% endif %}
           </div>
         </div>
 
@@ -197,6 +202,13 @@
 
 {% block extra_js %}
 <script>
+function getCookie(name) {
+  var v = '; ' + document.cookie;
+  var p = v.split('; ' + name + '=');
+  if (p.length === 2) return p.pop().split(';').shift();
+  return null;
+}
+
 function sendFriendRequest(userId) {
   fetch('/friends/requests/send/' + userId + '/', {
     method: 'POST',
@@ -205,10 +217,25 @@ function sendFriendRequest(userId) {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (data.sent) {
-      showToast('Friend request sent!');
       location.reload();
     } else {
-      showToast(data.error || 'Could not send request');
+      alert(data.error || 'Could not send request');
+    }
+  });
+}
+
+function blockUser(userId) {
+  if (!confirm('Block this user? They will not be able to see your posts or interact with you.')) return;
+  fetch('/friends/block/' + userId + '/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.blocked) {
+      location.reload();
+    } else {
+      alert(data.error || 'Could not block user');
     }
   });
 }

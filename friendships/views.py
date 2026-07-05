@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -88,3 +89,37 @@ class RemoveFriendView(LoginRequiredMixin, View):
             friendship.delete()
             return JsonResponse({"removed": True})
         return JsonResponse({"error": "Not friends"}, status=400)
+
+
+class BlockUserView(LoginRequiredMixin, View):
+    """Block a user — removes any existing friendship."""
+
+    def post(self, request, *args, **kwargs):
+        to_block = get_object_or_404(CustomUser, pk=self.kwargs["pk"])
+        if request.user == to_block:
+            return JsonResponse({"error": "Cannot block yourself"}, status=400)
+
+        # Remove any existing friendship in either direction
+        Friendship.objects.filter(
+            Q(from_user=request.user, to_user=to_block)
+            | Q(from_user=to_block, to_user=request.user)
+        ).delete()
+
+        # Create blocked record
+        Friendship.objects.create(
+            from_user=request.user, to_user=to_block, status="blocked"
+        )
+        return JsonResponse({"blocked": True})
+
+
+class UnblockUserView(LoginRequiredMixin, View):
+    """Unblock a previously blocked user."""
+
+    def post(self, request, *args, **kwargs):
+        to_unblock = get_object_or_404(CustomUser, pk=self.kwargs["pk"])
+        deleted, _ = Friendship.objects.filter(
+            from_user=request.user, to_user=to_unblock, status="blocked"
+        ).delete()
+        if deleted:
+            return JsonResponse({"unblocked": True})
+        return JsonResponse({"error": "User was not blocked"}, status=400)
