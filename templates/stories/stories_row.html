@@ -1,70 +1,88 @@
-<div class="stories-row">
-  {% for user, stories in stories_grouped.items %}
-  <div class="story-circle" data-username="{{ user.username }}"
-       data-user-id="{{ user.id }}"
-       data-stories='[
-         {% for s in stories %}
-         {"id": {{ s.id }}, "image_url": "{{ s.image.url }}", "caption": "{{ s.caption|escapejs }}"}{% if not forloop.last %},{% endif %}
-         {% endfor %}
-       ]'>
-    {% if user.profile_picture %}
-    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="story-avatar">
-    {% else %}
-    <img src="/static/images/default-avatar.svg" alt="{{ user.username }}" class="story-avatar">
+<div class="card-social-static overflow-hidden">
+  <div class="flex gap-3 overflow-x-auto px-4 py-4 scrollbar-none" style="scrollbar-width:none;-ms-overflow-style:none;">
+    {% for user, stories in stories_grouped.items %}
+    <div class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 story-circle" data-username="{{ user.username }}"
+         data-user-id="{{ user.id }}"
+         data-stories='[
+           {% for s in stories %}
+           {"id": {{ s.id }}, "image_url": "{{ s.image.url }}", "caption": "{{ s.caption|escapejs }}"}{% if not forloop.last %},{% endif %}
+           {% endfor %}
+         ]'>
+      <div class="story-ring p-[2.5px]">
+        {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="story-avatar w-16 h-16 rounded-full object-cover border-[3px] border-[var(--surface-primary)]">
+        {% else %}
+        <img src="/static/images/default-avatar.svg" alt="{{ user.username }}" class="story-avatar w-16 h-16 rounded-full object-cover border-[3px] border-[var(--surface-primary)]">
+        {% endif %}
+      </div>
+      <span class="text-xs font-medium text-[var(--text-secondary)] max-w-[72px] truncate text-center">{{ user.first_name|default:user.username }}</span>
+    </div>
+    {% empty %}
+    <div class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0" id="add-story-btn">
+      <div class="story-ring-add p-[2.5px]">
+        <div class="w-16 h-16 rounded-full bg-[var(--surface-tertiary)] flex items-center justify-center border-[3px] border-[var(--surface-primary)]">
+          <svg class="w-7 h-7 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </div>
+      </div>
+      <span class="text-xs font-medium text-[var(--text-muted)]">Add Story</span>
+    </div>
+    {% endfor %}
+    {% if stories_grouped %}
+    <div class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0" id="add-story-btn">
+      <div class="story-ring-add p-[2.5px]">
+        <div class="w-16 h-16 rounded-full bg-[var(--surface-tertiary)] flex items-center justify-center border-[3px] border-[var(--surface-primary)]">
+          <svg class="w-7 h-7 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </div>
+      </div>
+      <span class="text-xs font-medium text-[var(--text-muted)]">Add Story</span>
+    </div>
     {% endif %}
-    <span class="story-username">{{ user.first_name|default:user.username }}</span>
   </div>
-  {% empty %}
-  <div class="story-circle add-story" id="add-story-btn">
-    <div class="story-add-icon">+</div>
-    <span class="story-username">Add Story</span>
-  </div>
-  {% endfor %}
-  {% if stories_grouped %}
-  <div class="story-circle add-story" id="add-story-btn">
-    <div class="story-add-icon">+</div>
-    <span class="story-username">Add Story</span>
-  </div>
-  {% endif %}
 </div>
 
 <!-- Story Viewer Overlay -->
-<div id="story-viewer" class="story-viewer hidden">
-  <div class="story-viewer-header">
-    <div class="story-viewer-user">
-      <img id="story-viewer-avatar" src="" alt="" class="avatar avatar-sm">
-      <span id="story-viewer-username"></span>
+<div id="story-viewer" class="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center hidden">
+  <div class="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-10">
+    <div class="flex items-center gap-3">
+      <img id="story-viewer-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover border-2 border-white/30">
+      <span id="story-viewer-username" class="text-white font-semibold text-sm"></span>
     </div>
-    <button id="story-viewer-close" class="story-viewer-close">&times;</button>
+    <button id="story-viewer-close" class="text-white/70 hover:text-white text-3xl leading-none w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-all duration-150">&times;</button>
   </div>
-  <div class="story-viewer-progress" id="story-progress-bar"></div>
-  <img id="story-viewer-image" src="" alt="Story">
-  <div class="story-viewer-caption" id="story-viewer-caption"></div>
-  <div class="story-viewer-nav">
-    <button id="story-prev" class="story-nav-btn">&#8249;</button>
-    <button id="story-next" class="story-nav-btn">&#8250;</button>
+  <div class="absolute top-16 left-4 right-4 z-10">
+    <div id="story-progress-bar" class="h-1 bg-white/20 rounded-full overflow-hidden">
+      <div class="h-full bg-white rounded-full" style="width:0%;transition:width 3s linear;"></div>
+    </div>
+  </div>
+  <img id="story-viewer-image" src="" alt="Story" class="max-h-[80vh] max-w-full object-contain rounded-xl">
+  <div id="story-viewer-caption" class="text-white/80 text-sm mt-4 px-4 text-center"></div>
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+    <button id="story-prev" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-2xl transition-all duration-150">&#8249;</button>
+    <button id="story-next" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-2xl transition-all duration-150">&#8250;</button>
   </div>
 </div>
 
 <!-- Story Upload Modal -->
-<div id="story-upload-modal" class="modal-overlay hidden">
-  <div class="modal" style="max-width:400px;">
-    <div class="modal-header">
-      <h3>Add Story</h3>
-      <button class="modal-close">&times;</button>
+<div id="story-upload-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+  <div class="modal-social" style="max-width:400px;">
+    <div class="modal-social-header">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">Add Story</h3>
+      <button class="modal-close w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-150 text-xl leading-none">&times;</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-social-body">
       <form id="story-upload-form" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="form-group">
-          <label class="form-label">Choose Image</label>
-          <input type="file" name="image" class="form-input" accept="image/*" required id="story-image-input">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Choose Image</label>
+            <input type="file" name="image" class="input-brand" accept="image/*" required id="story-image-input">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Caption (optional)</label>
+            <input type="text" name="caption" class="input-brand" placeholder="Add a caption...">
+          </div>
+          <button type="submit" class="btn-brand w-full">Upload Story</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Caption (optional)</label>
-          <input type="text" name="caption" class="form-input" placeholder="Add a caption...">
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Upload Story</button>
       </form>
     </div>
   </div>

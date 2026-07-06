@@ -1,50 +1,55 @@
 {% load static %}
 {% for notification in notifications|slice:":10" %}
-<div class="notification-item {% if not notification.is_read %}unread{% endif %}"
-     data-notification-id="{{ notification.id }}"
-     data-href="{% if notification.post %}{% url 'posts:post_detail' pk=notification.post.pk %}{% else %}{% url 'notifications:notification_list' %}{% endif %}">
-  <div class="notification-item-avatar">
+<a href="{% if notification.post %}{% url 'posts:post_detail' pk=notification.post.pk %}{% else %}{% url 'notifications:notification_list' %}{% endif %}"
+   class="flex items-start gap-3 px-4 py-3 transition-colors {% if not notification.is_read %}bg-[var(--brand-from)]/5 border-l-2 border-[var(--brand-from)]{% else %}hover:bg-[var(--surface-tertiary)]{% endif %}"
+   data-notification-id="{{ notification.id }}">
+  <div class="flex-shrink-0 mt-1">
     {% if notification.sender and notification.sender.profile_picture %}
-    <img src="{{ notification.sender.profile_picture.url }}" alt="" class="avatar avatar-sm">
+    <img src="{{ notification.sender.profile_picture.url }}" alt="" class="w-8 h-8 rounded-full object-cover">
     {% else %}
-    <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+    <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-8 h-8 rounded-full object-cover bg-[var(--surface-tertiary)]">
     {% endif %}
   </div>
-  <div class="notification-item-content">
-    <div class="notification-item-text">
+  <div class="flex-1 min-w-0">
+    <p class="text-sm text-[var(--text-primary)]">
+      <span class="font-semibold">{{ notification.sender.username }}</span>
       {% if notification.notification_type == 'friend_request' %}
-        <strong>{{ notification.sender.username }}</strong> sent you a friend request
+        sent you a friend request
       {% elif notification.notification_type == 'friend_accept' %}
-        <strong>{{ notification.sender.username }}</strong> accepted your friend request
+        accepted your friend request
       {% elif notification.notification_type == 'like' %}
-        <strong>{{ notification.sender.username }}</strong> liked your post
+        liked your post
       {% elif notification.notification_type == 'comment' %}
-        <strong>{{ notification.sender.username }}</strong> commented on your post
+        commented on your post
       {% elif notification.notification_type == 'reply' %}
-        <strong>{{ notification.sender.username }}</strong> replied to your comment
+        replied to your comment
       {% elif notification.notification_type == 'mention' %}
-        <strong>{{ notification.sender.username }}</strong> mentioned you in a post
+        mentioned you in a post
       {% elif notification.notification_type == 'share' %}
-        <strong>{{ notification.sender.username }}</strong> shared your post
+        shared your post
       {% else %}
-        <strong>{{ notification.sender.username }}</strong> interacted with your post
+        interacted with your post
       {% endif %}
-    </div>
-    <div class="notification-item-time">{{ notification.created_at|timesince }} ago</div>
+    </p>
+    <p class="text-xs text-[var(--text-muted)] mt-0.5">{{ notification.created_at|timesince }} ago</p>
   </div>
   {% if not notification.is_read %}
-  <span class="unread-dot"></span>
+  <span class="flex-shrink-0 w-2 h-2 rounded-full bg-[var(--brand-from)] mt-2"></span>
   {% endif %}
-</div>
+</a>
 {% empty %}
-<div class="notification-item" style="justify-content:center;padding:24px;color:var(--text-muted);">
+<div class="px-4 py-6 text-center text-sm text-[var(--text-muted)]">
   No notifications yet
 </div>
 {% endfor %}
 
 {% if notifications.count > 10 %}
-<div class="dropdown-divider"></div>
-<a href="{% url 'notifications:notification_list' %}" class="dropdown-item" style="justify-content:center;color:var(--primary);font-weight:600;">
-  See all notifications
-</a>
+<div class="border-t border-[var(--border-light)]">
+  <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-center px-4 py-3 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:bg-[var(--surface-tertiary)] transition-colors no-underline">
+    See all notifications
+    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+  </a>
+</div>
 {% endif %}

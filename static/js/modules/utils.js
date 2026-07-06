@@ -27,11 +27,11 @@ export function showToast(message) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast-container';
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;align-items:center;';
     document.body.appendChild(toast);
   }
   var el = document.createElement('div');
-  el.className = 'toast show';
+  el.className = 'toast-social';
   el.textContent = message;
   toast.appendChild(el);
   setTimeout(function () {

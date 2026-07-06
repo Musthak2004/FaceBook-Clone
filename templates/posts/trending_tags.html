@@ -3,34 +3,39 @@
 {% block title %}Trending Hashtags — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <h2 class="mb-4">&#128200; Trending Hashtags</h2>
-
-    {% if tags %}
-    <div class="card">
-      <div class="card-body">
-        {% for tag in tags %}
-        <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border-secondary);">
-          <a href="{% url 'posts:hashtag_detail' slug=tag.name %}" style="font-size:var(--font-size-lg);font-weight:var(--font-weight-semibold);">
-            #{{ tag.name }}
-          </a>
-          <span class="text-muted" style="font-size:var(--font-size-sm);">
-            {{ tag.post_count }} post{{ tag.post_count|pluralize }}
-          </span>
-        </div>
-        {% endfor %}
-      </div>
+<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+      </svg>
     </div>
-    {% else %}
-    <div class="card">
-      <div class="card-body" style="text-align:center;padding:48px;color:var(--text-muted);">
-        <p style="font-size:48px;">#</p>
-        <h3>No hashtags yet</h3>
-        <p>Hashtags will appear here as people use them in posts.</p>
-      </div>
-    </div>
-    {% endif %}
+    <h1 class="text-xl font-bold text-[var(--text-primary)]">Trending Hashtags</h1>
   </div>
+
+  {% if tags %}
+  <div class="card-social-static overflow-hidden">
+    <div class="divide-y divide-[var(--border-light)]">
+      {% for tag in tags %}
+      <a href="{% url 'posts:hashtag_detail' slug=tag.name %}" class="flex items-center justify-between px-5 py-4 hover:bg-[var(--surface-secondary)] transition-colors no-underline">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-brand-600 dark:text-brand-400">#</span>
+          </div>
+          <span class="font-semibold text-[var(--text-primary)]">{{ tag.name }}</span>
+        </div>
+        <span class="text-sm text-[var(--text-muted)]">
+          <span class="font-medium text-[var(--text-secondary)]">{{ tag.post_count }}</span> post{{ tag.post_count|pluralize }}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card-social-static">
+    {% include "components/empty_state.html" with icon="hashtag" title="No hashtags yet" description="Hashtags will appear here as people use them in posts." %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

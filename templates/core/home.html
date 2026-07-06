@@ -4,196 +4,221 @@
 {% block title %}Home — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="display:flex;gap:var(--space-6);align-items:flex-start;">
-    <div class="feed-container" style="flex:1;max-width:680px;">
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex gap-6 items-start">
+
+    <!-- Main Feed -->
+    <div class="flex-1 max-w-2xl mx-auto lg:mx-0">
+
       <!-- Stories Row (cached 5 min) -->
       {% cache 300 stories_row request.user.id %}
-      <div id="stories-container">
+      <div id="stories-container" class="mb-4">
         {% include "stories/stories_row.html" %}
       </div>
       {% endcache %}
 
-      <!-- Create Post -->
-      <div class="create-post-card">
-        <div class="create-post-top">
-          {% if user.profile_picture %}
-          <img src="{{ user.profile_picture.url }}" alt="" class="avatar">
-          {% else %}
-          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
-          {% endif %}
-          <div class="create-post-input" data-modal-target="create-post-modal">
-            What's on your mind, {{ user.first_name|default:user.username }}?
+      <!-- Create Post Card -->
+      <div class="card-social-static mb-4">
+        <div class="p-4">
+          <div class="flex items-center gap-3">
+            {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+            {% endif %}
+            <div class="flex-1 bg-[var(--surface-tertiary)] rounded-full px-5 py-2.5 text-sm text-[var(--text-muted)] cursor-pointer hover:bg-[var(--border-light)] transition-colors duration-150 create-post-input" data-modal-target="create-post-modal">
+              What's on your mind, {{ user.first_name|default:user.username }}?
+            </div>
           </div>
         </div>
-        <div class="create-post-actions">
-          <button class="create-post-action" data-modal-target="create-post-modal">
-            &#128247; Photo
+        <div class="flex items-center justify-around px-4 pb-3 pt-0">
+          <button class="create-post-action flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-tertiary)] transition-all duration-150" data-modal-target="create-post-modal">
+            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Photo
           </button>
-          <button class="create-post-action" data-modal-target="create-post-modal">
-            &#128221; Feeling
+          <button class="create-post-action flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-tertiary)] transition-all duration-150" data-modal-target="create-post-modal">
+            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Feeling
           </button>
         </div>
       </div>
 
       <!-- Create Post Modal -->
-      <div id="create-post-modal" class="modal-overlay hidden">
-        <div class="modal">
-          <div class="modal-header">
-            <h3>Create Post</h3>
-            <button class="modal-close">&times;</button>
+      <div id="create-post-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+        <div class="modal-social">
+          <div class="modal-social-header">
+            <h3 class="text-lg font-bold text-[var(--text-primary)]">Create Post</h3>
+            <button class="modal-close w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-150 text-xl leading-none">&times;</button>
           </div>
-          <div class="modal-body">
+          <div class="modal-social-body">
             <form id="create-post-form" method="post" action="{% url 'posts:post_create' %}" enctype="multipart/form-data" aria-label="Create a new post">
               {% csrf_token %}
-              <div class="flex items-center gap-2 mb-4">
+              <div class="flex items-center gap-3 mb-4">
                 {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}'s avatar" class="avatar">
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}'s avatar" class="w-10 h-10 rounded-full object-cover">
                 {% else %}
-                <img src="{% static 'images/default-avatar.svg' %}" alt="{{ user.username }}'s avatar" class="avatar">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="{{ user.username }}'s avatar" class="w-10 h-10 rounded-full object-cover">
                 {% endif %}
-                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <span class="font-semibold text-[var(--text-primary)] text-sm">{{ user.get_full_name|default:user.username }}</span>
               </div>
-              <div class="form-group">
-                <label for="post-content-input" class="form-label sr-only">Post content</label>
-                <textarea id="post-content-input" name="content" class="form-input" rows="4"
+              <div class="mb-4">
+                <label for="post-content-input" class="sr-only">Post content</label>
+                <textarea id="post-content-input" name="content" class="input-brand" rows="4"
                           placeholder="What's on your mind?"></textarea>
               </div>
-              <div class="form-group">
-                <label for="post-visibility-select" class="form-label">Visibility</label>
-                <select id="post-visibility-select" name="visibility" class="form-input">
+              <div class="mb-4">
+                <label for="post-visibility-select" class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Visibility</label>
+                <select id="post-visibility-select" name="visibility" class="input-brand">
                   <option value="public">Public</option>
                   <option value="friends">Friends Only</option>
                   <option value="only_me">Only Me</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label for="post-images-input" class="form-label">Add Photos</label>
-                <input id="post-images-input" type="file" name="images" class="form-input" multiple accept="image/*">
+              <div class="mb-4">
+                <label for="post-images-input" class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+                  <span class="flex items-center gap-2 cursor-pointer text-brand-600 hover:text-brand-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Add Photos
+                  </span>
+                </label>
+                <input id="post-images-input" type="file" name="images" class="hidden" multiple accept="image/*" onchange="document.querySelector('.image-preview-container').innerHTML=Array.from(this.files).map(f=>'<div class=\'relative w-20 h-20 rounded-lg overflow-hidden\'><img src=\''+URL.createObjectURL(f)+'\' class=\'w-full h-full object-cover\'></div>').join('')">
               </div>
-              <div class="image-preview-container flex flex-wrap gap-2 mt-2"></div>
+              <div class="image-preview-container flex flex-wrap gap-2 mt-2 mb-4"></div>
 
               <!-- Poll -->
-              <details class="poll-toggle mb-3" style="cursor:pointer;">
-                <summary class="text-muted" style="font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);">
-                  &#128202; Add Poll
+              <details class="mb-4 group cursor-pointer">
+                <summary class="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 list-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  Add Poll
                 </summary>
-                <div class="mt-2" style="padding:var(--space-3);background:var(--bg-secondary);border-radius:var(--border-radius-md);">
-                  <div class="form-group">
-                    <label class="form-label">Question</label>
-                    <input type="text" name="poll_question" class="form-input" placeholder="What do you want to ask?">
+                <div class="mt-3 p-4 bg-[var(--surface-tertiary)] rounded-xl space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Question</label>
+                    <input type="text" name="poll_question" class="input-brand" placeholder="What do you want to ask?">
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Options</label>
-                    <textarea name="poll_options" class="form-input" rows="3" placeholder="One option per line"></textarea>
-                    <span class="form-help">Each line is a poll option (min 2, max 10)</span>
+                  <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Options</label>
+                    <textarea name="poll_options" class="input-brand" rows="3" placeholder="One option per line"></textarea>
+                    <p class="text-xs text-[var(--text-muted)] mt-1">Each line is a poll option (min 2, max 10)</p>
                   </div>
                 </div>
               </details>
 
-              <button type="submit" class="btn btn-primary btn-block btn-lg">Post</button>
+              <button type="submit" class="btn-brand w-full" id="create-post-submit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                Post
+              </button>
             </form>
           </div>
         </div>
       </div>
 
-      <!-- Skeleton Loading (shown only during initial render before JS hides it) -->
-      <div class="skeleton-feed" id="skeleton-feed">
-        <div class="skeleton-post">
-          <div class="skeleton-post-header">
-            <div class="skeleton skeleton-circle skeleton-avatar"></div>
-            <div>
-              <div class="skeleton skeleton-text skeleton-text-lg"></div>
-              <div class="skeleton skeleton-text skeleton-text-sm"></div>
+      <!-- Skeleton Loading -->
+      <div class="skeleton-feed space-y-4" id="skeleton-feed">
+        {% for i in "123" %}
+        <div class="card-social-static p-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full skeleton-shimmer"></div>
+            <div class="space-y-2 flex-1">
+              <div class="h-3 w-32 skeleton-shimmer"></div>
+              <div class="h-2.5 w-20 skeleton-shimmer"></div>
             </div>
           </div>
-          <div class="skeleton-post-body">
-            <div class="skeleton skeleton-text" style="width:100%;"></div>
-            <div class="skeleton skeleton-text" style="width:85%;"></div>
-            <div class="skeleton skeleton-text" style="width:60%;"></div>
+          <div class="space-y-2.5 mb-4">
+            <div class="h-3 w-full skeleton-shimmer"></div>
+            <div class="h-3 w-5/6 skeleton-shimmer"></div>
+            <div class="h-3 w-2/3 skeleton-shimmer"></div>
           </div>
-          <div class="skeleton skeleton-image"></div>
-          <div class="skeleton-post-actions">
-            <div class="skeleton skeleton-post-action"></div>
-            <div class="skeleton skeleton-post-action"></div>
-            <div class="skeleton skeleton-post-action"></div>
-          </div>
-        </div>
-        <div class="skeleton-post">
-          <div class="skeleton-post-header">
-            <div class="skeleton skeleton-circle skeleton-avatar"></div>
-            <div>
-              <div class="skeleton skeleton-text skeleton-text-lg"></div>
-              <div class="skeleton skeleton-text skeleton-text-sm"></div>
-            </div>
-          </div>
-          <div class="skeleton-post-body">
-            <div class="skeleton skeleton-text" style="width:100%;"></div>
-            <div class="skeleton skeleton-text" style="width:80%;"></div>
-            <div class="skeleton skeleton-text" style="width:55%;"></div>
-          </div>
-          <div class="skeleton skeleton-image skeleton-image-short"></div>
-          <div class="skeleton-post-actions">
-            <div class="skeleton skeleton-post-action"></div>
-            <div class="skeleton skeleton-post-action"></div>
-            <div class="skeleton skeleton-post-action"></div>
+          <div class="h-48 rounded-lg skeleton-shimmer mb-4"></div>
+          <div class="flex gap-2">
+            <div class="h-8 flex-1 skeleton-shimmer rounded-lg"></div>
+            <div class="h-8 flex-1 skeleton-shimmer rounded-lg"></div>
+            <div class="h-8 flex-1 skeleton-shimmer rounded-lg"></div>
           </div>
         </div>
+        {% endfor %}
       </div>
 
       <!-- Feed Posts -->
+      <div class="space-y-4 stagger-container">
       {% for post in posts %}
-      <div class="post-card">
-        <div class="post-header">
-          <div class="post-author online-indicator" data-user-id="{{ post.author.id }}">
-            {% if post.author.profile_picture %}
-            <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.username }}'s avatar" class="avatar">
-            {% else %}
-            <img src="{% static 'images/default-avatar.svg' %}" alt="{{ post.author.username }}'s avatar" class="avatar">
-            {% endif %}
-            <span class="online-dot{% if not post.author.is_online %} offline{% endif %}"></span>
-            <div class="post-author-info">
-              <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
+      <div class="card-social overflow-hidden press-feedback">
+        <!-- Post Header -->
+        <div class="flex items-center justify-between px-4 pt-4 pb-2">
+          <div class="flex items-center gap-3">
+            <div class="relative online-indicator" data-user-id="{{ post.author.id }}">
+              {% if post.author.profile_picture %}
+              <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.username }}'s avatar" class="w-10 h-10 rounded-full object-cover">
+              {% else %}
+              <img src="{% static 'images/default-avatar.svg' %}" alt="{{ post.author.username }}'s avatar" class="w-10 h-10 rounded-full object-cover">
+              {% endif %}
+              <span class="online-dot-social{% if not post.author.is_online %} offline{% endif %}"></span>
+            </div>
+            <div>
+              <a href="{% url 'accounts:profile' username=post.author.username %}" class="font-semibold text-[var(--text-primary)] text-sm hover:underline no-underline">
                 {{ post.author.get_full_name|default:post.author.username }}
               </a>
-              <span class="post-time">{{ post.created_at|timesince }} ago</span>
+              <div class="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                <span>{{ post.created_at|timesince }} ago</span>
+                {% if post.visibility == 'only_me' %}
+                <span class="mx-1">&middot;</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                {% elif post.visibility == 'friends' %}
+                <span class="mx-1">&middot;</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                {% endif %}
+              </div>
             </div>
           </div>
         </div>
-        <div class="post-body">
-          <p class="post-content">{{ post.content|post_render }}</p>
+
+        <!-- Post Content -->
+        <div class="px-4 py-2">
+          <p class="text-[var(--text-primary)] text-[15px] leading-relaxed">{{ post.content|post_render }}</p>
         </div>
+
+        <!-- Shared Post Embed -->
         {% if post.shared_post %}
-        <div class="shared-post-embed">
-          <div class="shared-post-header">
-            <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}">
-              <strong>{{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}</strong>
+        <div class="shared-embed">
+          <div class="flex items-center gap-2 mb-2">
+            <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline">
+              {{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}
             </a>
-            <span class="post-time">{{ post.shared_post.created_at|timesince }} ago</span>
+            <span class="text-xs text-[var(--text-muted)]">{{ post.shared_post.created_at|timesince }} ago</span>
           </div>
-          <p class="shared-post-content">{{ post.shared_post.content|post_render }}</p>
+          <p class="text-sm text-[var(--text-secondary)]">{{ post.shared_post.content|post_render }}</p>
           {% if post.shared_post.images.all %}
-          <div class="post-images" data-images-count="{{ post.shared_post.images.all|length }}">
-            {% for img in post.shared_post.images.all %}
-            <img src="{{ img.image.url }}" alt="Photo shared by {{ post.shared_post.author.username }}"
-                 class="gallery-image"
-                 data-gallery-id="shared-{{ post.shared_post.id }}"
-                 data-index="{{ forloop.counter0 }}">
-            {% endfor %}
+          <div class="mt-2 rounded-lg overflow-hidden" data-images-count="{{ post.shared_post.images.all|length }}">
+            <div class="photo-grid-social">
+              {% for img in post.shared_post.images.all %}
+              <img src="{{ img.image.url }}" alt="Photo shared by {{ post.shared_post.author.username }}" loading="lazy"
+                   class="gallery-image w-full h-full object-cover"
+                   data-gallery-id="shared-{{ post.shared_post.id }}"
+                   data-index="{{ forloop.counter0 }}">
+              {% endfor %}
+            </div>
           </div>
           {% endif %}
         </div>
         {% endif %}
+
+        <!-- Post Images -->
         {% if post.images.all %}
-        <div class="post-images" data-images-count="{{ post.images.all|length }}">
-          {% for img in post.images.all %}
-          <img src="{{ img.image.url }}" alt="Photo shared by {{ post.author.username }}"
-               class="gallery-image"
-               data-gallery-id="{{ post.id }}"
-               data-index="{{ forloop.counter0 }}">
-          {% endfor %}
+        <div class="px-4 mb-2">
+          <div class="rounded-xl overflow-hidden" data-images-count="{{ post.images.all|length }}">
+            <div class="photo-grid-social">
+              {% for img in post.images.all %}
+              <img src="{{ img.image.url }}" alt="Photo shared by {{ post.author.username }}" loading="lazy"
+                   class="gallery-image w-full h-full object-cover"
+                   data-gallery-id="{{ post.id }}"
+                   data-index="{{ forloop.counter0 }}">
+              {% endfor %}
+            </div>
+          </div>
         </div>
         {% endif %}
+
+        <!-- Poll -->
         {% with poll=post.poll %}
           {% if poll %}
             {% if poll.id in voted_poll_ids %}
@@ -203,34 +228,56 @@
             {% endif %}
           {% endif %}
         {% endwith %}
-        <div class="post-stats">
-          <div class="post-stats-left">
-            <span>{{ post.total_likes }} reactions</span>
+
+        <!-- Stats -->
+        <div class="post-stats-bar">
+          <div class="flex items-center gap-1.5">
+            <span class="flex items-center justify-center w-5 h-5 rounded-full bg-brand-600 text-white text-[10px] font-bold">&#9829;</span>
+            <span>{{ post.total_likes }}</span>
           </div>
           <span>{{ post.total_comments }} comments</span>
         </div>
-        <div class="post-actions">
-          <button class="post-action post-action-like {% if user in post.reactions.all %}liked{% endif %}"
+
+        <!-- Action Buttons -->
+        <div class="flex items-center border-t border-[var(--border-light)] px-1 py-0.5">
+          <button class="post-action-btn flex-1 justify-center post-action-like {% if user in post.reactions.all %}liked{% endif %}"
                   data-post-id="{{ post.id }}">
-            &#128147; <span class="like-count">{{ post.total_likes }}</span>
+            <svg class="w-5 h-5" fill="{% if user in post.reactions.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <span class="like-count">{{ post.total_likes }}</span>
           </button>
-          <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action">
-            &#128172; Comment
+          <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action-btn flex-1 justify-center no-underline hover:no-underline">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Comment
           </a>
-          <button class="post-action post-action-save" data-post-id="{{ post.id }}">
-            &#128190; Save
+          <button class="post-action-btn flex-1 justify-center post-action-save" data-post-id="{{ post.id }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+            </svg>
+            Save
           </button>
-          <button class="post-action share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
-            &#128257; Share
+          <button class="post-action-btn flex-1 justify-center share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            Share
           </button>
-          <button class="post-action report-btn" data-post-id="{{ post.id }}" data-post-author="{{ post.author.id }}" style="margin-left:auto;">
-            &#128681;
+          <button class="post-action-btn justify-center report-btn" data-post-id="{{ post.id }}" data-post-author="{{ post.author.id }}" style="margin-left:auto;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01"/>
+            </svg>
           </button>
         </div>
       </div>
+      </div>
       {% empty %}
-      <div class="empty-state">
-        <div class="empty-state-icon">&#128240;</div>
+      <div class="empty-state-social">
+        <div class="empty-icon">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+        </div>
         <h3>No posts in your feed</h3>
         <p>Add friends to see their posts here!</p>
       </div>
@@ -238,7 +285,7 @@
 
       <!-- Pagination -->
       {% if is_paginated %}
-      <div class="pagination">
+      <div class="pagination-social">
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
         {% endif %}
@@ -259,23 +306,26 @@
     </div>
 
     <!-- Right Sidebar: Friend Suggestions -->
-    <div class="right-sidebar" style="width:300px;flex-shrink:0;position:sticky;top:var(--nav-height, 60px);">
+    <div class="hidden lg:block w-[300px] flex-shrink-0 sticky top-20" style="top:calc(var(--nav-height, 64px) + 24px);">
       {% include "core/_friend_suggestions.html" %}
     </div>
   </div>
 </div>
 
 <!-- Report Modal -->
-<div id="report-modal" class="modal-overlay hidden">
-  <div class="modal" style="max-width:400px;">
-    <div class="modal-header">
-      <h3>&#128681; Report</h3>
-      <button class="modal-close">&times;</button>
+<div id="report-modal" class="modal-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+  <div class="modal-social" style="max-width:400px;">
+    <div class="modal-social-header">
+      <h3 class="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01"/></svg>
+        Report
+      </h3>
+      <button class="modal-close w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-150 text-xl leading-none">&times;</button>
     </div>
-    <div class="modal-body">
-      <p class="text-muted mb-3">Why are you reporting this post?</p>
+    <div class="modal-social-body space-y-4">
+      <p class="text-sm text-[var(--text-muted)]">Why are you reporting this post?</p>
       <div class="form-group" id="report-reason-group">
-        <select id="report-reason" class="form-input">
+        <select id="report-reason" class="input-brand">
           <option value="spam">Spam</option>
           <option value="harassment">Harassment or bullying</option>
           <option value="hate_speech">Hate speech</option>
@@ -285,18 +335,28 @@
           <option value="other">Other</option>
         </select>
       </div>
-      <div class="form-group">
-        <textarea id="report-description" class="form-input" rows="3" placeholder="Additional details (optional)"></textarea>
+      <div>
+        <textarea id="report-description" class="input-brand" rows="3" placeholder="Additional details (optional)"></textarea>
       </div>
-      <button id="report-submit-btn" class="btn btn-danger btn-block">Submit Report</button>
+      <button id="report-submit-btn" class="btn-danger-social w-full justify-center !bg-red-500 !text-white hover:!bg-red-600">Submit Report</button>
     </div>
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Create post loading state
+document.addEventListener('submit', function(e) {
+  var form = e.target.closest('#create-post-form');
+  if (!form) return;
+  var btn = document.getElementById('create-post-submit');
+  if (btn) {
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+  }
+});
+
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('.report-btn');
   if (!btn) return;

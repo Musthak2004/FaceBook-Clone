@@ -4,39 +4,55 @@
 {% block title %}{% if object %}Edit {{ object.name }}{% else %}Create Page{% endif %} — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <div class="card">
-      <h2>{% if object %}Edit Page{% else %}Create a Page{% endif %}</h2>
-      <p class="text-secondary mb-4">
-        {% if object %}
-        Update your page's information.
-        {% else %}
-        Create a page for your business, organization, or community.
-        {% endif %}
-      </p>
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="form-group">
-          <label class="form-label">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}
-          <span class="form-help">{{ field.help_text }}</span>
-          {% endif %}
-          {% if field.errors %}
-          <div class="text-danger" style="font-size:var(--font-size-sm);">{{ field.errors }}</div>
-          {% endif %}
-        </div>
-        {% endfor %}
-        <div class="flex gap-2">
-          <button type="submit" class="btn btn-primary">
-            {% if object %}Save Changes{% else %}Create Page{% endif %}
-          </button>
-          <a href="{% if object %}{% url 'pages:detail' pk=object.pk %}{% else %}{% url 'pages:list' %}{% endif %}" class="btn btn-ghost">Cancel</a>
-        </div>
-      </form>
+<div class="max-w-lg mx-auto px-4 py-8 page-enter">
+  <div class="card-social-static p-6">
+    <div class="flex items-center gap-4 mb-6 pb-4 border-b border-[var(--border-light)]">
+      <div class="w-12 h-12 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-[var(--text-primary)]">{% if object %}Edit Page{% else %}Create a Page{% endif %}</h1>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% if object %}Update your page's information.{% else %}Create a page for your business, organization, or community.{% endif %}
+        </p>
+      </div>
     </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 dark:bg-red-900/20 dark:border-red-800" role="alert">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+      {% endif %}
+
+      {% for field in form %}
+        {% if field.name == "profile_picture" or field.name == "cover" %}
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">{{ field.label }}</label>
+          <div class="flex items-center gap-3 p-4 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-light)] cursor-pointer hover:bg-[var(--surface-tertiary)] transition-colors image-upload-trigger" data-input="{{ field.id_for_label }}">
+            <div class="w-12 h-12 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
+              <svg class="w-6 h-6 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-[var(--text-primary)]">Choose image</p>
+          </div>
+          {{ field }}
+        </div>
+        {% else %}
+        {% include "components/form_field.html" with field=field %}
+        {% endif %}
+      {% endfor %}
+
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit" class="btn-brand flex-1 justify-center">{% if object %}Save Changes{% else %}Create Page{% endif %}</button>
+        <a href="{% if object %}{% url 'pages:detail' pk=object.pk %}{% else %}{% url 'pages:list' %}{% endif %}" class="btn-ghost-social border border-[var(--border-light)]">Cancel</a>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

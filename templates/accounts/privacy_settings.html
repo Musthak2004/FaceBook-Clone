@@ -1,28 +1,56 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Privacy Settings — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <div class="card">
-      <h2>Privacy Settings</h2>
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-          <label class="form-checkbox">
-            {{ form.is_private }}
-            <span>
-              <strong>Private Account</strong>
-              <p class="text-muted" style="font-size:var(--font-size-sm);">
-                When your account is private, only friends can see your posts.
-              </p>
-            </span>
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-      </form>
+<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center gap-4 mb-6">
+    <div class="w-12 h-12 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
+      <svg class="w-6 h-6 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
     </div>
+    <div>
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">Privacy Settings</h1>
+      <p class="text-sm text-[var(--text-secondary)]">Control who can see your content</p>
+    </div>
+  </div>
+
+  <div class="card-social-static p-6">
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 dark:bg-red-900/20 dark:border-red-800" role="alert">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="flex items-start justify-between gap-4 p-4 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-light)]">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <label for="id_is_private" class="font-semibold text-[var(--text-primary)] cursor-pointer">Private Account</label>
+            <p class="text-sm text-[var(--text-muted)] mt-1">When your account is private, only friends can see your posts and profile information.</p>
+          </div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+          {{ form.is_private }}
+          <span class="sr-only">Toggle private account</span>
+          <span class="w-11 h-6 bg-[var(--border-medium)] rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-brand-500 peer-focus:ring-2 peer-focus:ring-brand-500/30 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></span>
+        </label>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="btn-brand">Save Changes</button>
+        <a href="{% url 'accounts:account_settings' %}" class="btn-ghost-social ml-2">Back to Settings</a>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

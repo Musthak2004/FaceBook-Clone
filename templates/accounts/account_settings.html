@@ -1,39 +1,82 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Account Settings — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <div class="card mb-4">
-      <h2>Account Settings</h2>
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          {{ form.username }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          {{ form.email }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">First Name</label>
-          {{ form.first_name }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Last Name</label>
-          {{ form.last_name }}
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-      </form>
+<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center gap-4 mb-6">
+    <div class="w-12 h-12 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
     </div>
+    <div>
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">Account Settings</h1>
+      <p class="text-sm text-[var(--text-secondary)]">Manage your account details</p>
+    </div>
+  </div>
 
-    <div class="card">
-      <h3>Password</h3>
-      <p class="text-secondary">Want to change your password?</p>
-      <a href="{% url 'password_change' %}" class="btn btn-ghost">Change Password</a>
+  <div class="card-social-static p-6 mb-4">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 dark:bg-red-900/20 dark:border-red-800" role="alert">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% include "components/form_field.html" with field=form.first_name label="First Name" placeholder="John" %}
+        {% include "components/form_field.html" with field=form.last_name label="Last Name" placeholder="Doe" %}
+      </div>
+      {% include "components/form_field.html" with field=form.username label="Username" %}
+      {% include "components/form_field.html" with field=form.email type="email" label="Email" placeholder="you@example.com" %}
+
+      <div class="pt-2">
+        <button type="submit" class="btn-brand">Save Changes</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card-social-static p-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-semibold text-[var(--text-primary)]">Password</h3>
+          <p class="text-sm text-[var(--text-secondary)]">Want to change your password?</p>
+        </div>
+      </div>
+      <a href="{% url 'password_change' %}" class="btn-ghost-social border border-[var(--border-light)]">Change Password</a>
     </div>
+  </div>
+
+  <div class="mt-6 flex items-center gap-4">
+    <a href="{% url 'accounts:privacy_settings' %}" class="flex-1 card-social-static p-4 text-center hover:shadow-card-hover transition-shadow no-underline">
+      <svg class="w-6 h-6 mx-auto mb-2 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      <span class="text-sm font-medium text-[var(--text-primary)]">Privacy</span>
+    </a>
+    <a href="{% url 'accounts:security_settings' %}" class="flex-1 card-social-static p-4 text-center hover:shadow-card-hover transition-shadow no-underline">
+      <svg class="w-6 h-6 mx-auto mb-2 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+      <span class="text-sm font-medium text-[var(--text-primary)]">Security</span>
+    </a>
+    <a href="{% url 'accounts:profile_edit' username=user.username %}" class="flex-1 card-social-static p-4 text-center hover:shadow-card-hover transition-shadow no-underline">
+      <svg class="w-6 h-6 mx-auto mb-2 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+      <span class="text-sm font-medium text-[var(--text-primary)]">Profile</span>
+    </a>
   </div>
 </div>
 {% endblock %}

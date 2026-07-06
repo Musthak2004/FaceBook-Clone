@@ -1,0 +1,43 @@
+{% comment %}
+  Form field with label, input, and errors.
+  Usage: {% include "components/form_field.html" with field=form.username label="Username" %}
+         {% include "components/form_field.html" with field=form.email type="email" placeholder="you@example.com" %}
+
+  Parameters:
+    field       - Django form field (required)
+    label       - Label text (defaults to field.label)
+    type        - Input type (default: "text")
+    placeholder - Placeholder text (default: "")
+    help_text   - Help text below field (default: field.help_text)
+{% endcomment %}
+<div class="{% if class %}{{ class }}{% else %}mb-4{% endif %}">
+  {% if label or field.label %}
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+    {{ label|default:field.label }}
+  </label>
+  {% endif %}
+  {% if field.errors %}
+  <div class="mb-2 space-y-1">
+    {% for error in field.errors %}
+    <p class="text-xs text-red-500 flex items-center gap-1" role="alert">
+      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+      {{ error }}
+    </p>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if type == "textarea" %}
+    <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" rows="4" placeholder="{{ placeholder }}" {% if field.field.required %}required{% endif %}{% if field.value %}>{{ field.value }}{% else %}>{% endif %}</textarea>
+  {% elif type == "select" %}
+    <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" {% if field.field.required %}required{% endif %}>
+      {% for value, text in field.field.choices %}
+      <option value="{{ value }}"{% if field.value == value %} selected{% endif %}>{{ text }}</option>
+      {% endfor %}
+    </select>
+  {% else %}
+    <input type="{{ type|default:'text' }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" placeholder="{{ placeholder|default:'' }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %} autocomplete="{{ field.html_name }}">
+  {% endif %}
+  {% if help_text or field.help_text %}
+  <p class="text-xs text-[var(--text-muted)] mt-1">{{ help_text|default:field.help_text }}</p>
+  {% endif %}
+</div>

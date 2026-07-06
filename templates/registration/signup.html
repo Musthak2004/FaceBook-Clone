@@ -4,44 +4,53 @@
 {% block title %}Sign Up — SocialNet{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-  <div class="auth-container">
-    <div class="auth-header">
-      <div class="auth-logo">SocialNet</div>
-      <p>Create a new account</p>
-    </div>
-    <div class="auth-card">
-      <h2>Sign Up</h2>
-      <form method="post">
-        {% csrf_token %}
-        {% if form.errors %}
-        <div class="auth-errors">
-          <ul>
-            {% for field in form %}
-              {% for error in field.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            {% endfor %}
-          </ul>
-        </div>
-        {% endif %}
-        <div class="form-group">
-          <input type="text" name="username" class="form-input" placeholder="Username" required>
-        </div>
-        <div class="form-group">
-          <input type="email" name="email" class="form-input" placeholder="Email" required>
-        </div>
-        <div class="form-group">
-          <input type="password" name="password1" class="form-input" placeholder="Password" required>
-        </div>
-        <div class="form-group">
-          <input type="password" name="password2" class="form-input" placeholder="Confirm password" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block btn-lg">Sign Up</button>
-      </form>
-      <div class="auth-footer">
-        Already have an account? <a href="{% url 'login' %}">Log In</a>
+<div class="auth-page-bg">
+  <div class="auth-card-social">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl brand-gradient flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-500/20">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+        </svg>
       </div>
+      <h1 class="text-2xl font-extrabold brand-text">SocialNet</h1>
+      <p class="text-sm text-[var(--text-muted)] mt-1">Join the community</p>
+    </div>
+    <h2 class="text-xl font-bold text-[var(--text-primary)] mb-6">Create your account</h2>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+        <ul class="list-disc list-inside text-sm text-red-600 dark:text-red-400 space-y-1">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Username</label>
+        <input type="text" name="username" class="input-brand" placeholder="Choose a username" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Email</label>
+        <input type="email" name="email" class="input-brand" placeholder="Enter your email" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Password</label>
+        <input type="password" name="password1" class="input-brand" placeholder="Create a strong password" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Confirm Password</label>
+        <input type="password" name="password2" class="input-brand" placeholder="Confirm your password" required>
+      </div>
+      <button type="submit" class="btn-brand w-full py-3 text-base">Sign Up</button>
+    </form>
+    <div class="text-center mt-6">
+      <p class="text-sm text-[var(--text-muted)]">
+        Already have an account? <a href="{% url 'login' %}" class="text-brand-600 hover:text-brand-700 font-medium hover:underline">Log In</a>
+      </p>
     </div>
   </div>
 </div>

@@ -3,13 +3,21 @@
 {% block title %}Email Verified — SocialNet{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-  <div class="auth-container">
-    <div class="auth-card text-center">
-      <h2>✅ Email Verified</h2>
-      <p>Your email has been verified. You can now use all features of SocialNet.</p>
-      <a href="{% url 'core:home' %}" class="btn btn-primary mt-4">Go to Home</a>
+<div class="min-h-[70vh] flex items-center justify-center px-4 page-enter">
+  <div class="card-social-static p-8 text-center max-w-md w-full">
+    <div class="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
     </div>
+    <h1 class="text-xl font-bold text-[var(--text-primary)] mb-2">Email Verified</h1>
+    <p class="text-sm text-[var(--text-secondary)] mb-6">Your email has been verified. You can now use all features of SocialNet.</p>
+    <a href="{% url 'core:home' %}" class="btn-brand inline-flex items-center justify-center px-6">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+      Go to Home
+    </a>
   </div>
 </div>
 {% endblock %}

@@ -4,38 +4,47 @@
 {% block title %}Friend Requests — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <div class="card mb-4">
-      <h2>Friend Requests</h2>
-      <p class="text-secondary">People who want to connect with you</p>
+<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center gap-4 mb-6">
+    <div class="w-12 h-12 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+      </svg>
     </div>
+    <div>
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">Friend Requests</h1>
+      <p class="text-sm text-[var(--text-secondary)]">People who want to connect with you</p>
+    </div>
+  </div>
 
+  <div class="space-y-3 stagger-container">
     {% for request in requests %}
-    <div class="friend-request-card card flex items-center justify-between">
+    <div class="card-social-static p-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        {% if request.from_user.profile_picture %}
-        <img src="{{ request.from_user.profile_picture.url }}" alt="" class="avatar avatar-lg">
-        {% else %}
-        <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-lg">
-        {% endif %}
+        <a href="{% url 'accounts:profile' username=request.from_user.username %}">
+          {% if request.from_user.profile_picture %}
+          <img src="{{ request.from_user.profile_picture.url }}" alt="" class="w-12 h-12 rounded-full object-cover border-2 border-[var(--border-light)]">
+          {% else %}
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-12 h-12 rounded-full object-cover bg-[var(--surface-tertiary)] border-2 border-[var(--border-light)]">
+          {% endif %}
+        </a>
         <div>
-          <a href="{% url 'accounts:profile' username=request.from_user.username %}" class="post-author-name">
+          <a href="{% url 'accounts:profile' username=request.from_user.username %}" class="font-semibold text-[var(--text-primary)] hover:text-brand-600 dark:hover:text-brand-400 no-underline">
             {{ request.from_user.get_full_name|default:request.from_user.username }}
           </a>
-          <p class="text-muted" style="font-size:var(--font-size-sm);">{{ request.from_user.friend_count }} mutual friends</p>
+          {% if request.from_user.friend_count %}
+          <p class="text-xs text-[var(--text-muted)] mt-0.5">{{ request.from_user.friend_count }} mutual friend{{ request.from_user.friend_count|pluralize }}</p>
+          {% endif %}
         </div>
       </div>
-      <div class="flex gap-2">
-        <button class="btn btn-primary" onclick="acceptRequest({{ request.id }})">Confirm</button>
-        <button class="btn btn-ghost" onclick="rejectRequest({{ request.id }})">Delete</button>
+      <div class="flex items-center gap-2">
+        <button class="btn-brand btn-brand-sm" onclick="acceptRequest({{ request.id }})">Confirm</button>
+        <button class="btn-ghost-social border border-[var(--border-light)] text-sm !px-3 !py-1.5" onclick="rejectRequest({{ request.id }})">Delete</button>
       </div>
     </div>
     {% empty %}
-    <div class="empty-state">
-      <div class="empty-state-icon">&#128101;</div>
-      <h3>No friend requests</h3>
-      <p>When someone sends you a friend request, it will appear here.</p>
+    <div class="card-social-static">
+      {% include "components/empty_state.html" with icon="users" title="No friend requests" description="When someone sends you a friend request, it will appear here." %}
     </div>
     {% endfor %}
   </div>
@@ -45,25 +54,26 @@
 {% block extra_js %}
 <script>
 function acceptRequest(requestId) {
+  var btn = event.target.closest('button');
+  if (btn) { btn.classList.add('btn-loading'); btn.disabled = true; }
   fetch('/friends/requests/accept/' + requestId + '/', {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.accepted) location.reload();
-  });
+  .then(function(r){return r.json()})
+  .then(function(d){if(d.accepted) location.reload(); else if(btn){btn.classList.remove('btn-loading');btn.disabled=false;}})
+  .catch(function(){if(btn){btn.classList.remove('btn-loading');btn.disabled=false;}});
 }
-
 function rejectRequest(requestId) {
+  var btn = event.target.closest('button');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
   fetch('/friends/requests/reject/' + requestId + '/', {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.rejected) location.reload();
-  });
+  .then(function(r){return r.json()})
+  .then(function(d){if(d.rejected) location.reload(); else if(btn){btn.disabled=false;btn.textContent='Delete';}})
+  .catch(function(){if(btn){btn.disabled=false;btn.textContent='Delete';}});
 }
 </script>
 {% endblock %}

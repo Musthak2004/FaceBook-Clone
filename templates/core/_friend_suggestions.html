@@ -1,35 +1,37 @@
-<div class="suggestions-card">
-  <div class="suggestions-header">
-    <h3>People You May Know</h3>
-    <a href="{% url 'friendships:suggestions' %}" class="suggestions-see-all">See All</a>
+<div class="sidebar-card">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="font-semibold text-[var(--text-primary)] text-[15px]">People You May Know</h3>
+    <a href="{% url 'friendships:suggestions' %}" class="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors no-underline hover:underline">See All</a>
   </div>
-  <div class="suggestions-list">
+  <div class="space-y-1">
     {% for suggestion in friend_suggestions %}
-    <div class="suggestion-item" data-user-id="{{ suggestion.id }}">
-      <div class="suggestion-avatar">
+    <div class="suggestion-item-social" data-user-id="{{ suggestion.id }}">
+      <div class="flex-shrink-0">
         {% if suggestion.profile_picture %}
-        <img src="{{ suggestion.profile_picture.url }}" alt="{{ suggestion.username }}" class="avatar">
+        <img src="{{ suggestion.profile_picture.url }}" alt="{{ suggestion.username }}" class="w-10 h-10 rounded-full object-cover">
         {% else %}
-        <img src="/static/images/default-avatar.svg" alt="{{ suggestion.username }}" class="avatar">
+        <img src="/static/images/default-avatar.svg" alt="{{ suggestion.username }}" class="w-10 h-10 rounded-full object-cover">
         {% endif %}
       </div>
-      <div class="suggestion-info">
-        <a href="{% url 'accounts:profile' username=suggestion.username %}" class="suggestion-name">
+      <div class="flex-1 min-w-0">
+        <a href="{% url 'accounts:profile' username=suggestion.username %}" class="text-sm font-medium text-[var(--text-primary)] hover:underline no-underline block truncate">
           {{ suggestion.get_full_name|default:suggestion.username }}
         </a>
         {% if suggestion.mutual_count > 0 %}
-        <span class="suggestion-mutual">{{ suggestion.mutual_count }} mutual friend{{ suggestion.mutual_count|pluralize }}</span>
+        <span class="text-xs text-[var(--text-muted)]">{{ suggestion.mutual_count }} mutual friend{{ suggestion.mutual_count|pluralize }}</span>
         {% else %}
-        <span class="suggestion-mutual">{{ suggestion.location|default:"" }}</span>
+        <span class="text-xs text-[var(--text-muted)]">{{ suggestion.location|default:"" }}</span>
         {% endif %}
       </div>
-      <button class="btn btn-sm btn-primary add-friend-btn" data-user-id="{{ suggestion.id }}">
-        + Add
+      <button class="btn-brand-sm add-friend-btn" data-user-id="{{ suggestion.id }}">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add
       </button>
     </div>
     {% empty %}
-    <div class="suggestion-empty">
-      <p class="text-muted">No suggestions right now.</p>
+    <div class="text-center py-6">
+      <svg class="w-8 h-8 mx-auto mb-2 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <p class="text-sm text-[var(--text-muted)]">No suggestions right now.</p>
     </div>
     {% endfor %}
   </div>

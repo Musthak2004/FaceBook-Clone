@@ -1,0 +1,21 @@
+{% comment %}
+  Badge / chip component.
+  Usage: {% include "components/badge.html" with text="New" %}
+         {% include "components/badge.html" with text="Admin" type="success" size="sm" %}
+
+  Parameters:
+    text  - Badge text (required)
+    type  - "default" | "success" | "warning" | "error" | "brand" (default: "default")
+    size  - "sm" | "md" | "lg" (default: "sm")
+{% endcomment %}
+<span class="inline-flex items-center font-medium rounded-full
+  {% if size == 'lg' %}px-3 py-1 text-sm{% elif size == 'md' %}px-2.5 py-0.5 text-xs{% else %}px-2 py-0.5 text-[11px]{% endif %}
+  {% if type == 'success' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400
+  {% elif type == 'warning' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
+  {% elif type == 'error' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
+  {% elif type == 'brand' %}bg-[var(--brand-from)]/10 text-[var(--brand-from)] dark:text-[var(--brand-to)] font-semibold
+  {% else %}bg-[var(--surface-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--surface-tertiary)] dark:text-[var(--text-secondary)]
+  {% endif %}
+  {{ class }}">
+  {{ text }}
+</span>

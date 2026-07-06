@@ -4,47 +4,55 @@
 {% block title %}{{ profile_user.username }}'s Friends — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content">
-    <div class="card">
-      <h2>{{ profile_user.username }}'s Friends ({{ friends|length }})</h2>
+<div class="max-w-4xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center gap-4 mb-6">
+    <div class="w-12 h-12 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
     </div>
-    <div class="friend-list-grid">
-      {% for friend in friends %}
-      <div class="friend-card">
-        <a href="{% url 'accounts:profile' username=friend.username %}">
+    <div>
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">{{ profile_user.get_full_name|default:profile_user.username }}'s Friends</h1>
+      <p class="text-sm text-[var(--text-secondary)]">{{ friends|length }} friend{{ friends|length|pluralize }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 stagger-container">
+    {% for friend in friends %}
+    <div class="card-social-static p-4 text-center hover:shadow-card-hover transition-all active:scale-[0.98]">
+      <a href="{% url 'accounts:profile' username=friend.username %}" class="no-underline">
+        <div class="flex justify-center mb-3">
           {% if friend.profile_picture %}
-          <img src="{{ friend.profile_picture.url }}" alt="{{ friend.username }}">
+          <img src="{{ friend.profile_picture.url }}" alt="{{ friend.username }}" class="w-20 h-20 rounded-full object-cover border-2 border-[var(--border-light)]">
           {% else %}
-          <img src="{% static 'images/default-avatar.svg' %}" alt="{{ friend.username }}">
+          <img src="{% static 'images/default-avatar.svg' %}" alt="{{ friend.username }}" class="w-20 h-20 rounded-full object-cover bg-[var(--surface-tertiary)] border-2 border-[var(--border-light)]">
           {% endif %}
-        </a>
-        <a href="{% url 'accounts:profile' username=friend.username %}" class="friend-card-name">
-          {{ friend.get_full_name|default:friend.username }}
-        </a>
+        </div>
+        <h3 class="font-semibold text-[var(--text-primary)] hover:text-brand-600 dark:hover:text-brand-400 transition-colors">{{ friend.get_full_name|default:friend.username }}</h3>
         {% if friend.friend_count %}
-        <p class="friend-card-mutual">{{ friend.friend_count }} mutual friends</p>
+        <p class="text-xs text-[var(--text-muted)] mt-1">{{ friend.friend_count }} mutual friend{{ friend.friend_count|pluralize }}</p>
+        {% endif %}
+      </a>
+      {% if user != friend %}
+      <div class="mt-3">
+        {% if user in friend.friends.all %}
+        <span class="inline-flex items-center gap-1 text-xs font-medium text-[var(--accent-green)]">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Friends
+        </span>
         {% endif %}
       </div>
-      {% empty %}
-      <div class="empty-state" style="grid-column:1/-1;">
-        <h3>No friends yet</h3>
-        <p>When {{ profile_user.username }} makes friends, they'll appear here.</p>
-      </div>
-      {% endfor %}
-    </div>
-
-    {% if is_paginated %}
-    <div class="pagination">
-      {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
-      {% endif %}
-      <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
       {% endif %}
     </div>
-    {% endif %}
+    {% empty %}
+    <div class="col-span-full">
+      {% include "components/empty_state.html" with icon="users" title="No friends yet" description="When "|add:profile_user.username|add:" makes friends, they'll appear here." %}
+    </div>
+    {% endfor %}
   </div>
+
+  {% include "components/pagination.html" with page_obj=page_obj %}
 </div>
 {% endblock %}

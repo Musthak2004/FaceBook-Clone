@@ -4,140 +4,205 @@
 {% block title %}Post — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:600px;">
-    <div class="post-detail-card">
-      <div class="post-header">
-        <div class="post-author">
+<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
+  <!-- Back link -->
+  <a href="javascript:history.back()" class="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] no-underline mb-4">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Back
+  </a>
+
+  <!-- Post Card -->
+  <div class="card-social-static overflow-hidden">
+    <!-- Post Header -->
+    <div class="flex items-center justify-between px-5 pt-5 pb-3">
+      <div class="flex items-center gap-3">
+        <a href="{% url 'accounts:profile' username=post.author.username %}">
           {% if post.author.profile_picture %}
-          <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
+          <img src="{{ post.author.profile_picture.url }}" alt="" class="w-10 h-10 rounded-full object-cover border-2 border-[var(--border-light)]">
           {% else %}
-          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-10 h-10 rounded-full object-cover bg-[var(--surface-tertiary)] border-2 border-[var(--border-light)]">
           {% endif %}
-          <div class="post-author-info">
-            <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
-              {{ post.author.get_full_name|default:post.author.username }}
-            </a>
-            <span class="post-time">{{ post.created_at|timesince }} ago</span>
-          </div>
-        </div>
-        {% if post.author == user %}
-        <div class="dropdown">
-          <button class="btn-icon dropdown-toggle">&#8942;</button>
-          <div class="dropdown-menu">
-            <a href="{% url 'posts:post_update' pk=post.pk %}" class="dropdown-item">&#9998; Edit</a>
-            <a href="{% url 'posts:post_delete' pk=post.pk %}" class="dropdown-item" style="color:var(--danger);">
-              &#128465; Delete
-            </a>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-      <div class="post-body">
-        <p class="post-content" style="font-size:var(--font-size-lg);">{{ post.content|post_render }}</p>
-      </div>
-      {% if post.shared_post %}
-      <div class="shared-post-embed">
-        <div class="shared-post-header">
-          <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}">
-            <strong>{{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}</strong>
+        </a>
+        <div>
+          <a href="{% url 'accounts:profile' username=post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] hover:text-brand-600 no-underline">
+            {{ post.author.get_full_name|default:post.author.username }}
           </a>
-          <span class="post-time">{{ post.shared_post.created_at|timesince }} ago</span>
+          <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|timesince }} ago</p>
         </div>
-        <p class="shared-post-content">{{ post.shared_post.content|post_render }}</p>
-        {% if post.shared_post.images.all %}
-        <div class="post-images" data-images-count="{{ post.shared_post.images.all|length }}">
-          {% for img in post.shared_post.images.all %}
-          <img src="{{ img.image.url }}" alt="Post image"
-               class="gallery-image"
-               data-gallery-id="shared-{{ post.shared_post.id }}"
-               data-index="{{ forloop.counter0 }}">
-          {% endfor %}
+      </div>
+      {% if post.author == user %}
+      <div class="relative dropdown">
+        <button class="flex items-center justify-center w-8 h-8 rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] transition-colors dropdown-toggle" aria-label="Post options">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu hidden right-0">
+          <a href="{% url 'posts:post_update' pk=post.pk %}" class="dropdown-item">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Edit
+          </a>
+          <a href="{% url 'posts:post_delete' pk=post.pk %}" class="dropdown-item text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete
+          </a>
         </div>
-        {% endif %}
       </div>
       {% endif %}
-      {% if post.images.all %}
-      <div class="post-images" data-images-count="{{ post.images.all|length }}">
-        {% for img in post.images.all %}
-        <img src="{{ img.image.url }}" alt="Post image"
-             class="gallery-image"
-             data-gallery-id="{{ post.id }}"
-             data-index="{{ forloop.counter0 }}">
+    </div>
+
+    <!-- Post Content -->
+    <div class="px-5 pb-3">
+      <p class="text-[var(--text-primary)] leading-relaxed">{{ post.content|post_render }}</p>
+    </div>
+
+    <!-- Shared Post -->
+    {% if post.shared_post %}
+    <div class="mx-5 mb-3 p-4 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-light)]">
+      <div class="flex items-center gap-2 mb-2">
+        <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] no-underline hover:text-brand-600">
+          {{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}
+        </a>
+        <span class="text-xs text-[var(--text-muted)]">{{ post.shared_post.created_at|timesince }} ago</span>
+      </div>
+      <p class="text-sm text-[var(--text-secondary)]">{{ post.shared_post.content|post_render }}</p>
+      {% if post.shared_post.images.all %}
+      <div class="photo-grid-social mt-2" data-images-count="{{ post.shared_post.images.all|length }}">
+        {% for img in post.shared_post.images.all %}
+        <img src="{{ img.image.url }}" alt="Post image" loading="lazy" class="gallery-image" data-gallery-id="shared-{{ post.shared_post.id }}" data-index="{{ forloop.counter0 }}">
         {% endfor %}
       </div>
       {% endif %}
-      {% with poll=post.poll %}
-        {% if poll %}
-          {% include "posts/_poll.html" with poll=poll already_voted=user_voted %}
-        {% endif %}
-      {% endwith %}
-      <div class="post-stats">
-        <span>{{ post.total_likes }} reactions</span>
-        <span>{{ post.total_comments }} comments</span>
-      </div>
-      <div class="post-actions">
-        <button class="post-action post-action-like" data-post-id="{{ post.id }}">
-          &#128147; <span class="like-count">{{ post.total_likes }}</span>
-        </button>
-        <button class="post-action post-action-save" data-post-id="{{ post.id }}">
-          &#128190; Save
-        </button>
-        <button class="post-action share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
-          &#128257; Share
-        </button>
-      </div>
+    </div>
+    {% endif %}
 
-      <!-- Comments -->
-      <div class="comment-section">
-        <form class="comment-form" data-post-id="{{ post.id }}" method="post">
-          {% csrf_token %}
+    <!-- Post Images -->
+    {% if post.images.all %}
+    <div class="px-5 mb-3">
+      <div class="photo-grid-social" data-images-count="{{ post.images.all|length }}">
+        {% for img in post.images.all %}
+        <img src="{{ img.image.url }}" alt="Post image" loading="lazy" class="gallery-image cursor-pointer" data-gallery-id="{{ post.id }}" data-index="{{ forloop.counter0 }}">
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Poll -->
+    {% with poll=post.poll %}
+      {% if poll %}
+        {% include "posts/_poll.html" with poll=poll already_voted=user_voted %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="post-stats-bar mb-0 border-t-0">
+      <div class="flex items-center gap-1.5">
+        <span class="flex items-center justify-center w-5 h-5 rounded-full brand-gradient text-white text-[10px] font-bold">&#9829;</span>
+        <span>{{ post.total_likes }}</span>
+      </div>
+      <span>{{ post.total_comments }} comment{{ post.total_comments|pluralize }}</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center border-t border-[var(--border-light)] px-1 py-0.5 press-feedback-sm">
+      <button class="post-action-btn flex-1 justify-center post-action-like{% if user in post.reactions.all %} liked{% endif %}" data-post-id="{{ post.id }}">
+        <svg class="w-5 h-5" fill="{% if user in post.reactions.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <span class="like-count">{{ post.total_likes }}</span>
+      </button>
+      <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action-btn flex-1 justify-center no-underline hover:no-underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        Comment
+      </a>
+      <button class="post-action-btn flex-1 justify-center post-action-save" data-post-id="{{ post.id }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+        </svg>
+        Save
+      </button>
+      <button class="post-action-btn flex-1 justify-center share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+        </svg>
+        Share
+      </button>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="border-t border-[var(--border-light)] px-5 py-4">
+      <!-- Comment Form -->
+      <form class="comment-form flex items-center gap-3 mb-4" data-post-id="{{ post.id }}" method="post">
+        {% csrf_token %}
+        <div class="flex-shrink-0">
           {% if user.profile_picture %}
-          <img src="{{ user.profile_picture.url }}" alt="" class="avatar avatar-sm">
+          <img src="{{ user.profile_picture.url }}" alt="" class="w-8 h-8 rounded-full object-cover">
           {% else %}
-          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
+          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-8 h-8 rounded-full object-cover bg-[var(--surface-tertiary)]">
           {% endif %}
-          <input type="text" name="content" placeholder="Write a comment..." required>
-        </form>
-
-        <div class="post-comments" data-post-id="{{ post.id }}">
-          {% for comment in comments %}
-          <div class="comment-item">
-            {% if comment.author.profile_picture %}
-            <img src="{{ comment.author.profile_picture.url }}" alt="" class="avatar avatar-sm">
-            {% else %}
-            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
-            {% endif %}
-            <div class="comment-content">
-              <div class="comment-author">{{ comment.author.username }}</div>
-              <div class="comment-text">{{ comment.content|post_render }}</div>
-              <div class="comment-actions">
-                <span>{{ comment.created_at|timesince }} ago</span>
-                {% if comment.author == user %}
-                <button onclick="deleteComment({{ comment.id }})">Delete</button>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-          {% for reply in comment.replies.all %}
-          <div class="comment-item" style="margin-left:48px;">
-            {% if reply.author.profile_picture %}
-            <img src="{{ reply.author.profile_picture.url }}" alt="" class="avatar avatar-sm">
-            {% else %}
-            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-sm">
-            {% endif %}
-            <div class="comment-content">
-              <div class="comment-author">{{ reply.author.username }}</div>
-              <div class="comment-text">{{ reply.content|post_render }}</div>
-              <div class="comment-actions">
-                <span>{{ reply.created_at|timesince }} ago</span>
-              </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-          {% endfor %}
         </div>
+        <div class="flex-1 relative">
+          <input type="text" name="content" class="input-brand !rounded-full !py-2.5 !text-sm" placeholder="Write a comment..." required>
+          <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors" aria-label="Send comment">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Comments List -->
+      <div class="post-comments space-y-4" data-post-id="{{ post.id }}">
+        {% for comment in comments %}
+        <div class="flex gap-3">
+          <a href="{% url 'accounts:profile' username=comment.author.username %}" class="flex-shrink-0">
+            {% if comment.author.profile_picture %}
+            <img src="{{ comment.author.profile_picture.url }}" alt="" class="w-8 h-8 rounded-full object-cover">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-8 h-8 rounded-full object-cover bg-[var(--surface-tertiary)]">
+            {% endif %}
+          </a>
+          <div class="flex-1 min-w-0">
+            <div class="bg-[var(--surface-secondary)] rounded-2xl px-4 py-2.5">
+              <a href="{% url 'accounts:profile' username=comment.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] no-underline hover:underline">{{ comment.author.username }}</a>
+              <p class="text-sm text-[var(--text-primary)] mt-0.5">{{ comment.content|post_render }}</p>
+            </div>
+            <div class="flex items-center gap-3 mt-1 ml-2">
+              <span class="text-xs text-[var(--text-muted)]">{{ comment.created_at|timesince }} ago</span>
+              {% if comment.author == user %}
+              <button onclick="deleteComment({{ comment.id }})" class="text-xs text-red-500 hover:text-red-600">Delete</button>
+              {% endif %}
+            </div>
+            <!-- Replies -->
+            {% for reply in comment.replies.all %}
+            <div class="flex gap-3 mt-3 ml-4">
+              <a href="{% url 'accounts:profile' username=reply.author.username %}" class="flex-shrink-0">
+                {% if reply.author.profile_picture %}
+                <img src="{{ reply.author.profile_picture.url }}" alt="" class="w-7 h-7 rounded-full object-cover">
+                {% else %}
+                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-7 h-7 rounded-full object-cover bg-[var(--surface-tertiary)]">
+                {% endif %}
+              </a>
+              <div class="flex-1 min-w-0">
+                <div class="bg-[var(--surface-secondary)] rounded-2xl px-4 py-2.5">
+                  <a href="{% url 'accounts:profile' username=reply.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] no-underline hover:underline">{{ reply.author.username }}</a>
+                  <p class="text-sm text-[var(--text-primary)] mt-0.5">{{ reply.content|post_render }}</p>
+                </div>
+                <div class="flex items-center gap-3 mt-1 ml-2">
+                  <span class="text-xs text-[var(--text-muted)]">{{ reply.created_at|timesince }} ago</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-[var(--text-muted)] text-center py-4">No comments yet. Be the first to comment!</p>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -150,12 +215,10 @@ function deleteComment(commentId) {
   if (!confirm('Delete this comment?')) return;
   fetch('/comments/' + commentId + '/delete/', {
     method: 'POST',
-    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.deleted) location.reload();
-  });
+  .then(function(r){return r.json()})
+  .then(function(d){if(d.deleted) location.reload();});
 }
 </script>
 {% endblock %}

@@ -4,199 +4,258 @@
 {% block title %}{{ profile_user.username }} — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content">
-    <div class="profile-container">
-      <!-- Cover Photo -->
-      <div class="profile-cover">
-        {% if profile_user.cover_photo %}
-        <img src="{{ profile_user.cover_photo.url }}" alt="Cover" class="profile-cover-image">
-        {% else %}
-        <div class="profile-cover-empty"></div>
-        {% endif %}
+<div class="max-w-5xl mx-auto px-4 pt-4">
+  <div class="card-social-static overflow-hidden">
 
-        <div class="profile-info-row">
-          <div class="profile-avatar-wrapper online-indicator" data-user-id="{{ profile_user.id }}">
+    <!-- Cover Photo -->
+    <div class="profile-cover-wrapper">
+      {% if profile_user.cover_photo %}
+      <img src="{{ profile_user.cover_photo.url }}" alt="Cover" loading="lazy" class="w-full h-full object-cover">
+      {% else %}
+      <div class="w-full h-full bg-gradient-to-r from-brand-600 to-[var(--brand-to)] opacity-60"></div>
+      {% endif %}
+      <div class="profile-cover-gradient"></div>
+
+      <div class="profile-avatar-container">
+        <div class="profile-avatar-ring">
+          <div class="relative inline-block online-indicator" data-user-id="{{ profile_user.id }}">
             {% if profile_user.profile_picture %}
             <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}"
-                 class="profile-avatar-img">
+                 class="w-[168px] h-[168px] rounded-full object-cover md:w-[168px] md:h-[168px]">
             {% else %}
             <img src="{% static 'images/default-avatar.svg' %}" alt="{{ profile_user.username }}"
-                 class="profile-avatar-img">
+                 class="w-[168px] h-[168px] rounded-full object-cover md:w-[168px] md:h-[168px]">
             {% endif %}
-            <span class="online-dot{% if not profile_user.is_online %} offline{% endif %}"></span>
-          </div>
-          <div class="profile-details">
-            <h1 class="profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
-            <span class="profile-friend-count">{{ profile_user.friend_count }} friends</span>
-          </div>
-          <div class="profile-actions">
-            {% if is_own_profile %}
-            <a href="{% url 'accounts:profile_edit' username=user.username %}" class="btn btn-ghost">
-              &#9998; Edit Profile
-            </a>
-            {% elif friendship_status == 'none' %}
-            <button class="btn btn-primary" onclick="sendFriendRequest({{ profile_user.id }})">
-              &#10133; Add Friend
-            </button>
-            {% elif friendship_status == 'pending' %}
-            <button class="btn btn-ghost" disabled>&#9203; Request Sent</button>
-            {% elif friendship_status == 'accepted' %}
-            <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="btn btn-ghost">
-              &#128101; Friends
-            </a>
-            {% endif %}
-            {% if not is_own_profile %}
-            <button class="btn btn-ghost text-danger" onclick="blockUser({{ profile_user.id }})" style="color:var(--danger);">
-              &#128683; Block
-            </button>
-            {% endif %}
+            <span class="online-dot-social{% if not profile_user.is_online %} offline{% endif %} !w-5 !h-5 !border-[3px]"></span>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="profile-tabs">
-          <a href="{% url 'accounts:profile' username=profile_user.username %}" class="profile-tab active">Posts</a>
-          <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="profile-tab">Friends</a>
+    <!-- Profile Info & Actions -->
+    <div class="pt-[72px] pb-4 px-6 md:pl-[220px] md:pt-4 md:pb-4 md:pr-6 relative" style="min-height:80px;">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+          <span class="text-sm text-[var(--text-muted)]">{{ profile_user.friend_count }} friends</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          {% if is_own_profile %}
+          <a href="{% url 'accounts:profile_edit' username=user.username %}" class="btn-ghost-social border border-[var(--border-light)]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            Edit Profile
+          </a>
+          {% elif friendship_status == 'none' %}
+          <button class="btn-brand" onclick="sendFriendRequest({{ profile_user.id }})">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Friend
+          </button>
+          {% elif friendship_status == 'pending' %}
+          <button class="btn-ghost-social border border-[var(--border-light)]" disabled>
+            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Request Sent
+          </button>
+          {% elif friendship_status == 'accepted' %}
+          <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="btn-ghost-social border border-[var(--border-light)]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Friends
+          </a>
+          {% endif %}
+          {% if not is_own_profile %}
+          <button class="btn-danger-social" onclick="blockUser({{ profile_user.id }})">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            Block
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Tabs -->
+    <div class="border-t border-[var(--border-light)] px-6">
+      <div class="flex gap-0 -mb-px">
+        <a href="{% url 'accounts:profile' username=profile_user.username %}" class="profile-tab-social active">Posts</a>
+        <a href="{% url 'accounts:friend_list' username=profile_user.username %}" class="profile-tab-social">Friends</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Content: Two columns -->
+  <div class="flex flex-col md:flex-row gap-6 mt-6 items-start">
+
+    <!-- Left Column: Intro -->
+    <div class="w-full md:w-[360px] flex-shrink-0 space-y-4">
+      <div class="card-social-static p-4">
+        <h3 class="font-bold text-lg text-[var(--text-primary)] mb-3">Intro</h3>
+        <div class="space-y-3">
+          {% if profile_user.bio %}
+          <p class="text-sm text-[var(--text-primary)] leading-relaxed">{{ profile_user.bio }}</p>
+          {% endif %}
+          {% if profile_user.education %}
+          <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <svg class="w-5 h-5 flex-shrink-0 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+            <span>{{ profile_user.education }}</span>
+          </div>
+          {% endif %}
+          {% if profile_user.work %}
+          <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <svg class="w-5 h-5 flex-shrink-0 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span>{{ profile_user.work }}</span>
+          </div>
+          {% endif %}
+          {% if profile_user.location %}
+          <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <svg class="w-5 h-5 flex-shrink-0 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>{{ profile_user.location }}</span>
+          </div>
+          {% endif %}
+          {% if profile_user.website %}
+          <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <svg class="w-5 h-5 flex-shrink-0 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+            <a href="{{ profile_user.website }}" target="_blank" class="text-brand-600 hover:underline truncate">{{ profile_user.website }}</a>
+          </div>
+          {% endif %}
+          <div class="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <svg class="w-5 h-5 flex-shrink-0 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Joined {{ profile_user.date_joined|date:"F Y" }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Profile Content -->
-      <div class="profile-content">
-        <!-- Left Column: Intro -->
-        <div>
-          <div class="profile-intro">
-            <h3>Intro</h3>
-            {% if profile_user.bio %}
-            <p>{{ profile_user.bio }}</p>
-            {% endif %}
-            {% if profile_user.education %}
-            <div class="profile-intro-item">
-              <span class="intro-icon">&#127891;</span>
-              <span>{{ profile_user.education }}</span>
-            </div>
-            {% endif %}
-            {% if profile_user.work %}
-            <div class="profile-intro-item">
-              <span class="intro-icon">&#128188;</span>
-              <span>{{ profile_user.work }}</span>
-            </div>
-            {% endif %}
-            {% if profile_user.location %}
-            <div class="profile-intro-item">
-              <span class="intro-icon">&#128205;</span>
-              <span>{{ profile_user.location }}</span>
-            </div>
-            {% endif %}
-            {% if profile_user.website %}
-            <div class="profile-intro-item">
-              <span class="intro-icon">&#127760;</span>
-              <a href="{{ profile_user.website }}" target="_blank">{{ profile_user.website }}</a>
-            </div>
-            {% endif %}
-            <div class="profile-intro-item">
-              <span class="intro-icon">&#128197;</span>
-              <span>Joined {{ profile_user.date_joined|date:"F Y" }}</span>
-            </div>
-          </div>
-
-          <div class="profile-intro mt-4">
-            <h3>Photos</h3>
-            <div class="profile-photos-grid">
-              {% for post in posts %}
-                {% if post.images.all %}
-                  {% for img in post.images.all|slice:":3" %}
-                  <img src="{{ img.image.url }}" alt="Photo">
-                  {% endfor %}
-                {% endif %}
-              {% empty %}
-                <p style="grid-column:span 3;color:var(--text-muted);">No photos yet</p>
+      <div class="card-social-static p-4">
+        <h3 class="font-bold text-lg text-[var(--text-primary)] mb-3">Photos</h3>
+        {% if posts %}
+        <div class="photo-grid-social">
+          {% for post in posts %}
+            {% if post.images.all %}
+              {% for img in post.images.all|slice:":3" %}
+              <img src="{{ img.image.url }}" alt="Photo" loading="lazy" class="w-full aspect-square object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity">
               {% endfor %}
-            </div>
+            {% endif %}
+          {% empty %}
+            <p class="text-sm text-[var(--text-muted)] col-span-3">No photos yet</p>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-[var(--text-muted)]">No photos yet</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Posts -->
+    <div class="flex-1 min-w-0 space-y-4 stagger-container">
+      {% for post in posts %}
+      <div class="card-social overflow-hidden press-feedback">
+        <!-- Post Header -->
+        <div class="flex items-center gap-3 px-4 pt-4 pb-2">
+          <div class="relative">
+            {% if post.author.profile_picture %}
+            <img src="{{ post.author.profile_picture.url }}" alt="" class="w-10 h-10 rounded-full object-cover">
+            {% else %}
+            <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-10 h-10 rounded-full object-cover">
+            {% endif %}
+          </div>
+          <div>
+            <a href="{% url 'accounts:profile' username=post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline">
+              {{ post.author.get_full_name|default:post.author.username }}
+            </a>
+            <div class="text-xs text-[var(--text-muted)]">{{ post.created_at|timesince }} ago</div>
           </div>
         </div>
 
-        <!-- Right Column: Posts -->
-        <div>
-          {% for post in posts %}
-          <div class="post-card">
-            <div class="post-header">
-              <div class="post-author">
-                {% if post.author.profile_picture %}
-                <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
-                {% else %}
-                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
-                {% endif %}
-                <div class="post-author-info">
-                  <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
-                    {{ post.author.get_full_name|default:post.author.username }}
-                  </a>
-                  <span class="post-time">{{ post.created_at|timesince }} ago</span>
-                </div>
-              </div>
+        <!-- Post Content -->
+        <div class="px-4 py-2">
+          <p class="text-[var(--text-primary)] text-[15px] leading-relaxed">{{ post.content|post_render }}</p>
+        </div>
+
+        <!-- Shared Post -->
+        {% if post.shared_post %}
+        <div class="shared-embed">
+          <div class="flex items-center gap-2 mb-2">
+            <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline">
+              {{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}
+            </a>
+            <span class="text-xs text-[var(--text-muted)]">{{ post.shared_post.created_at|timesince }} ago</span>
+          </div>
+          <p class="text-sm text-[var(--text-secondary)]">{{ post.shared_post.content|post_render }}</p>
+          {% if post.shared_post.images.all %}
+          <div class="mt-2 rounded-lg overflow-hidden" data-images-count="{{ post.shared_post.images.all|length }}">
+            <div class="photo-grid-social">
+              {% for img in post.shared_post.images.all %}
+              <img src="{{ img.image.url }}" alt="Post image"
+                   class="gallery-image w-full h-full object-cover"
+                   data-gallery-id="shared-{{ post.shared_post.id }}"
+                   data-index="{{ forloop.counter0 }}">
+              {% endfor %}
             </div>
-            <div class="post-body">
-              <p class="post-content">{{ post.content }}</p>
-            </div>
-            {% if post.shared_post %}
-            <div class="shared-post-embed">
-              <div class="shared-post-header">
-                <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}">
-                  <strong>{{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}</strong>
-                </a>
-                <span class="post-time">{{ post.shared_post.created_at|timesince }} ago</span>
-              </div>
-              <p class="shared-post-content">{{ post.shared_post.content|post_render }}</p>
-              {% if post.shared_post.images.all %}
-              <div class="post-images" data-images-count="{{ post.shared_post.images.all|length }}">
-                {% for img in post.shared_post.images.all %}
-                <img src="{{ img.image.url }}" alt="Post image"
-                     class="gallery-image"
-                     data-gallery-id="shared-{{ post.shared_post.id }}"
-                     data-index="{{ forloop.counter0 }}">
-                {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-            {% endif %}
-            {% if post.images.all %}
-            <div class="post-images" data-images-count="{{ post.images.all|length }}">
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Images -->
+        {% if post.images.all %}
+        <div class="px-4 mb-2">
+          <div class="rounded-xl overflow-hidden" data-images-count="{{ post.images.all|length }}">
+            <div class="photo-grid-social">
               {% for img in post.images.all %}
               <img src="{{ img.image.url }}" alt="Post image"
-                   class="gallery-image"
+                   class="gallery-image w-full h-full object-cover"
                    data-gallery-id="{{ post.id }}"
                    data-index="{{ forloop.counter0 }}">
               {% endfor %}
             </div>
-            {% endif %}
-            <div class="post-stats">
-              <span>{{ post.total_likes }} reactions</span>
-              <span>{{ post.total_comments }} comments</span>
-            </div>
-            <div class="post-actions">
-              <button class="post-action post-action-like" data-post-id="{{ post.id }}">
-                &#128147; <span class="like-count">{{ post.total_likes }}</span>
-              </button>
-              <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action">
-                &#128172; Comment
-              </a>
-              <button class="post-action post-action-save" data-post-id="{{ post.id }}">
-                &#128190; Save
-              </button>
-              <button class="post-action share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
-                &#128257; Share
-              </button>
-            </div>
           </div>
-          {% empty %}
-          <div class="empty-state">
-            <div class="empty-state-icon">&#128221;</div>
-            <h3>No posts yet</h3>
-            <p>When {{ profile_user.username }} posts, you'll see it here.</p>
-          </div>
-          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="post-stats-bar">
+          <span>{{ post.total_likes }} reactions</span>
+          <span>{{ post.total_comments }} comments</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center border-t border-[var(--border-light)] px-1 py-0.5">
+          <button class="post-action-btn flex-1 justify-center post-action-like" data-post-id="{{ post.id }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <span class="like-count">{{ post.total_likes }}</span>
+          </button>
+          <a href="{% url 'posts:post_detail' pk=post.id %}" class="post-action-btn flex-1 justify-center no-underline hover:no-underline">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            Comment
+          </a>
+          <button class="post-action-btn flex-1 justify-center post-action-save" data-post-id="{{ post.id }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+            Save
+          </button>
+          <button class="post-action-btn flex-1 justify-center share-btn" data-post-id="{{ post.id }}" data-post-url="{{ post.get_absolute_url }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            Share
+          </button>
         </div>
       </div>
+      {% empty %}
+      <div class="empty-state-social">
+        <div class="empty-icon">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </div>
+        <h3>No posts yet</h3>
+        <p>When {{ profile_user.username }} posts, you'll see it here.</p>
+      </div>
+      {% endfor %}
     </div>
+
   </div>
 </div>
 {% endblock %}
@@ -211,6 +270,11 @@ function getCookie(name) {
 }
 
 function sendFriendRequest(userId) {
+  var btn = event.target.closest('button');
+  if (btn) {
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+  }
   fetch('/friends/requests/send/' + userId + '/', {
     method: 'POST',
     headers: { 'X-CSRFToken': getCookie('csrftoken') },
@@ -221,12 +285,21 @@ function sendFriendRequest(userId) {
       location.reload();
     } else {
       alert(data.error || 'Could not send request');
+      if (btn) { btn.classList.remove('btn-loading'); btn.disabled = false; }
     }
+  })
+  .catch(function() {
+    if (btn) { btn.classList.remove('btn-loading'); btn.disabled = false; }
   });
 }
 
 function blockUser(userId) {
   if (!confirm('Block this user? They will not be able to see your posts or interact with you.')) return;
+  var btn = event.target.closest('button');
+  if (btn) {
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+  }
   fetch('/friends/block/' + userId + '/', {
     method: 'POST',
     headers: { 'X-CSRFToken': getCookie('csrftoken') },
@@ -237,7 +310,11 @@ function blockUser(userId) {
       location.reload();
     } else {
       alert(data.error || 'Could not block user');
+      if (btn) { btn.classList.remove('btn-loading'); btn.disabled = false; }
     }
+  })
+  .catch(function() {
+    if (btn) { btn.classList.remove('btn-loading'); btn.disabled = false; }
   });
 }
 </script>

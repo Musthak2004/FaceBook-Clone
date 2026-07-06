@@ -4,103 +4,113 @@
 {% block title %}Search: {{ query }} — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content">
-    <div class="card mb-4">
-      <form method="get" action="{% url 'search:search_results' %}" class="search-form">
-        <div class="flex items-center gap-2">
-          <input type="text" name="q" class="form-input" value="{{ query }}" placeholder="Search SocialNet..."
-                 style="flex:1;">
-          <input type="hidden" name="type" value="{{ search_type }}">
-          <button type="submit" class="btn btn-primary">Search</button>
+<div class="max-w-3xl mx-auto px-4 py-8 page-enter">
+  <div class="card-social-static p-5 mb-6">
+    <form method="get" action="{% url 'search:search_results' %}" class="space-y-4">
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" name="q" class="input-brand !pl-10 w-full" value="{{ query }}" placeholder="Search SocialNet...">
         </div>
-      </form>
+        <input type="hidden" name="type" value="{{ search_type }}">
+        <button type="submit" class="btn-brand flex-shrink-0">Search</button>
+      </div>
       {% if query %}
-      <div class="search-tabs tabs mt-4">
-        <button class="tab {% if search_type == 'users' %}active{% endif %}" data-type="users">People</button>
-        <button class="tab {% if search_type == 'posts' %}active{% endif %}" data-type="posts">Posts</button>
+      <div class="flex items-center gap-1 bg-[var(--surface-secondary)] rounded-xl p-1 border border-[var(--border-light)]">
+        <button class="tab-search flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 {% if search_type == 'users' %}bg-[var(--surface-primary)] shadow-sm text-brand-600{% else %}text-[var(--text-secondary)] hover:text-[var(--text-primary)]{% endif %}" data-type="users">People</button>
+        <button class="tab-search flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 {% if search_type == 'posts' %}bg-[var(--surface-primary)] shadow-sm text-brand-600{% else %}text-[var(--text-secondary)] hover:text-[var(--text-primary)]{% endif %}" data-type="posts">Posts</button>
       </div>
       {% endif %}
-    </div>
+    </form>
+  </div>
 
-    {% if query %}
-    <div class="search-results">
-      {% if search_type == 'users' or search_type == 'all' %}
-        {% if user_results %}
-        <div class="card">
-          <h3 class="mb-4">People</h3>
+  {% if query %}
+  <div class="space-y-6">
+    {% if search_type == 'users' or search_type == 'all' %}
+      {% if user_results %}
+      <div class="card-social-static p-5">
+        <h3 class="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+          </svg>
+          People
+        </h3>
+        <div class="divide-y divide-[var(--border-light)]">
           {% for user_result in user_results %}
-          <div class="flex items-center justify-between p-2" style="border-bottom:1px solid var(--border-secondary);">
+          <div class="flex items-center justify-between py-3 first:pt-0 last:pb-0">
             <div class="flex items-center gap-3">
-              {% if user_result.profile_picture %}
-              <img src="{{ user_result.profile_picture.url }}" alt="" class="avatar avatar-lg">
-              {% else %}
-              <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar avatar-lg">
-              {% endif %}
+              <a href="{% url 'accounts:profile' username=user_result.username %}">
+                {% if user_result.profile_picture %}
+                <img src="{{ user_result.profile_picture.url }}" alt="" class="w-10 h-10 rounded-full object-cover border-2 border-[var(--border-light)]">
+                {% else %}
+                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-10 h-10 rounded-full object-cover bg-[var(--surface-tertiary)] border-2 border-[var(--border-light)]">
+                {% endif %}
+              </a>
               <div>
-                <a href="{% url 'accounts:profile' username=user_result.username %}" class="post-author-name">
+                <a href="{% url 'accounts:profile' username=user_result.username %}" class="font-medium text-[var(--text-primary)] hover:text-brand-600 dark:hover:text-brand-400 no-underline">
                   {{ user_result.get_full_name|default:user_result.username }}
                 </a>
-                <p class="text-muted" style="font-size:var(--font-size-sm);">{{ user_result.friend_count }} friends</p>
+                <p class="text-xs text-[var(--text-muted)]">{{ user_result.friend_count }} friend{{ user_result.friend_count|pluralize }}</p>
               </div>
             </div>
           </div>
           {% endfor %}
         </div>
-        {% endif %}
-      {% endif %}
-
-      {% if search_type == 'posts' or search_type == 'all' %}
-        {% if post_results %}
-        <div class="mt-4">
-          <h3 class="mb-4">Posts</h3>
-          {% for post in post_results %}
-          <div class="post-card">
-            <div class="post-header">
-              <div class="post-author">
-                {% if post.author.profile_picture %}
-                <img src="{{ post.author.profile_picture.url }}" alt="" class="avatar">
-                {% else %}
-                <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
-                {% endif %}
-                <div class="post-author-info">
-                  <a href="{% url 'accounts:profile' username=post.author.username %}" class="post-author-name">
-                    {{ post.author.get_full_name|default:post.author.username }}
-                  </a>
-                  <span class="post-time">{{ post.created_at|timesince }} ago</span>
-                </div>
-              </div>
-            </div>
-            <div class="post-body">
-              <a href="{% url 'posts:post_detail' pk=post.pk %}" style="color:inherit;">
-                <p class="post-content">{{ post.content|truncatewords:50 }}</p>
-              </a>
-            </div>
-            <div class="post-stats">
-              <span>{{ post.total_likes }} reactions</span>
-              <span>{{ post.total_comments }} comments</span>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-      {% endif %}
-
-      {% if not user_results and not post_results %}
-      <div class="empty-state">
-        <div class="empty-state-icon">&#128269;</div>
-        <h3>No results found</h3>
-        <p>We couldn't find anything for "{{ query }}". Try different keywords.</p>
       </div>
       {% endif %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <div class="empty-state-icon">&#128269;</div>
-      <h3>Search SocialNet</h3>
-      <p>Find people, posts, and more.</p>
+    {% endif %}
+
+    {% if search_type == 'posts' or search_type == 'all' %}
+      {% if post_results %}
+      <div>
+        <h3 class="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+          </svg>
+          Posts
+        </h3>
+        <div class="space-y-4">
+          {% for post in post_results %}
+          <div class="card-social-static p-4 hover:shadow-card-hover transition-all active:scale-[0.99]">
+            <div class="flex items-center gap-3 mb-3">
+              {% if post.author.profile_picture %}
+              <img src="{{ post.author.profile_picture.url }}" alt="" class="w-10 h-10 rounded-full object-cover">
+              {% else %}
+              <img src="{% static 'images/default-avatar.svg' %}" alt="" class="w-10 h-10 rounded-full object-cover bg-[var(--surface-tertiary)]">
+              {% endif %}
+              <div>
+                <a href="{% url 'accounts:profile' username=post.author.username %}" class="font-semibold text-sm text-[var(--text-primary)] hover:text-brand-600 no-underline">
+                  {{ post.author.get_full_name|default:post.author.username }}
+                </a>
+                <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|timesince }} ago</p>
+              </div>
+            </div>
+            <a href="{% url 'posts:post_detail' pk=post.pk %}" class="no-underline">
+              <p class="text-[var(--text-primary)] leading-relaxed">{{ post.content|truncatewords:50 }}</p>
+            </a>
+            <div class="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border-light)] text-xs text-[var(--text-muted)]">
+              <span>{{ post.total_likes }} reaction{{ post.total_likes|pluralize }}</span>
+              <span>{{ post.total_comments }} comment{{ post.total_comments|pluralize }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
+
+    {% if not user_results and not post_results %}
+    <div class="card-social-static">
+      {% include "components/empty_state.html" with icon="search" title="No results found" description='We couldn\'t find anything for "'|add:query|add:'". Try different keywords.' %}
     </div>
     {% endif %}
   </div>
+  {% else %}
+  <div class="card-social-static">
+    {% include "components/empty_state.html" with icon="search" title="Search SocialNet" description="Find people, posts, and more." %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

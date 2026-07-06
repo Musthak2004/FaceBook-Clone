@@ -4,72 +4,60 @@
 {% block title %}Pages — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:800px;">
-    <div class="flex items-center justify-between mb-4">
-      <h2>Pages</h2>
-      <a href="{% url 'pages:create' %}" class="btn btn-primary">+ Create Page</a>
-    </div>
-
-    {% if pages %}
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-4);">
-      {% for page in pages %}
-      <div class="card" style="padding:0;overflow:hidden;">
-        {% if page.cover %}
-        <img src="{{ page.cover.url }}" alt="" style="width:100%;height:120px;object-fit:cover;">
-        {% else %}
-        <div style="width:100%;height:120px;background:var(--bg-tertiary);"></div>
-        {% endif %}
-        <div style="padding:var(--space-3);position:relative;">
-          <div style="margin-top:-40px;margin-bottom:var(--space-2);">
-            {% if page.profile_picture %}
-            <img src="{{ page.profile_picture.url }}" alt="{{ page.name }}" class="avatar" style="width:60px;height:60px;border:3px solid var(--bg-primary);border-radius:50%;object-fit:cover;">
-            {% else %}
-            <div style="width:60px;height:60px;border:3px solid var(--bg-primary);border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">
-              {{ page.name|first }}
-            </div>
-            {% endif %}
-          </div>
-          <h4 style="margin-bottom:var(--space-1);">
-            <a href="{% url 'pages:detail' pk=page.pk %}" style="color:var(--text-primary);">{{ page.name }}</a>
-          </h4>
-          <div class="text-muted" style="font-size:var(--font-size-sm);">
-            {{ page.get_category_display }} &middot; {{ page.follower_count }} follower{{ page.follower_count|pluralize }}
-          </div>
-          <p style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-top:var(--space-1);">
-            {{ page.description|truncatewords:20 }}
-          </p>
-        </div>
+<div class="max-w-5xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
+        <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+        </svg>
       </div>
-      {% endfor %}
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">Pages</h1>
     </div>
-
-    {% if is_paginated %}
-    <div class="pagination mt-4">
-      {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
-      {% endif %}
-      {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="current">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-        <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-      {% endfor %}
-      {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    {% else %}
-    <div class="card text-center" style="padding:var(--space-8);">
-      <div style="font-size:48px;margin-bottom:var(--space-4);">&#127760;</div>
-      <h3>No pages yet</h3>
-      <p class="text-secondary">Create a page for your business, organization, or community.</p>
-      <a href="{% url 'pages:create' %}" class="btn btn-primary mt-3">Create Your First Page</a>
-    </div>
-    {% endif %}
+    <a href="{% url 'pages:create' %}" class="btn-brand btn-brand-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Create Page
+    </a>
   </div>
+
+  {% if pages %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-container">
+    {% for page in pages %}
+    <div class="card-social-static overflow-hidden hover:shadow-card-hover transition-all active:scale-[0.98]">
+      {% if page.cover %}
+      <div class="h-28 bg-[var(--surface-tertiary)]">
+        <img src="{{ page.cover.url }}" alt="" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      {% else %}
+      <div class="h-28 bg-gradient-to-r from-brand-100 to-brand-50 dark:from-brand-900/20 dark:to-brand-800/10"></div>
+      {% endif %}
+      <div class="px-4 pb-4 -mt-10 relative z-10 text-center">
+        <div class="flex justify-center mb-2">
+          {% if page.profile_picture %}
+          <img src="{{ page.profile_picture.url }}" alt="{{ page.name }}" loading="lazy" class="w-16 h-16 rounded-full object-cover border-4 border-[var(--surface-primary)] shadow-md">
+          {% else %}
+          <div class="w-16 h-16 rounded-full border-4 border-[var(--surface-primary)] shadow-md brand-gradient flex items-center justify-center text-white text-xl font-bold">
+            {{ page.name|first }}
+          </div>
+          {% endif %}
+        </div>
+        <h3 class="font-semibold text-[var(--text-primary)]">
+          <a href="{% url 'pages:detail' pk=page.pk %}" class="text-inherit no-underline hover:text-brand-600">{{ page.name }}</a>
+        </h3>
+        <p class="text-xs text-[var(--text-muted)]">{{ page.get_category_display }} &middot; {{ page.follower_count }} follower{{ page.follower_count|pluralize }}</p>
+        <p class="text-xs text-[var(--text-secondary)] mt-2 line-clamp-2">{{ page.description|truncatewords:20 }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% include "components/pagination.html" with page_obj=page_obj %}
+  {% else %}
+  <div class="card-social-static">
+    {% include "components/empty_state.html" with icon="flag" title="No pages yet" description="Create a page for your business, organization, or community." action_url="/pages/create/" action_label="Create Your First Page" %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

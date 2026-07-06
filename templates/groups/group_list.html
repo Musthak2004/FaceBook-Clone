@@ -4,59 +4,55 @@
 {% block title %}Groups — SocialNet{% endblock %}
 
 {% block content %}
-<div class="main-wrapper">
-  <div class="main-content" style="max-width:680px;">
-    <div class="flex items-center justify-between mb-4">
-      <h2>Groups</h2>
-      <a href="{% url 'groups:group_create' %}" class="btn btn-primary">&#43; Create Group</a>
+<div class="max-w-3xl mx-auto px-4 py-8 page-enter">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
+        <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+      <h1 class="text-xl font-bold text-[var(--text-primary)]">Groups</h1>
     </div>
+    <a href="{% url 'groups:group_create' %}" class="btn-brand btn-brand-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Create Group
+    </a>
+  </div>
 
+  <div class="space-y-4 stagger-container">
     {% for group in groups %}
-    <div class="post-card">
-      <div class="post-header">
-        <div class="post-author">
-          {% if group.cover %}
-          <img src="{{ group.cover.url }}" alt="" class="avatar">
-          {% else %}
-          <img src="{% static 'images/default-avatar.svg' %}" alt="" class="avatar">
-          {% endif %}
-          <div class="post-author-info">
-            <a href="{% url 'groups:group_detail' pk=group.pk %}" class="post-author-name">
-              {{ group.name }}
-            </a>
-            <span class="post-time">{{ group.member_count }} member{{ group.member_count|pluralize }}</span>
-          </div>
+    <a href="{% url 'groups:group_detail' pk=group.pk %}" class="card-social-static p-4 flex items-center gap-4 hover:shadow-card-hover transition-all active:scale-[0.98] no-underline">
+      <div class="flex-shrink-0">
+        {% if group.cover %}
+        <img src="{{ group.cover.url }}" alt="{{ group.name }}" loading="lazy" class="w-16 h-16 rounded-2xl object-cover border-2 border-[var(--border-light)]">
+        {% else %}
+        <div class="w-16 h-16 rounded-2xl bg-[var(--surface-tertiary)] flex items-center justify-center border-2 border-[var(--border-light)]">
+          <svg class="w-6 h-6 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
         </div>
+        {% endif %}
       </div>
-      <div class="post-body">
-        <p>{{ group.description|truncatechars:200 }}</p>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-semibold text-[var(--text-primary)]">{{ group.name }}</h3>
+        <p class="text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">{{ group.description|truncatechars:200 }}</p>
+        <p class="text-xs text-[var(--text-muted)] mt-1">{{ group.member_count }} member{{ group.member_count|pluralize }}</p>
       </div>
-    </div>
+      <svg class="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </a>
     {% empty %}
-    <div class="empty-state">
-      <div class="empty-state-icon">&#128101;</div>
-      <h3>No groups yet</h3>
-      <p>Create the first group or join an existing one!</p>
+    <div class="card-social-static">
+      {% url 'groups:group_create' as group_create_url %}
+      {% include "components/empty_state.html" with icon="users" title="No groups yet" description="Create the first group or join an existing one!" action_url=group_create_url action_label="Create Group" %}
     </div>
     {% endfor %}
-
-    {% if is_paginated %}
-    <div class="pagination">
-      {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
-      {% endif %}
-      {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="current">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-        <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-      {% endfor %}
-      {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
-      {% endif %}
-    </div>
-    {% endif %}
   </div>
+
+  {% include "components/pagination.html" with page_obj=page_obj %}
 </div>
 {% endblock %}
