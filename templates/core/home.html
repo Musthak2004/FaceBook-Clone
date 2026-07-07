@@ -1,556 +1,617 @@
 {% extends "base.html" %}
 {% load cache static post_tags %}
+
 {% block title %}Home — SocialNet{% endblock %}
+
 {% block extra_css %}
 <style>
-  /* ══════════════════════════════════════
-   HOME FEED — Page-scoped styles
-   ══════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   HOME FEED — Enhanced Page Styles
+   ══════════════════════════════════════════════ */
 
-  /* ── Post Card ── */
-  .post-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    overflow: hidden;
-    transition:
-      box-shadow 0.18s ease,
-      transform 0.18s ease;
+/* ── Reduced motion override ── */
+@media (prefers-reduced-motion: reduce) {
+  .post-card,
+  .skeleton-shimmer,
+  .heartPop,
+  .fadeSlideUp {
+    animation: none !important;
+    transition: none !important;
   }
-  .post-card:hover {
-    box-shadow: var(--shadow-md);
-  }
+}
 
-  /* ── Create Post Card ── */
-  .create-post-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .create-post-input-bar {
-    background: var(--surface-secondary);
-    border: 1.5px solid transparent;
-    border-radius: 9999px;
-    padding: 10px 18px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.18s ease;
-    flex: 1;
-    font-family: inherit;
-  }
-  .create-post-input-bar:hover {
-    background: var(--surface-tertiary);
-    border-color: var(--border-light);
-    color: var(--text-secondary);
-  }
-  .create-post-divider {
-    height: 1px;
-    background: var(--border-light);
-    margin: 0 16px;
-  }
-  .create-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    flex: 1;
-    padding: 10px 8px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-family: inherit;
-  }
-  .create-action-btn:hover {
-    background: var(--surface-hover);
-    color: var(--text-primary);
-  }
-  .create-action-btn:active {
-    transform: scale(0.95);
-  }
+/* ── Post Card ── */
+.post-card {
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  animation: fadeSlideUp 0.35s ease both;
+  contain: layout style;
+}
+.post-card:hover {
+  box-shadow: 0 4px 24px -4px rgba(0,0,0,0.08),
+              0 1px 4px rgba(0,0,0,0.04);
+}
+.post-card:nth-child(1)  { animation-delay: 0.04s; }
+.post-card:nth-child(2)  { animation-delay: 0.08s; }
+.post-card:nth-child(3)  { animation-delay: 0.12s; }
+.post-card:nth-child(4)  { animation-delay: 0.16s; }
+.post-card:nth-child(5)  { animation-delay: 0.20s; }
+.post-card:nth-child(n+6){ animation-delay: 0.22s; }
 
-  /* ── Post Stats Bar ── */
-  .post-stats-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    font-size: 0.8125rem;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-light);
-  }
-  .post-stats-bar span {
-    cursor: pointer;
-  }
-  .post-stats-bar span:hover {
-    text-decoration: underline;
-    color: var(--text-secondary);
-  }
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  /* ── Reaction Pill ── */
-  .reaction-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--surface-secondary);
-    border-radius: 9999px;
-    padding: 2px 8px 2px 4px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
+/* ── Create Post Card ── */
+.create-post-card {
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease;
+}
+.create-post-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
 
-  /* ── Action Buttons ── */
-  .post-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    justify-content: center;
-    padding: 10px 4px;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    font-family: inherit;
-    position: relative;
-  }
-  .post-action-btn:hover {
-    background: var(--surface-hover);
-    color: var(--text-primary);
-    text-decoration: none;
-  }
-  .post-action-btn:active {
-    transform: scale(0.95);
-  }
+.create-post-input-bar {
+  background: var(--surface-secondary);
+  border: 1.5px solid transparent;
+  border-radius: 9999px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex: 1;
+  font-family: inherit;
+  text-align: left;
+}
+.create-post-input-bar:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+.create-post-input-bar:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
 
-  /* Like button states */
-  .post-action-btn.liked {
-    color: var(--brand-600);
-  }
-  .post-action-btn.liked svg {
-    fill: var(--brand-600);
-    animation: heartPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  @keyframes heartPop {
-    0% {
-      transform: scale(1);
-    }
-    40% {
-      transform: scale(1.35);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
+.create-post-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0 16px;
+}
 
-  /* Save button saved state */
-  .post-action-btn.saved {
-    color: var(--accent-yellow, #f59e0b);
-  }
-  .post-action-btn.saved svg {
-    fill: var(--accent-yellow, #f59e0b);
-  }
+.create-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.create-action-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+.create-action-btn:active { transform: scale(0.95); }
+.create-action-btn:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
 
-  /* ── Photo Grid ── */
-  .photo-grid-social {
-    display: grid;
-    gap: 2px;
-    width: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-  }
-  .photo-grid-social[data-count="1"] {
-    grid-template-columns: 1fr;
-  }
-  .photo-grid-social[data-count="1"] .grid-img {
-    max-height: 480px;
-  }
-  .photo-grid-social[data-count="2"] {
-    grid-template-columns: 1fr 1fr;
-  }
-  .photo-grid-social[data-count="2"] .grid-img {
-    height: 260px;
-  }
-  .photo-grid-social[data-count="3"] {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-  }
-  .photo-grid-social[data-count="3"] .grid-img:first-child {
-    grid-row: span 2;
-    height: 300px;
-  }
-  .photo-grid-social[data-count="3"] .grid-img:not(:first-child) {
-    height: 149px;
-  }
-  .photo-grid-social[data-count="4"] {
-    grid-template-columns: 1fr 1fr;
-  }
-  .photo-grid-social[data-count="4"] .grid-img {
-    height: 220px;
-  }
+/* ── Post Stats Bar ── */
+.post-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+}
+.post-stats-bar span {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.post-stats-bar span:hover {
+  text-decoration: underline;
+  color: var(--text-secondary);
+}
 
-  .grid-img {
-    width: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.2s ease;
-    min-height: 120px;
-  }
-  .photo-grid-social:hover .grid-img {
-    transform: scale(1.01);
-  }
+/* ── Reaction Pill ── */
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-secondary);
+  border-radius: 9999px;
+  padding: 3px 10px 3px 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.reaction-pill:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-light);
+}
 
-  /* More overlay for 4+ images */
-  .img-more-overlay {
-    position: relative;
-  }
-  .img-more-overlay::after {
-    content: attr(data-more);
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 700;
-    border-radius: inherit;
-  }
+/* ── Post Action Buttons ── */
+.post-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  padding: 10px 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  font-family: inherit;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+.post-action-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.post-action-btn:active { transform: scale(0.95); }
+.post-action-btn:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
 
-  /* ── Shared Post Embed ── */
-  .shared-embed {
-    margin: 0 16px 12px;
-    padding: 12px;
-    background: var(--surface-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: 10px;
-  }
+/* Like — active state */
+.post-action-btn.liked {
+  color: #EF4444;
+}
+.post-action-btn.liked svg {
+  fill: #EF4444;
+  animation: heartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
 
-  /* ── Empty State ── */
-  .feed-empty {
-    text-align: center;
-    padding: 56px 24px;
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-  }
-  .feed-empty-icon {
-    width: 72px;
-    height: 72px;
-    background: var(--brand-50);
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    color: var(--brand-500);
-  }
-  .dark .feed-empty-icon {
-    background: rgba(99, 102, 241, 0.12);
-  }
-  .feed-empty h3 {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-  .feed-empty p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-  }
+/* Save — active state */
+.post-action-btn.saved {
+  color: #F59E0B;
+}
+.post-action-btn.saved svg {
+  fill: #F59E0B;
+  animation: savePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes savePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.3) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
 
-  /* ── Skeleton Shimmer ── */
-  .skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      var(--surface-tertiary) 25%,
-      var(--surface-hover) 50%,
-      var(--surface-tertiary) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 6px;
-  }
-  @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-  .skeleton-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 16px;
-    overflow: hidden;
-  }
+/* ── Photo Grid ── */
+.photo-grid-social {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+}
+.photo-grid-social[data-count="1"] { grid-template-columns: 1fr; }
+.photo-grid-social[data-count="1"] .grid-img { max-height: 500px; }
 
-  /* ── Pagination ── */
-  .pagination-social {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 0 4px;
-    flex-wrap: wrap;
-  }
-  .pagination-social a,
-  .pagination-social span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    border: 1px solid var(--border-light);
-    background: var(--surface-card);
-    color: var(--text-secondary);
-  }
-  .pagination-social a:hover {
-    background: var(--brand-50);
-    border-color: var(--brand-200);
-    color: var(--brand-600);
-  }
-  .pagination-social .current {
-    background: var(--brand-600);
-    border-color: var(--brand-600);
-    color: white;
-    font-weight: 700;
-  }
-  .dark .pagination-social a:hover {
-    background: rgba(99, 102, 241, 0.12);
-  }
+.photo-grid-social[data-count="2"] { grid-template-columns: 1fr 1fr; }
+.photo-grid-social[data-count="2"] .grid-img { height: 280px; }
 
-  /* ── Image Preview ── */
-  .image-preview-item {
-    position: relative;
-    width: 72px;
-    height: 72px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid var(--border-light);
-  }
-  .image-preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .image-preview-remove {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 18px;
-    height: 18px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: background 0.15s;
-  }
-  .image-preview-remove:hover {
-    background: rgba(239, 68, 68, 0.9);
-  }
+.photo-grid-social[data-count="3"] { grid-template-columns: 1fr 1fr; }
+.photo-grid-social[data-count="3"] .grid-img:first-child {
+  grid-row: span 2;
+  height: 320px;
+}
+.photo-grid-social[data-count="3"] .grid-img:not(:first-child) { height: 159px; }
 
-  /* ── Sidebar Sections ── */
-  .sidebar-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-  .sidebar-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px 10px;
-  }
-  .sidebar-card-header h3 {
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-  .sidebar-card-header a {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--brand-600);
-    text-decoration: none;
-    padding: 3px 8px;
-    border-radius: 6px;
-    transition: background 0.15s;
-  }
-  .sidebar-card-header a:hover {
-    background: var(--brand-50);
-  }
+.photo-grid-social[data-count="4"] { grid-template-columns: 1fr 1fr; }
+.photo-grid-social[data-count="4"] .grid-img { height: 240px; }
 
-  /* ── Stories Row ── */
-  .stories-container {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .stories-container::-webkit-scrollbar {
-    display: none;
-  }
+.grid-img {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  min-height: 120px;
+  background: var(--surface-secondary);
+}
+.photo-grid-social:hover .grid-img {
+  transform: scale(1.015);
+}
 
-  /* ── Stagger animation ── */
-  .post-card {
-    animation: fadeSlideUp 0.3s ease both;
-  }
-  @keyframes fadeSlideUp {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .post-card:nth-child(1) {
-    animation-delay: 0.05s;
-  }
-  .post-card:nth-child(2) {
-    animation-delay: 0.1s;
-  }
-  .post-card:nth-child(3) {
-    animation-delay: 0.15s;
-  }
-  .post-card:nth-child(4) {
-    animation-delay: 0.2s;
-  }
-  .post-card:nth-child(5) {
-    animation-delay: 0.25s;
-  }
+/* ── More overlay (5+ images) ── */
+.img-more-overlay {
+  position: relative;
+  overflow: hidden;
+}
+.img-more-overlay::after {
+  content: attr(data-more);
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  pointer-events: none;
+}
 
-  /* ── Report reason items ── */
-  .report-option {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border: 1.5px solid var(--border-light);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    background: transparent;
-  }
-  .report-option:hover {
-    border-color: var(--brand-400);
-    background: var(--brand-50);
-    color: var(--brand-700);
-  }
-  .report-option.selected {
-    border-color: var(--brand-500);
-    background: var(--brand-50);
-    color: var(--brand-700);
-  }
-  .dark .report-option:hover,
-  .dark .report-option.selected {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--brand-300);
-  }
+/* ── Shared Post Embed ── */
+.shared-embed {
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  transition: border-color 0.15s;
+}
+.shared-embed:hover {
+  border-color: var(--border-medium, #cbd5e1);
+}
 
-  /* ── Poll styles ── */
-  .poll-option-bar {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1.5px solid var(--border-light);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    overflow: hidden;
-    background: var(--surface-card);
-  }
-  .poll-option-bar:hover {
-    border-color: var(--brand-400);
-    background: var(--brand-50);
-  }
-  .poll-option-bar.voted {
-    border-color: var(--brand-500);
-    background: var(--brand-50);
-  }
-  .poll-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    background: var(--brand-100);
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 0;
-    border-radius: inherit;
-  }
-  .dark .poll-fill {
-    background: rgba(99, 102, 241, 0.15);
-  }
-  .poll-option-text {
-    position: relative;
-    z-index: 1;
-    font-weight: 500;
-    font-size: 0.875rem;
-  }
-  .poll-option-pct {
-    position: relative;
-    z-index: 1;
-    margin-left: auto;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    color: var(--brand-600);
-  }
+/* ── Empty State ── */
+.feed-empty {
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+}
+.feed-empty-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(99,102,241,0.15));
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--brand-600, #4F46E5);
+}
+.feed-empty h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.feed-empty p {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  /* ── Infinite scroll indicator ── */
-  .scroll-loading {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    display: none;
-  }
+/* ── Skeleton Shimmer ── */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-hover, #f1f5f9) 25%,
+    var(--surface-active, #e2e8f0) 50%,
+    var(--surface-hover, #f1f5f9) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-card {
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* ── Pagination ── */
+.pagination-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 0 4px;
+  flex-wrap: wrap;
+}
+.pagination-social a,
+.pagination-social span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  border: 1.5px solid var(--border-light);
+  background: var(--surface-primary, #fff);
+  color: var(--text-secondary);
+}
+.pagination-social a:hover {
+  background: rgba(99,102,241,0.07);
+  border-color: var(--brand-300, #A5B4FC);
+  color: var(--brand-600);
+}
+.pagination-social .current {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: white;
+  font-weight: 700;
+}
+
+/* ── Image Preview ── */
+.image-preview-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.image-preview-item:hover { transform: scale(1.04); }
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-preview-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.image-preview-item:hover .image-preview-remove {
+  opacity: 1;
+}
+.image-preview-remove:hover { background: rgba(239, 68, 68, 0.9); }
+
+/* ── Sidebar Cards ── */
+.sidebar-card {
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+.sidebar-card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.sidebar-card-header a {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.sidebar-card-header a:hover { background: rgba(99,102,241,0.08); }
+
+/* ── Stories ── */
+.stories-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.stories-container::-webkit-scrollbar { display: none; }
+
+/* ── Poll ── */
+.poll-option-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  background: var(--surface-primary, #fff);
+}
+.poll-option-bar:hover {
+  border-color: var(--brand-400);
+  background: rgba(99,102,241,0.04);
+}
+.poll-option-bar.voted {
+  border-color: var(--brand-500);
+  background: rgba(99,102,241,0.06);
+  cursor: default;
+}
+.poll-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(99,102,241,0.1);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  border-radius: inherit;
+}
+.poll-option-text {
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.poll-option-pct {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+/* ── Report Options ── */
+.report-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: transparent;
+  text-align: left;
+}
+.report-option:hover {
+  border-color: var(--brand-400, #818CF8);
+  background: rgba(99,102,241,0.06);
+}
+.report-option.selected {
+  border-color: var(--brand-500);
+  background: rgba(99,102,241,0.08);
+  color: var(--brand-700, #4338CA);
+}
+
+/* ── Confirm Dialog (replaces browser confirm()) ── */
+.confirm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.confirm-dialog {
+  background: var(--surface-primary, #fff);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  width: calc(100% - 40px);
+  max-width: 380px;
+  padding: 28px;
+  animation: confirmSlide 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+  text-align: center;
+}
+@keyframes confirmSlide {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Char counter ── */
+.char-counter {
+  font-size: 0.75rem;
+  transition: color 0.2s ease;
+}
+.char-counter.warn   { color: #F59E0B; }
+.char-counter.danger { color: #EF4444; font-weight: 700; }
+
+/* ── Drag-over state ── */
+.drag-over {
+  border-color: var(--brand-400) !important;
+  background: rgba(99,102,241,0.06) !important;
+}
+
+/* ── Infinite scroll loading ── */
+.scroll-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  display: none;
+}
+.scroll-loading.visible { display: block; }
+
+/* ── Sidebar sticky ── */
+.sidebar-sticky {
+  position: sticky;
+  top: calc(var(--nav-height, 64px) + 20px);
+  max-height: calc(100vh - var(--nav-height, 64px) - 40px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+
+{% block content %}
 <div class="max-w-7xl mx-auto px-3 sm:px-4 py-5">
   <div class="flex gap-5 items-start justify-center">
-    <!-- ════════════════════════════════
+
+    <!-- ════════════════════════════════════════
          MAIN FEED COLUMN
-         ════════════════════════════════ -->
-    <div class="flex-1 min-w-0 max-w-[620px]">
+         ════════════════════════════════════════ -->
+    <div class="flex-1 min-w-0 max-w-[640px]">
+
       <!-- ── Stories Row ── -->
       {% cache 300 stories_row request.user.id %}
       <div id="stories-container" class="mb-4">
@@ -559,35 +620,29 @@
       {% endcache %}
 
       <!-- ── Create Post Card ── -->
-      <div class="create-post-card mb-4 shadow-[var(--shadow-xs)]">
+      <div class="create-post-card mb-4">
         <div class="p-4">
           <div class="flex items-center gap-3">
             <!-- Avatar -->
-            <a
-              href="{% url 'accounts:profile' username=user.username %}"
-              class="flex-shrink-0"
-            >
+            <a href="{% url 'accounts:profile' username=user.username %}"
+               class="flex-shrink-0" aria-label="My Profile">
               {% if user.profile_picture %}
-              <img
-                src="{{ user.profile_picture.url }}"
-                alt=""
-                class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-brand-400 transition-all"
-              />
+              <img src="{{ user.profile_picture.url }}" alt=""
+                   class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent
+                          hover:ring-brand-400/60 transition-all"
+                   loading="lazy" />
               {% else %}
-              <img
-                src="{% static 'images/default-avatar.svg' %}"
-                alt=""
-                class="w-10 h-10 rounded-full object-cover"
-              />
+              <img src="{% static 'images/default-avatar.svg' %}" alt=""
+                   class="w-10 h-10 rounded-full object-cover" />
               {% endif %}
             </a>
 
             <!-- Input trigger -->
             <button
-              class="create-post-input-bar text-left"
+              class="create-post-input-bar"
               data-modal-target="create-post-modal"
               id="create-post-trigger"
-              aria-label="Create a post"
+              aria-label="Create a post — What's on your mind?"
             >
               What's on your mind,
               <strong>{{ user.first_name|default:user.username }}</strong>?
@@ -597,67 +652,40 @@
 
         <div class="create-post-divider"></div>
 
-        <!-- Action buttons -->
+        <!-- Quick action buttons -->
         <div class="flex items-center px-2 py-1 gap-0.5">
-          <button
-            class="create-action-btn"
-            data-modal-target="create-post-modal"
-            data-focus="images"
-          >
-            <svg
-              class="w-5 h-5 text-emerald-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
+          <button class="create-action-btn"
+                  data-modal-target="create-post-modal"
+                  data-modal-focus="images"
+                  aria-label="Add photo or video">
+            <svg class="w-5 h-5 text-emerald-500 flex-shrink-0"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span>Photo/Video</span>
           </button>
 
-          <button
-            class="create-action-btn"
-            data-modal-target="create-post-modal"
-            data-focus="feeling"
-          >
-            <svg
-              class="w-5 h-5 text-amber-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+          <button class="create-action-btn"
+                  data-modal-target="create-post-modal"
+                  data-modal-focus="feeling"
+                  aria-label="Add feeling">
+            <svg class="w-5 h-5 text-amber-400 flex-shrink-0"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Feeling</span>
           </button>
 
-          <button
-            class="create-action-btn"
-            data-modal-target="create-post-modal"
-            data-focus="poll"
-          >
-            <svg
-              class="w-5 h-5 text-purple-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
+          <button class="create-action-btn"
+                  data-modal-target="create-post-modal"
+                  data-modal-focus="poll"
+                  aria-label="Create poll">
+            <svg class="w-5 h-5 text-purple-500 flex-shrink-0"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <span>Poll</span>
           </button>
@@ -665,506 +693,418 @@
       </div>
 
       <!-- ── Create Post Modal ── -->
-      <div
-        id="create-post-modal"
-        class="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-post-modal-title"
-      >
-        <div
-          class="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-light)] shadow-[var(--shadow-xl)] w-[95%] max-w-[520px] max-h-[90vh] overflow-y-auto"
-        >
-          <!-- Header -->
-          <div
-            class="flex items-center justify-between px-5 py-4 border-b border-[var(--border-light)] sticky top-0 bg-[var(--surface-card)] z-10"
-          >
-            <h3
-              id="create-post-modal-title"
-              class="text-lg font-bold text-[var(--text-primary)]"
-            >
+      <div id="create-post-modal"
+           class="fixed inset-0 z-[400] flex items-end sm:items-center justify-center
+                  bg-black/50 backdrop-blur-sm hidden"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="create-post-modal-title">
+
+        <div class="bg-[var(--surface-primary,#fff)] w-full sm:w-[95%] sm:max-w-[540px]
+                    rounded-t-2xl sm:rounded-2xl border border-[var(--border-light)]
+                    shadow-2xl max-h-[90vh] flex flex-col">
+
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between px-5 py-4
+                      border-b border-[var(--border-light)] flex-shrink-0">
+            <h3 id="create-post-modal-title"
+                class="text-lg font-bold text-[var(--text-primary)]">
               Create Post
             </h3>
-            <button
-              class="modal-close-btn w-9 h-9 flex items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-active)] transition-all text-lg font-medium"
-              aria-label="Close"
-              data-modal-close="create-post-modal"
-            >
-              ✕
+            <button class="w-9 h-9 flex items-center justify-center rounded-full
+                           bg-[var(--surface-hover)] text-[var(--text-secondary)]
+                           hover:bg-[var(--surface-active)] hover:text-[var(--text-primary)]
+                           transition-all text-xl font-medium"
+                    aria-label="Close create post dialog"
+                    data-modal-close="create-post-modal">
+              ×
             </button>
           </div>
 
-          <!-- Body -->
-          <div class="p-5">
-            <form
-              id="create-post-form"
-              method="post"
-              action="{% url 'posts:post_create' %}"
-              enctype="multipart/form-data"
-            >
-              {% csrf_token %}
+          <!-- Modal Body — scrollable -->
+          <div class="overflow-y-auto flex-1">
+            <div class="p-5">
+              <form id="create-post-form"
+                    method="post"
+                    action="{% url 'posts:post_create' %}"
+                    enctype="multipart/form-data">
+                {% csrf_token %}
 
-              <!-- Author row -->
-              <div class="flex items-center gap-3 mb-4">
-                {% if user.profile_picture %}
-                <img
-                  src="{{ user.profile_picture.url }}"
-                  alt=""
-                  class="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                />
-                {% else %}
-                <img
-                  src="{% static 'images/default-avatar.svg' %}"
-                  alt=""
-                  class="w-10 h-10 rounded-full flex-shrink-0"
-                />
-                {% endif %}
-                <div>
-                  <p class="font-semibold text-sm text-[var(--text-primary)]">
-                    {{ user.get_full_name|default:user.username }}
-                  </p>
-                  <!-- Visibility inline select -->
-                  <select
-                    name="visibility"
-                    id="post-visibility-select"
-                    class="text-xs font-semibold text-[var(--brand-600)] bg-[var(--brand-50)] border border-[var(--brand-200)] rounded-full px-2 py-0.5 mt-0.5 cursor-pointer outline-none hover:bg-[var(--brand-100)] transition-colors"
-                  >
-                    <option value="public">🌍 Public</option>
-                    <option value="friends">👥 Friends</option>
-                    <option value="only_me">🔒 Only Me</option>
-                  </select>
+                <!-- Author + Visibility -->
+                <div class="flex items-center gap-3 mb-4">
+                  {% if user.profile_picture %}
+                  <img src="{{ user.profile_picture.url }}" alt=""
+                       class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                       loading="lazy" />
+                  {% else %}
+                  <img src="{% static 'images/default-avatar.svg' %}" alt=""
+                       class="w-10 h-10 rounded-full flex-shrink-0" />
+                  {% endif %}
+                  <div>
+                    <p class="font-semibold text-sm text-[var(--text-primary)] leading-tight">
+                      {{ user.get_full_name|default:user.username }}
+                    </p>
+                    <select name="visibility"
+                            id="post-visibility-select"
+                            class="mt-1 text-xs font-semibold text-[var(--brand-600)]
+                                   bg-[rgba(99,102,241,0.08)] border border-[rgba(99,102,241,0.2)]
+                                   rounded-full px-3 py-1 cursor-pointer outline-none
+                                   hover:bg-[rgba(99,102,241,0.12)] transition-colors
+                                   appearance-none"
+                            aria-label="Post visibility">
+                      <option value="public">🌍 Public</option>
+                      <option value="friends">👥 Friends</option>
+                      <option value="only_me">🔒 Only Me</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Content Textarea -->
-              <div class="mb-3">
-                <label for="post-content-input" class="sr-only"
-                  >Post content</label
-                >
-                <textarea
-                  id="post-content-input"
-                  name="content"
-                  class="w-full bg-transparent border-none outline-none text-[var(--text-primary)] text-[1rem] leading-relaxed resize-none placeholder:text-[var(--text-muted)] font-inherit"
-                  rows="4"
-                  placeholder="What's on your mind, {{ user.first_name|default:user.username }}?"
-                  autofocus
-                ></textarea>
-              </div>
-
-              <!-- Image Preview -->
-              <div
-                id="image-preview-container"
-                class="flex flex-wrap gap-2 mb-3 empty:hidden"
-              ></div>
-
-              <!-- Image Upload Zone -->
-              <div id="image-upload-zone" class="hidden mb-3">
-                <label
-                  for="post-images-input"
-                  class="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-[var(--border-light)] rounded-xl cursor-pointer hover:border-[var(--brand-400)] hover:bg-[var(--brand-50)] transition-all group"
-                >
-                  <svg
-                    class="w-8 h-8 text-[var(--text-muted)] group-hover:text-[var(--brand-500)] transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span
-                    class="text-sm font-medium text-[var(--text-muted)] group-hover:text-[var(--brand-600)]"
-                  >
-                    Click to add photos
-                  </span>
-                  <span class="text-xs text-[var(--text-muted)]"
-                    >PNG, JPG, GIF up to 10MB each</span
-                  >
-                </label>
-                <input
-                  id="post-images-input"
-                  type="file"
-                  name="images"
-                  class="hidden"
-                  multiple
-                  accept="image/*"
-                />
-              </div>
-
-              <!-- Poll Section -->
-              <div
-                id="poll-section"
-                class="hidden mb-3 p-4 bg-[var(--surface-secondary)] rounded-xl border border-[var(--border-light)]"
-              >
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm font-semibold text-[var(--text-primary)]"
-                    >Create Poll</span
-                  >
-                  <button
-                    type="button"
-                    id="close-poll"
-                    class="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-lg leading-none"
-                  >
-                    &times;
-                  </button>
+                <!-- Textarea + char counter -->
+                <div class="relative mb-3">
+                  <label for="post-content-input" class="sr-only">Post content</label>
+                  <textarea id="post-content-input"
+                            name="content"
+                            class="w-full bg-transparent border-none outline-none
+                                   text-[var(--text-primary)] text-[1rem] leading-relaxed
+                                   resize-none placeholder:text-[var(--text-muted)] font-inherit
+                                   min-h-[100px]"
+                            rows="4"
+                            maxlength="5000"
+                            placeholder="What's on your mind, {{ user.first_name|default:user.username }}?"
+                            autofocus
+                            aria-describedby="char-count-display"></textarea>
+                  <div class="flex items-center justify-end">
+                    <span id="char-count-display"
+                          class="char-counter text-[var(--text-muted)]"
+                          aria-live="polite"
+                          aria-label="Characters remaining">
+                      5000
+                    </span>
+                  </div>
                 </div>
-                <div class="space-y-2">
-                  <input
-                    type="text"
-                    name="poll_question"
-                    class="w-full px-3 py-2 bg-[var(--surface-card)] border border-[var(--border-light)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--brand-400)] focus:ring-2 focus:ring-[var(--brand-400)]/10 transition-all placeholder:text-[var(--text-muted)]"
-                    placeholder="Ask a question…"
-                  />
-                  <textarea
-                    name="poll_options"
-                    class="w-full px-3 py-2 bg-[var(--surface-card)] border border-[var(--border-light)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--brand-400)] focus:ring-2 focus:ring-[var(--brand-400)]/10 transition-all placeholder:text-[var(--text-muted)] resize-none"
-                    rows="3"
-                    placeholder="Option 1&#10;Option 2&#10;Option 3"
-                  ></textarea>
-                  <p class="text-xs text-[var(--text-muted)]">
-                    Each line = one option (2–10 options)
-                  </p>
-                </div>
-              </div>
 
-              <!-- Bottom toolbar -->
-              <div
-                class="flex items-center justify-between py-3 border-t border-[var(--border-light)] mt-2"
-              >
-                <div class="flex items-center gap-1">
-                  <!-- Photo toggle -->
-                  <button
-                    type="button"
-                    id="toggle-image-upload"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                    title="Add photos"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
+                <!-- Image Preview -->
+                <div id="image-preview-container"
+                     class="flex flex-wrap gap-2 mb-3"
+                     aria-label="Selected images preview"></div>
+
+                <!-- Image Upload Zone (drag & drop enhanced) -->
+                <div id="image-upload-zone" class="hidden mb-3">
+                  <label for="post-images-input"
+                         id="upload-zone-label"
+                         class="flex flex-col items-center gap-3 p-8 border-2 border-dashed
+                                border-[var(--border-light)] rounded-2xl cursor-pointer
+                                hover:border-[var(--brand-400)] hover:bg-[rgba(99,102,241,0.04)]
+                                transition-all group"
+                         role="button"
+                         aria-label="Click or drag images here to upload">
+                    <svg class="w-9 h-9 text-[var(--text-muted)] group-hover:text-[var(--brand-500)]
+                                transition-colors"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                  </button>
-                  <!-- Poll toggle -->
-                  <button
-                    type="button"
-                    id="toggle-poll"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
-                    title="Add poll"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                  </button>
-                  <!-- Emoji toggle (visual) -->
-                  <button
-                    type="button"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                    title="Add emoji"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </button>
+                    <div class="text-center">
+                      <p class="text-sm font-semibold text-[var(--text-secondary)]
+                                group-hover:text-[var(--brand-600)] transition-colors">
+                        Click or drag to add photos
+                      </p>
+                      <p class="text-xs text-[var(--text-muted)] mt-1">
+                        PNG, JPG, GIF, WEBP · Max 10MB each
+                      </p>
+                    </div>
+                  </label>
+                  <input id="post-images-input"
+                         type="file"
+                         name="images"
+                         class="hidden"
+                         multiple
+                         accept="image/png,image/jpeg,image/gif,image/webp" />
                 </div>
 
-                <!-- Post button -->
-                <button
-                  type="submit"
-                  class="flex items-center gap-2 px-5 py-2 bg-[var(--brand-600)] hover:bg-[var(--brand-700)] text-white text-sm font-semibold rounded-lg transition-all shadow-[var(--shadow-brand)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-                  id="create-post-submit"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                  Post
-                </button>
-              </div>
-            </form>
+                <!-- Poll Section -->
+                <div id="poll-section"
+                     class="hidden mb-3 p-4 bg-[var(--surface-secondary)]
+                            rounded-2xl border border-[var(--border-light)]">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                      <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor"
+                           viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Create Poll
+                    </span>
+                    <button type="button" id="close-poll"
+                            class="w-7 h-7 flex items-center justify-center rounded-full
+                                   text-[var(--text-muted)] hover:text-[var(--text-primary)]
+                                   hover:bg-[var(--surface-hover)] transition-all text-lg"
+                            aria-label="Remove poll">
+                      ×
+                    </button>
+                  </div>
+                  <div class="space-y-2">
+                    <input type="text"
+                           name="poll_question"
+                           class="w-full px-3 py-2.5 bg-[var(--surface-primary,#fff)]
+                                  border border-[var(--border-light)] rounded-xl text-sm
+                                  text-[var(--text-primary)] outline-none
+                                  focus:border-[var(--brand-400)]
+                                  focus:ring-2 focus:ring-[rgba(99,102,241,0.12)]
+                                  transition-all placeholder:text-[var(--text-muted)]"
+                           placeholder="Ask a question…"
+                           aria-label="Poll question" />
+                    <textarea name="poll_options"
+                              class="w-full px-3 py-2.5 bg-[var(--surface-primary,#fff)]
+                                     border border-[var(--border-light)] rounded-xl text-sm
+                                     text-[var(--text-primary)] outline-none
+                                     focus:border-[var(--brand-400)]
+                                     focus:ring-2 focus:ring-[rgba(99,102,241,0.12)]
+                                     transition-all placeholder:text-[var(--text-muted)] resize-none"
+                              rows="3"
+                              placeholder="Option 1&#10;Option 2&#10;Option 3"
+                              aria-label="Poll options — one per line"></textarea>
+                    <p class="text-xs text-[var(--text-muted)]">
+                      Each line = one option · 2–10 options max
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Bottom Toolbar -->
+                <div class="flex items-center justify-between py-3
+                            border-t border-[var(--border-light)] mt-2 gap-3">
+                  <div class="flex items-center gap-1" role="group"
+                       aria-label="Post attachment options">
+                    <button type="button" id="toggle-image-upload"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl
+                                   text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
+                                   transition-all"
+                            title="Add photos"
+                            aria-label="Toggle photo upload"
+                            aria-pressed="false">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                           viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+
+                    <button type="button" id="toggle-poll"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl
+                                   text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20
+                                   transition-all"
+                            title="Add poll"
+                            aria-label="Toggle poll"
+                            aria-pressed="false">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                           viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </button>
+
+                    <button type="button" id="emoji-toggle-btn"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl
+                                   text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20
+                                   transition-all"
+                            title="Add emoji"
+                            aria-label="Add emoji">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                           viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Post Submit Button -->
+                  <button type="submit"
+                          id="create-post-submit"
+                          class="flex items-center gap-2 px-6 py-2.5 rounded-xl
+                                 bg-[var(--brand-600)] hover:bg-[var(--brand-700)]
+                                 text-white text-sm font-semibold transition-all
+                                 shadow-[0_2px_8px_rgba(79,70,229,0.25)]
+                                 hover:shadow-[0_4px_16px_rgba(79,70,229,0.35)]
+                                 disabled:opacity-50 disabled:cursor-not-allowed
+                                 disabled:transform-none"
+                          aria-label="Publish post">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    Post
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ── Skeleton Loading ── -->
-      <div id="skeleton-feed" class="space-y-4">
+      <!-- ── Skeleton Loading (3 cards) ── -->
+      <div id="skeleton-feed" class="space-y-4" aria-label="Loading posts" aria-busy="true">
         {% for i in "123" %}
         <div class="skeleton-card">
           <div class="flex items-center gap-3 mb-4">
-            <div
-              class="w-10 h-10 rounded-full skeleton-shimmer flex-shrink-0"
-            ></div>
+            <div class="w-10 h-10 rounded-full skeleton-shimmer flex-shrink-0"></div>
             <div class="space-y-2 flex-1">
-              <div class="h-3 w-28 skeleton-shimmer rounded"></div>
-              <div class="h-2.5 w-20 skeleton-shimmer rounded"></div>
+              <div class="h-3 w-32 skeleton-shimmer rounded-full"></div>
+              <div class="h-2.5 w-24 skeleton-shimmer rounded-full"></div>
             </div>
           </div>
           <div class="space-y-2 mb-4">
-            <div class="h-3 w-full skeleton-shimmer rounded"></div>
-            <div class="h-3 w-11/12 skeleton-shimmer rounded"></div>
-            <div class="h-3 w-3/4 skeleton-shimmer rounded"></div>
+            <div class="h-3 w-full skeleton-shimmer rounded-full"></div>
+            <div class="h-3 w-11/12 skeleton-shimmer rounded-full"></div>
+            <div class="h-3 w-3/4 skeleton-shimmer rounded-full"></div>
           </div>
-          <div class="h-52 skeleton-shimmer rounded-xl mb-4"></div>
-          <div class="flex gap-2">
-            <div class="h-9 flex-1 skeleton-shimmer rounded-lg"></div>
-            <div class="h-9 flex-1 skeleton-shimmer rounded-lg"></div>
-            <div class="h-9 flex-1 skeleton-shimmer rounded-lg"></div>
-            <div class="h-9 flex-1 skeleton-shimmer rounded-lg"></div>
+          <div class="h-56 skeleton-shimmer rounded-2xl mb-4"></div>
+          <div class="flex gap-2 pt-2 border-t border-[var(--border-light)]">
+            <div class="h-9 flex-1 skeleton-shimmer rounded-xl"></div>
+            <div class="h-9 flex-1 skeleton-shimmer rounded-xl"></div>
+            <div class="h-9 flex-1 skeleton-shimmer rounded-xl"></div>
+            <div class="h-9 flex-1 skeleton-shimmer rounded-xl"></div>
           </div>
         </div>
         {% endfor %}
       </div>
 
       <!-- ── Feed Posts ── -->
-      <div id="posts-feed" class="space-y-4 hidden">
+      <div id="posts-feed" class="space-y-4 hidden" aria-label="News feed" aria-live="polite">
         {% for post in posts %}
         <!-- ▸ Post Card -->
-        <article
-          class="post-card"
-          id="post-{{ post.id }}"
-          data-post-id="{{ post.id }}"
-        >
+        <article class="post-card"
+                 id="post-{{ post.id }}"
+                 data-post-id="{{ post.id }}"
+                 aria-label="Post by {{ post.author.get_full_name|default:post.author.username }}">
+
           <!-- Post Header -->
           <div class="flex items-center justify-between px-4 pt-4 pb-2">
             <div class="flex items-center gap-3 min-w-0">
-              <!-- Author Avatar -->
-              <div
-                class="relative flex-shrink-0 online-indicator"
-                data-user-id="{{ post.author.id }}"
-              >
-                <a
-                  href="{% url 'accounts:profile' username=post.author.username %}"
-                >
+              <!-- Avatar with online indicator -->
+              <div class="relative flex-shrink-0 online-indicator"
+                   data-user-id="{{ post.author.id }}">
+                <a href="{% url 'accounts:profile' username=post.author.username %}"
+                   aria-label="View {{ post.author.get_full_name|default:post.author.username }}'s profile">
                   {% if post.author.profile_picture %}
-                  <img
-                    src="{{ post.author.profile_picture.url }}"
-                    alt="{{ post.author.username }}"
-                    class="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
-                  />
+                  <img src="{{ post.author.profile_picture.url }}"
+                       alt="{{ post.author.get_full_name|default:post.author.username }}"
+                       class="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
+                       loading="lazy" />
                   {% else %}
-                  <img
-                    src="{% static 'images/default-avatar.svg' %}"
-                    alt="{{ post.author.username }}"
-                    class="w-10 h-10 rounded-full object-cover"
-                  />
+                  <img src="{% static 'images/default-avatar.svg' %}"
+                       alt="{{ post.author.username }}"
+                       class="w-10 h-10 rounded-full object-cover" />
                   {% endif %}
                 </a>
-                <span
-                  class="online-dot-social {% if not post.author.is_online %}offline{% endif %}"
-                ></span>
+                <span class="online-dot {% if not post.author.is_online %}offline{% endif %}"
+                      aria-hidden="true"></span>
               </div>
 
               <!-- Author Info -->
               <div class="min-w-0">
-                <a
-                  href="{% url 'accounts:profile' username=post.author.username %}"
-                  class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline block truncate"
-                >
+                <a href="{% url 'accounts:profile' username=post.author.username %}"
+                   class="font-semibold text-sm text-[var(--text-primary)]
+                          hover:underline no-underline block truncate">
                   {{ post.author.get_full_name|default:post.author.username }}
                 </a>
-                <div
-                  class="flex items-center gap-1 text-xs text-[var(--text-muted)]"
-                >
+                <div class="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                   <time datetime="{{ post.created_at|date:'c' }}"
-                    >{{ post.created_at|timesince }} ago</time
-                  >
+                        title="{{ post.created_at|date:'N j, Y, g:i a' }}">
+                    {{ post.created_at|timesince }} ago
+                  </time>
+                  <span aria-hidden="true">·</span>
                   {% if post.visibility == 'only_me' %}
-                  <span>·</span>
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-label="Only me">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   {% elif post.visibility == 'friends' %}
-                  <span>·</span>
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-label="Friends">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   {% else %}
-                  <span>·</span>
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"
-                    />
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-label="Public">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
                   </svg>
                   {% endif %}
                 </div>
               </div>
             </div>
 
-            <!-- Post Options Menu -->
+            <!-- Post Options Dropdown -->
             <div class="dropdown flex-shrink-0">
-              <button
-                class="w-9 h-9 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all dropdown-toggle"
-                aria-label="Post options"
-              >
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <button class="w-9 h-9 flex items-center justify-center rounded-full
+                             text-[var(--text-muted)] hover:bg-[var(--surface-hover)]
+                             hover:text-[var(--text-primary)] transition-all dropdown-toggle"
+                      aria-label="Post options for post by {{ post.author.username }}"
+                      aria-haspopup="true"
+                      aria-expanded="false">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="12" cy="5" r="1.5" />
                   <circle cx="12" cy="12" r="1.5" />
                   <circle cx="12" cy="19" r="1.5" />
                 </svg>
               </button>
-              <div class="dropdown-menu hidden" style="min-width: 180px">
+
+              <div class="dropdown-menu hidden" style="min-width:190px" role="menu">
                 {% if post.author == user %}
-                <a
-                  href="{% url 'posts:post_update' pk=post.id %}"
-                  class="dropdown-item"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
+                <a href="{% url 'posts:post_update' pk=post.id %}"
+                   class="dropdown-item" role="menuitem">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Edit Post
                 </a>
-                <button
-                  class="dropdown-item !text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20 w-full delete-post-btn"
-                  data-post-id="{{ post.id }}"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
+                <button class="dropdown-item !text-red-500 hover:!bg-red-50
+                               dark:hover:!bg-red-950/30 w-full delete-post-btn"
+                        data-post-id="{{ post.id }}"
+                        data-post-preview="{{ post.content|truncatechars:60 }}"
+                        role="menuitem">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                   Delete Post
                 </button>
                 {% else %}
-                <button
-                  class="dropdown-item w-full report-btn"
-                  data-post-id="{{ post.id }}"
-                >
-                  <svg
-                    class="w-4 h-4 text-red-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01"
-                    />
+                <button class="dropdown-item w-full report-btn"
+                        data-post-id="{{ post.id }}"
+                        role="menuitem">
+                  <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01" />
                   </svg>
                   Report Post
                 </button>
-                <button class="dropdown-item w-full">
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                    />
+                <button class="dropdown-item w-full" role="menuitem">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                   </svg>
                   Hide Post
                 </button>
                 {% endif %}
+
                 <div class="dropdown-divider"></div>
-                <button
-                  class="dropdown-item w-full copy-link-btn"
-                  data-url="{{ post.get_absolute_url }}"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                    />
+
+                <button class="dropdown-item w-full copy-link-btn"
+                        data-url="{{ post.get_absolute_url }}"
+                        role="menuitem">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                       viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                   Copy Link
                 </button>
@@ -1175,9 +1115,8 @@
           <!-- Post Content -->
           {% if post.content %}
           <div class="px-4 pb-3">
-            <p
-              class="text-[var(--text-primary)] text-[0.9375rem] leading-relaxed whitespace-pre-line"
-            >
+            <p class="text-[var(--text-primary)] text-[0.9375rem] leading-relaxed
+                      whitespace-pre-line break-words">
               {{ post.content|post_render }}
             </p>
           </div>
@@ -1188,48 +1127,37 @@
           <div class="mx-4 mb-3 shared-embed">
             <div class="flex items-center gap-2 mb-2">
               {% if post.shared_post.author.profile_picture %}
-              <img
-                src="{{ post.shared_post.author.profile_picture.url }}"
-                alt=""
-                class="w-7 h-7 rounded-full object-cover flex-shrink-0"
-              />
+              <img src="{{ post.shared_post.author.profile_picture.url }}" alt=""
+                   class="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                   loading="lazy" />
               {% else %}
-              <img
-                src="{% static 'images/default-avatar.svg' %}"
-                alt=""
-                class="w-7 h-7 rounded-full flex-shrink-0"
-              />
+              <img src="{% static 'images/default-avatar.svg' %}" alt=""
+                   class="w-7 h-7 rounded-full flex-shrink-0" />
               {% endif %}
-              <a
-                href="{% url 'accounts:profile' username=post.shared_post.author.username %}"
-                class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline"
-              >
-                {{
-                post.shared_post.author.get_full_name|default:post.shared_post.author.username
-                }}
+              <a href="{% url 'accounts:profile' username=post.shared_post.author.username %}"
+                 class="font-semibold text-sm text-[var(--text-primary)] hover:underline no-underline">
+                {{ post.shared_post.author.get_full_name|default:post.shared_post.author.username }}
               </a>
               <span class="text-xs text-[var(--text-muted)]">
                 {{ post.shared_post.created_at|timesince }} ago
               </span>
             </div>
-            <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
-              {{ post.shared_post.content|post_render }}
+            {% if post.shared_post.content %}
+            <p class="text-sm text-[var(--text-secondary)] leading-relaxed break-words">
+              {{ post.shared_post.content|post_render|truncatewords:60 }}
             </p>
+            {% endif %}
             {% if post.shared_post.images.all %}
-            <div class="mt-2 rounded-lg overflow-hidden">
-              <div
-                class="photo-grid-social"
-                data-count="{{ post.shared_post.images.all|length }}"
-              >
-                {% for img in post.shared_post.images.all %}
-                <img
-                  src="{{ img.image.url }}"
-                  alt=""
-                  loading="lazy"
-                  class="grid-img gallery-image"
-                  data-gallery-id="shared-{{ post.shared_post.id }}"
-                  data-index="{{ forloop.counter0 }}"
-                />
+            <div class="mt-2 rounded-xl overflow-hidden">
+              <div class="photo-grid-social"
+                   data-count="{{ post.shared_post.images.all|length }}"
+                   role="group"
+                   aria-label="{{ post.shared_post.images.all|length }} photos">
+                {% for img in post.shared_post.images.all|slice:":4" %}
+                <img src="{{ img.image.url }}" alt="" loading="lazy"
+                     class="grid-img gallery-image"
+                     data-gallery-id="shared-{{ post.shared_post.id }}"
+                     data-index="{{ forloop.counter0 }}" />
                 {% endfor %}
               </div>
             </div>
@@ -1237,24 +1165,31 @@
           </div>
           {% endif %}
 
-          <!-- Post Images -->
+          <!-- Post Images (max 4 shown, rest overlaid) -->
           {% if post.images.all %}
-          <div class="{% if not post.content %}mt-0{% else %}mt-0{% endif %}">
-            <div
-              class="photo-grid-social"
-              data-count="{{ post.images.all|length }}"
-            >
-              {% for img in post.images.all %}
-              <img
-                src="{{ img.image.url }}"
-                alt="Photo by {{ post.author.username }}"
-                loading="lazy"
-                class="grid-img gallery-image"
-                data-gallery-id="{{ post.id }}"
-                data-index="{{ forloop.counter0 }}"
-              />
-              {% endfor %}
+          <div class="photo-grid-social"
+               data-count="{% if post.images.all|length > 4 %}4{% else %}{{ post.images.all|length }}{% endif %}"
+               role="group"
+               aria-label="{{ post.images.all|length }} photo{% if post.images.all|length != 1 %}s{% endif %}">
+            {% for img in post.images.all|slice:":4" %}
+            {% if forloop.last and post.images.all|length > 4 %}
+            <div class="img-more-overlay grid-img"
+                 data-more="+{{ post.images.all|length|add:"-3" }}"
+                 style="overflow:hidden">
+              <img src="{{ img.image.url }}" alt="" loading="lazy"
+                   class="grid-img gallery-image"
+                   data-gallery-id="{{ post.id }}"
+                   data-index="{{ forloop.counter0 }}" />
             </div>
+            {% else %}
+            <img src="{{ img.image.url }}"
+                 alt="Photo {{ forloop.counter }} by {{ post.author.username }}"
+                 loading="lazy"
+                 class="grid-img gallery-image"
+                 data-gallery-id="{{ post.id }}"
+                 data-index="{{ forloop.counter0 }}" />
+            {% endif %}
+            {% endfor %}
           </div>
           {% endif %}
 
@@ -1263,249 +1198,185 @@
           {% if poll %}
           <div class="px-4 pb-3">
             {% if poll.id in voted_poll_ids %}
-            {% include "posts/_poll.html" with poll=poll already_voted=True %}
+              {% include "posts/_poll.html" with poll=poll already_voted=True %}
             {% else %}
-            {% include "posts/_poll.html" with poll=poll already_voted=False %}
+              {% include "posts/_poll.html" with poll=poll already_voted=False %}
             {% endif %}
           </div>
           {% endif %}
           {% endwith %}
 
           <!-- Stats Bar -->
-          <div class="post-stats-bar">
+          <div class="post-stats-bar" aria-label="Post statistics">
             <div class="flex items-center gap-1.5">
-              <div class="reaction-pill">
-                <span>❤️</span>
+              <button class="reaction-pill"
+                      aria-label="See who liked this post"
+                      title="See reactions">
+                <span aria-hidden="true">❤️</span>
                 <span id="like-count-{{ post.id }}"
-                  >{{ post.total_likes }}</span
-                >
-              </div>
+                      aria-live="polite"
+                      aria-atomic="true">{{ post.total_likes }}</span>
+              </button>
             </div>
-            <a
-              href="{% url 'posts:post_detail' pk=post.id %}"
-              class="text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:underline text-[0.8125rem] no-underline"
-            >
-              {{ post.total_comments }} comment{{ post.total_comments|pluralize
-              }}
+            <a href="{% url 'posts:post_detail' pk=post.id %}"
+               class="text-[var(--text-muted)] hover:text-[var(--text-secondary)]
+                      hover:underline text-[0.8125rem] no-underline transition-colors"
+               aria-label="{{ post.total_comments }} comment{{ post.total_comments|pluralize }}">
+              {{ post.total_comments }} comment{{ post.total_comments|pluralize }}
             </a>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex items-center px-1 py-0.5 gap-0.5">
+          <div class="flex items-center px-1 py-1 gap-0.5"
+               role="group"
+               aria-label="Post actions">
             <!-- Like -->
-            <button
-              class="post-action-btn {% if user in post.reactions.all %}liked{% endif %} post-action-like"
-              data-post-id="{{ post.id }}"
-              aria-label="Like post"
-              aria-pressed="{% if user in post.reactions.all %}true{% else %}false{% endif %}"
-            >
-              <svg
-                class="w-[18px] h-[18px]"
-                fill="{% if user in post.reactions.all %}currentColor{% else %}none{% endif %}"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
+            <button class="post-action-btn post-action-like
+                           {% if post.id in liked_post_ids %}liked{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    aria-label="{% if post.id in liked_post_ids %}Unlike{% else %}Like{% endif %} post"
+                    aria-pressed="{% if post.id in liked_post_ids %}true{% else %}false{% endif %}">
+              <svg class="w-[18px] h-[18px]" aria-hidden="true"
+                   fill="{% if post.id in liked_post_ids %}currentColor{% else %}none{% endif %}"
+                   stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
               <span>Like</span>
             </button>
 
             <!-- Comment -->
-            <a
-              href="{% url 'posts:post_detail' pk=post.id %}"
-              class="post-action-btn no-underline hover:no-underline"
-              aria-label="Comment on post"
-            >
-              <svg
-                class="w-[18px] h-[18px]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
+            <a href="{% url 'posts:post_detail' pk=post.id %}"
+               class="post-action-btn no-underline"
+               aria-label="Comment on post">
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
+                   viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               <span>Comment</span>
             </a>
 
             <!-- Share -->
-            <button
-              class="post-action-btn share-btn"
-              data-post-id="{{ post.id }}"
-              data-post-url="{{ post.get_absolute_url }}"
-              aria-label="Share post"
-            >
-              <svg
-                class="w-[18px] h-[18px]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                />
+            <button class="post-action-btn share-btn"
+                    data-post-id="{{ post.id }}"
+                    data-post-url="{{ post.get_absolute_url }}"
+                    aria-label="Share post">
+              <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
+                   viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
               <span>Share</span>
             </button>
 
             <!-- Save -->
-            <button
-              class="post-action-btn post-action-save"
-              data-post-id="{{ post.id }}"
-              aria-label="Save post"
-            >
-              <svg
-                class="w-[18px] h-[18px]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                />
+            <button class="post-action-btn post-action-save
+                           {% if post.id in saved_post_ids %}saved{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    aria-label="{% if post.id in saved_post_ids %}Unsave{% else %}Save{% endif %} post"
+                    aria-pressed="{% if post.id in saved_post_ids %}true{% else %}false{% endif %}">
+              <svg class="w-[18px] h-[18px]" aria-hidden="true"
+                   fill="{% if post.id in saved_post_ids %}currentColor{% else %}none{% endif %}"
+                   stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
               <span>Save</span>
             </button>
           </div>
         </article>
-        {% empty %}
 
-        <!-- Empty State -->
-        <div class="feed-empty">
-          <div class="feed-empty-icon">
-            <svg
-              class="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-              />
+        {% empty %}
+        <!-- ── Empty State ── -->
+        <div class="feed-empty" role="status" aria-label="Empty feed">
+          <div class="feed-empty-icon" aria-hidden="true">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
             </svg>
           </div>
-          <h3>Your feed is empty</h3>
-          <p>Connect with friends and follow pages to see posts here.</p>
+          <h3>Your feed is quiet</h3>
+          <p>Connect with friends or share a post to get started.</p>
           <div class="flex gap-3 justify-center flex-wrap">
-            <a href="{% url 'friendships:friend_requests' %}" class="btn-brand">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
+            <a href="{% url 'friendships:friend_requests' %}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
+                      bg-[var(--brand-600)] hover:bg-[var(--brand-700)]
+                      text-white text-sm font-semibold transition-all
+                      shadow-[0_2px_8px_rgba(79,70,229,0.25)]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                   viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
               Find Friends
             </a>
-            <button
-              class="btn-ghost-social border border-[var(--border-light)]"
-              data-modal-target="create-post-modal"
-            >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
+            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
+                           border-2 border-[var(--border-light)] text-[var(--text-secondary)]
+                           hover:bg-[var(--surface-hover)] hover:border-[var(--border-medium)]
+                           text-sm font-semibold transition-all"
+                    data-modal-target="create-post-modal">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                   viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16m8-8H4" />
               </svg>
               Create Post
             </button>
           </div>
         </div>
-
         {% endfor %}
       </div>
 
-      <!-- Pagination -->
+      <!-- ── Pagination ── -->
       {% if is_paginated %}
-      <nav class="pagination-social mt-4" aria-label="Feed pagination">
+      <nav class="pagination-social mt-5" aria-label="Feed pages">
         {% if page_obj.has_previous %}
-        <a
-          href="?page={{ page_obj.previous_page_number }}"
-          aria-label="Previous page"
-        >
+        <a href="?page={{ page_obj.previous_page_number }}"
+           aria-label="Go to previous page">
           ← Prev
         </a>
         {% endif %}
+
         {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="current" aria-current="page">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-        <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
+          {% if page_obj.number == num %}
+          <span class="current" aria-current="page" aria-label="Page {{ num }}, current">
+            {{ num }}
+          </span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}" aria-label="Go to page {{ num }}">{{ num }}</a>
+          {% endif %}
         {% endfor %}
+
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" aria-label="Next page">
+        <a href="?page={{ page_obj.next_page_number }}"
+           aria-label="Go to next page">
           Next →
         </a>
         {% endif %}
       </nav>
       {% endif %}
 
-      <!-- Infinite scroll sentinel -->
-      <div class="scroll-loading" id="scroll-loading">
+      <!-- ── Infinite scroll indicator ── -->
+      <div class="scroll-loading" id="scroll-loading" aria-live="polite" aria-label="Loading">
         <div class="inline-flex items-center gap-2 text-[var(--text-muted)]">
-          <svg
-            class="w-4 h-4 animate-spin"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
+          <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor"
+               viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Loading more posts…
+          Loading more…
         </div>
       </div>
-      <div class="infinite-scroll-sentinel h-1"></div>
+      <div id="infinite-scroll-sentinel" class="h-1" aria-hidden="true"></div>
     </div>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════════════════
          RIGHT SIDEBAR
-         ════════════════════════════════ -->
-    <aside
-      class="hidden lg:block w-[300px] flex-shrink-0"
-      style="
-        position: sticky;
-        top: calc(60px + 20px);
-        max-height: calc(100vh - 100px);
-        overflow-y: auto;
-      "
-    >
+         ════════════════════════════════════════ -->
+    <aside class="hidden lg:block w-[300px] flex-shrink-0 sidebar-sticky"
+           aria-label="Sidebar">
+
       <!-- Friend Suggestions -->
       <div class="sidebar-card mb-4">
         <div class="sidebar-card-header">
@@ -1525,556 +1396,776 @@
         </div>
         <div class="px-4 pb-3 space-y-1">
           {% cache 300 trending_tags_sidebar %}
-          <p class="text-sm text-[var(--text-muted)] py-2 text-center">
+          <p class="text-sm text-[var(--text-muted)] py-3 text-center">
             Loading trends…
           </p>
           {% endcache %}
         </div>
       </div>
 
-      <!-- Footer links -->
-      <div class="px-2">
-        <p class="text-[11px] text-[var(--text-muted)] leading-relaxed">
-          <a href="#" class="hover:underline">Privacy</a> ·
-          <a href="#" class="hover:underline">Terms</a> ·
-          <a href="#" class="hover:underline">Cookies</a> ·
-          <a href="#" class="hover:underline">About</a>
-          <br />SocialNet © {% now "Y" %}
-        </p>
+      <!-- Footer -->
+      <div class="px-3">
+        <nav aria-label="Footer links">
+          <p class="text-[11px] text-[var(--text-muted)] leading-loose">
+            <a href="#" class="hover:underline hover:text-[var(--text-secondary)]
+                               transition-colors">Privacy</a>
+            <span aria-hidden="true"> · </span>
+            <a href="#" class="hover:underline hover:text-[var(--text-secondary)]
+                               transition-colors">Terms</a>
+            <span aria-hidden="true"> · </span>
+            <a href="#" class="hover:underline hover:text-[var(--text-secondary)]
+                               transition-colors">Cookies</a>
+            <span aria-hidden="true"> · </span>
+            <a href="#" class="hover:underline hover:text-[var(--text-secondary)]
+                               transition-colors">About</a>
+            <br />
+            <span>SocialNet © {% now "Y" %}</span>
+          </p>
+        </nav>
       </div>
     </aside>
   </div>
 </div>
 
-<!-- ════════════════════════════════
+<!-- ═══════════════════════════════════════════
      REPORT MODAL
-     ════════════════════════════════ -->
-<div
-  id="report-modal"
-  class="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="report-modal-title"
->
-  <div
-    class="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-light)] shadow-[var(--shadow-xl)] w-[95%] max-w-[420px]"
-  >
+     ═══════════════════════════════════════════ -->
+<div id="report-modal"
+     class="fixed inset-0 z-[400] flex items-end sm:items-center justify-center
+            bg-black/50 backdrop-blur-sm hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="report-modal-title">
+
+  <div class="bg-[var(--surface-primary,#fff)] w-full sm:w-[95%] sm:max-w-[440px]
+              rounded-t-2xl sm:rounded-2xl border border-[var(--border-light)]
+              shadow-2xl overflow-hidden">
+
     <!-- Header -->
-    <div
-      class="flex items-center justify-between px-5 py-4 border-b border-[var(--border-light)]"
-    >
-      <h3
-        id="report-modal-title"
-        class="text-base font-bold text-[var(--text-primary)] flex items-center gap-2"
-      >
-        <svg
-          class="w-5 h-5 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01"
-          />
+    <div class="flex items-center justify-between px-5 py-4
+                border-b border-[var(--border-light)]">
+      <h3 id="report-modal-title"
+          class="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+        <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor"
+             viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9m0 4.5h.01" />
         </svg>
         Report Post
       </h3>
-      <button
-        class="modal-close-btn w-9 h-9 flex items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:bg-[var(--surface-active)] hover:text-[var(--text-primary)] transition-all text-lg"
-        data-modal-close="report-modal"
-      >
-        ✕
+      <button class="w-9 h-9 flex items-center justify-center rounded-full
+                     bg-[var(--surface-hover)] text-[var(--text-secondary)]
+                     hover:bg-[var(--surface-active)] hover:text-[var(--text-primary)]
+                     transition-all text-xl"
+              aria-label="Close report dialog"
+              data-modal-close="report-modal">
+        ×
       </button>
     </div>
 
     <!-- Body -->
-    <div class="p-5 space-y-3">
+    <div class="p-5 space-y-3 max-h-[70vh] overflow-y-auto">
       <p class="text-sm text-[var(--text-muted)] font-medium">
         Why are you reporting this post?
       </p>
 
-      <!-- Report Options -->
-      <div class="space-y-2" id="report-options">
+      <div class="space-y-2" id="report-options" role="radiogroup"
+           aria-label="Report reasons">
         {% for value, label in report_reasons %}
-        <button class="report-option w-full text-left" data-value="{{ value }}">
+        <button class="report-option w-full" data-value="{{ value }}"
+                role="radio" aria-checked="false">
           {{ label }}
         </button>
         {% empty %}
-        <button class="report-option w-full text-left" data-value="spam">
-          🚫 Spam
-        </button>
-        <button class="report-option w-full text-left" data-value="harassment">
-          😠 Harassment or bullying
-        </button>
-        <button class="report-option w-full text-left" data-value="hate_speech">
-          🗣 Hate speech
-        </button>
-        <button class="report-option w-full text-left" data-value="nudity">
-          🔞 Nudity or sexual content
-        </button>
-        <button class="report-option w-full text-left" data-value="violence">
-          ⚠️ Violence or harm
-        </button>
-        <button
-          class="report-option w-full text-left"
-          data-value="misinformation"
-        >
-          ❌ False information
-        </button>
-        <button class="report-option w-full text-left" data-value="other">
-          💬 Other
-        </button>
+        {% for value, label in "spam,🚫 Spam|harassment,😠 Harassment or bullying|hate_speech,🗣 Hate speech|nudity,🔞 Nudity or sexual content|violence,⚠️ Violence or harm|misinformation,❌ False information|other,💬 Other"|split:"|" %}
+        {% endfor %}
+        <button class="report-option w-full" data-value="spam"
+                role="radio" aria-checked="false">🚫 Spam</button>
+        <button class="report-option w-full" data-value="harassment"
+                role="radio" aria-checked="false">😠 Harassment or bullying</button>
+        <button class="report-option w-full" data-value="hate_speech"
+                role="radio" aria-checked="false">🗣 Hate speech</button>
+        <button class="report-option w-full" data-value="nudity"
+                role="radio" aria-checked="false">🔞 Nudity or sexual content</button>
+        <button class="report-option w-full" data-value="violence"
+                role="radio" aria-checked="false">⚠️ Violence or harm</button>
+        <button class="report-option w-full" data-value="misinformation"
+                role="radio" aria-checked="false">❌ False information</button>
+        <button class="report-option w-full" data-value="other"
+                role="radio" aria-checked="false">💬 Other</button>
         {% endfor %}
       </div>
 
-      <textarea
-        id="report-description"
-        class="w-full px-3 py-2.5 bg-[var(--surface-secondary)] border border-[var(--border-light)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--brand-400)] focus:ring-2 focus:ring-[var(--brand-400)]/10 transition-all placeholder:text-[var(--text-muted)] resize-none"
-        rows="3"
-        placeholder="Additional details (optional)…"
-      ></textarea>
+      <textarea id="report-description"
+                class="w-full px-3 py-2.5 bg-[var(--surface-secondary)]
+                       border border-[var(--border-light)] rounded-xl text-sm
+                       text-[var(--text-primary)] outline-none
+                       focus:border-[var(--brand-400)]
+                       focus:ring-2 focus:ring-[rgba(99,102,241,0.12)]
+                       transition-all placeholder:text-[var(--text-muted)] resize-none"
+                rows="3"
+                placeholder="Additional details (optional)…"
+                aria-label="Additional report details"></textarea>
 
-      <button
-        id="report-submit-btn"
-        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all shadow-sm disabled:opacity-50"
-        disabled
-      >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-          />
+      <button id="report-submit-btn"
+              class="w-full flex items-center justify-center gap-2 py-3 px-4
+                     bg-red-500 hover:bg-red-600 text-white font-semibold
+                     text-sm rounded-xl transition-all
+                     shadow-[0_2px_8px_rgba(239,68,68,0.25)]
+                     hover:shadow-[0_4px_16px_rgba(239,68,68,0.3)]
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     disabled:shadow-none"
+              disabled
+              aria-disabled="true">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+             viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
         </svg>
-        Submit Report
+        <span id="report-submit-text">Submit Report</span>
       </button>
     </div>
   </div>
 </div>
-{% endblock %} {% block extra_js %}
+
+<!-- ═══════════════════════════════════════════
+     CUSTOM CONFIRM DIALOG (replaces confirm())
+     ═══════════════════════════════════════════ -->
+<div id="confirm-dialog-overlay" class="confirm-dialog-overlay hidden"
+     role="alertdialog"
+     aria-modal="true"
+     aria-labelledby="confirm-title"
+     aria-describedby="confirm-desc">
+  <div class="confirm-dialog">
+    <div class="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center
+                justify-center mx-auto mb-4">
+      <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor"
+           viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </div>
+    <h2 id="confirm-title"
+        class="text-lg font-bold text-[var(--text-primary)] mb-2">
+      Delete Post?
+    </h2>
+    <p id="confirm-desc"
+       class="text-sm text-[var(--text-muted)] mb-6 leading-relaxed"></p>
+    <div class="flex gap-3">
+      <button id="confirm-cancel"
+              class="flex-1 py-2.5 rounded-xl border-2 border-[var(--border-light)]
+                     text-[var(--text-secondary)] font-semibold text-sm
+                     hover:bg-[var(--surface-hover)] transition-all">
+        Cancel
+      </button>
+      <button id="confirm-ok"
+              class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600
+                     text-white font-semibold text-sm transition-all
+                     shadow-[0_2px_8px_rgba(239,68,68,0.25)]">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-  (function () {
-    "use strict";
+(function () {
+  "use strict";
 
-    /* ══════════════════════════════════════
-     HELPERS
-     ══════════════════════════════════════ */
-    function getCsrf() {
-      var v = "; " + document.cookie;
-      var p = v.split("; csrftoken=");
-      return p.length === 2 ? p.pop().split(";").shift() : "";
-    }
+  /* ════════════════════════════════════════
+     UTILS
+     ════════════════════════════════════════ */
+  function getCsrf() {
+    var v = "; " + document.cookie;
+    var p = v.split("; csrftoken=");
+    return p.length === 2 ? p.pop().split(";").shift() : "";
+  }
 
-    function fetchJson(url, method, body) {
-      return fetch(url, {
-        method: method || "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrf(),
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      }).then(function (r) {
-        return r.json();
-      });
-    }
-
-    /* ══════════════════════════════════════
-     SKELETON → REVEAL FEED
-     ══════════════════════════════════════ */
-    window.addEventListener("load", function () {
-      var skeleton = document.getElementById("skeleton-feed");
-      var feed = document.getElementById("posts-feed");
-      if (!skeleton || !feed) return;
-
-      setTimeout(function () {
-        skeleton.style.transition = "opacity 0.3s ease";
-        skeleton.style.opacity = "0";
-        setTimeout(function () {
-          skeleton.classList.add("hidden");
-          feed.classList.remove("hidden");
-        }, 300);
-      }, 600);
+  function fetchJson(url, method, body) {
+    return fetch(url, {
+      method: method || "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrf(),
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    }).then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
     });
+  }
 
-    /* ══════════════════════════════════════
-     MODAL SYSTEM
-     ══════════════════════════════════════ */
-    function openModal(id) {
-      var m = document.getElementById(id);
-      if (!m) return;
-      m.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-      // focus first focusable
-      var first = m.querySelector("button, textarea, input, select, a[href]");
-      if (first)
-        setTimeout(function () {
-          first.focus();
-        }, 50);
-    }
-    function closeModal(id) {
-      var m = document.getElementById(id);
-      if (!m) return;
-      m.classList.add("hidden");
+  function toast(msg, type, dur) {
+    if (typeof showToast === "function") showToast(msg, type || "info", dur);
+  }
+
+  /* ════════════════════════════════════════
+     CUSTOM CONFIRM DIALOG
+     ════════════════════════════════════════ */
+  function showConfirm(title, description, onConfirm) {
+    var overlay = document.getElementById("confirm-dialog-overlay");
+    var titleEl = document.getElementById("confirm-title");
+    var descEl  = document.getElementById("confirm-desc");
+    var okBtn   = document.getElementById("confirm-ok");
+    var cancelBtn = document.getElementById("confirm-cancel");
+    if (!overlay) { if (onConfirm) onConfirm(); return; }
+
+    if (titleEl)  titleEl.textContent = title || "Are you sure?";
+    if (descEl)   descEl.textContent  = description || "";
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    // Focus trap
+    if (cancelBtn) cancelBtn.focus();
+
+    function close() {
+      overlay.classList.add("hidden");
       document.body.style.overflow = "";
+      okBtn.removeEventListener("click", handleOk);
+      cancelBtn.removeEventListener("click", close);
     }
-    function closeAllModals() {
-      document
-        .querySelectorAll("[data-modal-close], .modal-overlay")
-        .forEach(function (m) {
-          var id = m.dataset && m.dataset.modalClose;
-          if (id) closeModal(id);
-        });
+    function handleOk() {
+      close();
+      if (onConfirm) onConfirm();
     }
 
-    // Open via data-modal-target
-    document.addEventListener("click", function (e) {
-      var trigger = e.target.closest("[data-modal-target]");
-      if (trigger) {
-        e.preventDefault();
-        openModal(trigger.dataset.modalTarget);
-      }
-    });
-
-    // Close via data-modal-close button
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-modal-close]");
-      if (btn) closeModal(btn.dataset.modalClose);
-    });
-
-    // Close on overlay click
-    document.addEventListener("click", function (e) {
-      if (
-        e.target.classList.contains("fixed") &&
-        e.target.style.zIndex >= 400 &&
-        !e.target.closest(".bg-\\[var\\(--surface-card\\)\\]")
-      ) {
-        // clicked overlay background
-      }
-    });
+    okBtn.addEventListener("click", handleOk);
+    cancelBtn.addEventListener("click", close);
 
     // Escape key
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        document
-          .querySelectorAll('[id$="-modal"]:not(.hidden)')
-          .forEach(function (m) {
-            m.classList.add("hidden");
-            document.body.style.overflow = "";
-          });
+    function handleKey(e) {
+      if (e.key === "Escape") { close(); document.removeEventListener("keydown", handleKey); }
+    }
+    document.addEventListener("keydown", handleKey);
+  }
+
+  /* ════════════════════════════════════════
+     MODAL SYSTEM (with focus trap)
+     ════════════════════════════════════════ */
+  var _lastFocus = null;
+
+  function openModal(id) {
+    var m = document.getElementById(id);
+    if (!m) return;
+    _lastFocus = document.activeElement;
+    m.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    // Auto-focus first element
+    requestAnimationFrame(function() {
+      var first = m.querySelector(
+        'textarea, input:not([type="hidden"]), select, button:not([disabled]), a[href]'
+      );
+      if (first) first.focus();
+    });
+  }
+
+  function closeModal(id) {
+    var m = document.getElementById(id);
+    if (!m) return;
+    m.classList.add("hidden");
+    document.body.style.overflow = "";
+    if (_lastFocus) { _lastFocus.focus(); _lastFocus = null; }
+  }
+
+  // Focus trap inside modals
+  document.addEventListener("keydown", function(e) {
+    if (e.key !== "Tab") return;
+    var openModal = document.querySelector(
+      '[role="dialog"]:not(.hidden):not(#confirm-dialog-overlay)'
+    );
+    if (!openModal) return;
+    var focusable = Array.from(openModal.querySelectorAll(
+      'button:not([disabled]), [href], input:not([type="hidden"]):not([disabled]), ' +
+      'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function(el) { return !el.closest('.hidden'); });
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last  = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  // Open via data-modal-target
+  document.addEventListener("click", function(e) {
+    var t = e.target.closest("[data-modal-target]");
+    if (!t) return;
+    e.preventDefault();
+    var id = t.dataset.modalTarget;
+    openModal(id);
+
+    // Handle focus hint for create post
+    var focus = t.dataset.modalFocus;
+    if (focus === "images") {
+      setTimeout(function() {
+        var zone = document.getElementById("image-upload-zone");
+        var toggleBtn = document.getElementById("toggle-image-upload");
+        if (zone && toggleBtn) {
+          zone.classList.remove("hidden");
+          toggleBtn.setAttribute("aria-pressed", "true");
+        }
+      }, 100);
+    } else if (focus === "poll") {
+      setTimeout(function() {
+        var ps = document.getElementById("poll-section");
+        var toggleBtn = document.getElementById("toggle-poll");
+        if (ps && toggleBtn) {
+          ps.classList.remove("hidden");
+          toggleBtn.setAttribute("aria-pressed", "true");
+        }
+      }, 100);
+    }
+  });
+
+  // Close via data-modal-close
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest("[data-modal-close]");
+    if (btn) closeModal(btn.dataset.modalClose);
+  });
+
+  // Close on overlay background click
+  document.addEventListener("click", function(e) {
+    if (!e.target.matches('[role="dialog"]')) return;
+    var id = e.target.id;
+    if (id) closeModal(id);
+  });
+
+  // Escape to close modals
+  document.addEventListener("keydown", function(e) {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll('[role="dialog"]:not(.hidden)').forEach(function(m) {
+      if (m.id !== "confirm-dialog-overlay") closeModal(m.id);
+    });
+  });
+
+  /* ════════════════════════════════════════
+     SKELETON → FEED REVEAL
+     ════════════════════════════════════════ */
+  function revealFeed() {
+    var skeleton = document.getElementById("skeleton-feed");
+    var feed = document.getElementById("posts-feed");
+    if (!skeleton || !feed) return;
+    skeleton.style.transition = "opacity 0.3s ease";
+    skeleton.style.opacity = "0";
+    setTimeout(function() {
+      skeleton.classList.add("hidden");
+      feed.classList.remove("hidden");
+    }, 300);
+  }
+
+  // Reveal on load or after 1s max
+  if (document.readyState === "complete") {
+    setTimeout(revealFeed, 200);
+  } else {
+    window.addEventListener("load", function() { setTimeout(revealFeed, 200); });
+    setTimeout(revealFeed, 1000); // Fallback
+  }
+
+  /* ════════════════════════════════════════
+     CHAR COUNTER
+     ════════════════════════════════════════ */
+  var textarea = document.getElementById("post-content-input");
+  var counter  = document.getElementById("char-count-display");
+  var MAX_CHARS = 5000;
+
+  if (textarea && counter) {
+    textarea.addEventListener("input", function() {
+      var remaining = MAX_CHARS - this.value.length;
+      counter.textContent = remaining;
+      counter.className = "char-counter " +
+        (remaining < 0 ? "danger" : remaining < 200 ? "warn" : "");
+
+      // Auto-grow textarea
+      this.style.height = "auto";
+      this.style.height = this.scrollHeight + "px";
+
+      // Disable submit if over limit
+      var submit = document.getElementById("create-post-submit");
+      if (submit) submit.disabled = remaining < 0;
+    });
+  }
+
+  /* ════════════════════════════════════════
+     IMAGE UPLOAD — Preview + Drag & Drop
+     ════════════════════════════════════════ */
+  var imageInput    = document.getElementById("post-images-input");
+  var previewBox    = document.getElementById("image-preview-container");
+  var uploadZone    = document.getElementById("image-upload-zone");
+  var uploadLabel   = document.getElementById("upload-zone-label");
+  var toggleImgBtn  = document.getElementById("toggle-image-upload");
+  var togglePollBtn = document.getElementById("toggle-poll");
+  var pollSection   = document.getElementById("poll-section");
+  var closePollBtn  = document.getElementById("close-poll");
+
+  if (toggleImgBtn) {
+    toggleImgBtn.addEventListener("click", function() {
+      var isOpen = uploadZone && !uploadZone.classList.contains("hidden");
+      if (uploadZone) uploadZone.classList.toggle("hidden", isOpen);
+      this.setAttribute("aria-pressed", String(!isOpen));
+    });
+  }
+
+  if (togglePollBtn) {
+    togglePollBtn.addEventListener("click", function() {
+      var isOpen = pollSection && !pollSection.classList.contains("hidden");
+      if (pollSection) pollSection.classList.toggle("hidden", isOpen);
+      this.setAttribute("aria-pressed", String(!isOpen));
+    });
+  }
+  if (closePollBtn && pollSection) {
+    closePollBtn.addEventListener("click", function() {
+      pollSection.classList.add("hidden");
+      if (togglePollBtn) togglePollBtn.setAttribute("aria-pressed", "false");
+    });
+  }
+
+  function renderPreviews(files) {
+    if (!previewBox) return;
+    previewBox.innerHTML = "";
+    Array.from(files).slice(0, 10).forEach(function(file, idx) {
+      if (!file.type.startsWith("image/")) return;
+      var url  = URL.createObjectURL(file);
+      var item = document.createElement("div");
+      item.className = "image-preview-item";
+      item.innerHTML =
+        '<img src="' + url + '" alt="Preview image ' + (idx+1) + '">' +
+        '<button type="button" class="image-preview-remove" ' +
+        'aria-label="Remove image ' + (idx+1) + '">×</button>';
+      previewBox.appendChild(item);
+    });
+  }
+
+  if (imageInput && previewBox) {
+    imageInput.addEventListener("change", function() {
+      renderPreviews(this.files);
+    });
+    previewBox.addEventListener("click", function(e) {
+      var btn = e.target.closest(".image-preview-remove");
+      if (btn) btn.closest(".image-preview-item").remove();
+    });
+  }
+
+  // Drag & drop
+  if (uploadLabel) {
+    ["dragenter", "dragover"].forEach(function(ev) {
+      uploadLabel.addEventListener(ev, function(e) {
+        e.preventDefault();
+        uploadLabel.classList.add("drag-over");
+      });
+    });
+    ["dragleave", "drop"].forEach(function(ev) {
+      uploadLabel.addEventListener(ev, function(e) {
+        e.preventDefault();
+        uploadLabel.classList.remove("drag-over");
+        if (ev === "drop" && e.dataTransfer && imageInput) {
+          imageInput.files = e.dataTransfer.files;
+          renderPreviews(e.dataTransfer.files);
+        }
+      });
+    });
+  }
+
+  /* ════════════════════════════════════════
+     CREATE POST — Loading State
+     ════════════════════════════════════════ */
+  var createForm = document.getElementById("create-post-form");
+  var createBtn  = document.getElementById("create-post-submit");
+
+  if (createForm && createBtn) {
+    createForm.addEventListener("submit", function(e) {
+      var content = document.getElementById("post-content-input");
+      if (content && content.value.trim().length === 0) {
+        e.preventDefault();
+        toast("Please write something before posting!", "warning");
+        content.focus();
+        return;
       }
+      createBtn.disabled = true;
+      createBtn.innerHTML =
+        '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" ' +
+        'viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" ' +
+        'stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 ' +
+        '11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Posting…';
     });
+  }
 
-    /* ══════════════════════════════════════
-     CREATE POST — Image Preview
-     ══════════════════════════════════════ */
-    var imageInput = document.getElementById("post-images-input");
-    var previewBox = document.getElementById("image-preview-container");
-    var uploadZone = document.getElementById("image-upload-zone");
-    var toggleImgBtn = document.getElementById("toggle-image-upload");
-    var togglePollBtn = document.getElementById("toggle-poll");
-    var pollSection = document.getElementById("poll-section");
-    var closePollBtn = document.getElementById("close-poll");
+  /* ════════════════════════════════════════
+     LIKE (Optimistic)
+     ════════════════════════════════════════ */
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".post-action-like");
+    if (!btn) return;
+    e.preventDefault();
 
-    if (toggleImgBtn) {
-      toggleImgBtn.addEventListener("click", function () {
-        if (uploadZone) {
-          var hidden = uploadZone.classList.toggle("hidden");
-          toggleImgBtn.classList.toggle("ring-2", !hidden);
-          toggleImgBtn.classList.toggle("ring-emerald-400", !hidden);
-          if (!hidden) uploadZone.querySelector("label").click();
+    var postId   = btn.dataset.postId;
+    var wasLiked = btn.classList.contains("liked");
+    var svg      = btn.querySelector("svg");
+    var countEl  = document.getElementById("like-count-" + postId);
+
+    // Optimistic update
+    btn.classList.toggle("liked", !wasLiked);
+    btn.setAttribute("aria-pressed", String(!wasLiked));
+    btn.setAttribute("aria-label", (!wasLiked ? "Unlike" : "Like") + " post");
+    if (svg) svg.setAttribute("fill", wasLiked ? "none" : "currentColor");
+    if (countEl) {
+      var c = parseInt(countEl.textContent, 10) || 0;
+      countEl.textContent = wasLiked ? Math.max(0, c - 1) : c + 1;
+    }
+
+    fetchJson("/posts/" + postId + "/like/", "POST")
+      .then(function(data) {
+        if (data.liked !== undefined) {
+          btn.classList.toggle("liked", data.liked);
+          btn.setAttribute("aria-pressed", String(data.liked));
+          btn.setAttribute("aria-label", (data.liked ? "Unlike" : "Like") + " post");
+          if (svg) svg.setAttribute("fill", data.liked ? "currentColor" : "none");
         }
-      });
-    }
-
-    if (togglePollBtn) {
-      togglePollBtn.addEventListener("click", function () {
-        if (pollSection) {
-          pollSection.classList.toggle("hidden");
+        if (data.likes !== undefined && countEl) {
+          countEl.textContent = data.likes;
         }
-      });
-    }
-    if (closePollBtn) {
-      closePollBtn.addEventListener("click", function () {
-        if (pollSection) pollSection.classList.add("hidden");
-      });
-    }
-
-    if (imageInput && previewBox) {
-      imageInput.addEventListener("change", function () {
-        previewBox.innerHTML = "";
-        Array.from(this.files).forEach(function (file, idx) {
-          var url = URL.createObjectURL(file);
-          var item = document.createElement("div");
-          item.className = "image-preview-item";
-          item.innerHTML =
-            '<img src="' +
-            url +
-            '" alt="Preview"><button type="button" class="image-preview-remove" data-index="' +
-            idx +
-            '">✕</button>';
-          previewBox.appendChild(item);
-        });
-      });
-
-      // Remove individual preview (visual only — form file list is read-only)
-      previewBox.addEventListener("click", function (e) {
-        var btn = e.target.closest(".image-preview-remove");
-        if (btn) btn.closest(".image-preview-item").remove();
-      });
-    }
-
-    /* ══════════════════════════════════════
-     CREATE POST — Submit loading state
-     ══════════════════════════════════════ */
-    var createForm = document.getElementById("create-post-form");
-    var createBtn = document.getElementById("create-post-submit");
-
-    if (createForm) {
-      createForm.addEventListener("submit", function () {
-        if (createBtn) {
-          createBtn.disabled = true;
-          createBtn.innerHTML =
-            '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Posting…';
+      })
+      .catch(function() {
+        // Revert
+        btn.classList.toggle("liked", wasLiked);
+        btn.setAttribute("aria-pressed", String(wasLiked));
+        if (svg) svg.setAttribute("fill", wasLiked ? "currentColor" : "none");
+        if (countEl) {
+          var c2 = parseInt(countEl.textContent, 10) || 0;
+          countEl.textContent = wasLiked ? c2 + 1 : Math.max(0, c2 - 1);
         }
+        toast("Failed to update like. Please try again.", "error");
       });
-    }
+  });
 
-    /* ══════════════════════════════════════
-     LIKE / REACT
-     ══════════════════════════════════════ */
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest(".post-action-like");
-      if (!btn) return;
-      e.preventDefault();
+  /* ════════════════════════════════════════
+     SAVE (Optimistic)
+     ════════════════════════════════════════ */
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".post-action-save");
+    if (!btn) return;
+    e.preventDefault();
 
-      var postId = btn.dataset.postId;
-      var isLiked = btn.classList.contains("liked");
-      var svg = btn.querySelector("svg");
-      var countEl = document.getElementById("like-count-" + postId);
+    var postId   = btn.dataset.postId;
+    var wasSaved = btn.classList.contains("saved");
+    var svg      = btn.querySelector("svg");
 
-      // Optimistic UI
-      btn.classList.toggle("liked", !isLiked);
-      btn.setAttribute("aria-pressed", String(!isLiked));
-      if (svg) svg.setAttribute("fill", isLiked ? "none" : "currentColor");
-      if (countEl) {
-        var c = parseInt(countEl.textContent) || 0;
-        countEl.textContent = isLiked ? Math.max(0, c - 1) : c + 1;
-      }
+    // Optimistic
+    btn.classList.toggle("saved", !wasSaved);
+    btn.setAttribute("aria-pressed", String(!wasSaved));
+    btn.setAttribute("aria-label", (!wasSaved ? "Unsave" : "Save") + " post");
+    if (svg) svg.setAttribute("fill", wasSaved ? "none" : "currentColor");
 
-      fetchJson("/posts/" + postId + "/like/", "POST")
-        .then(function (data) {
-          if (data.likes !== undefined && countEl) {
-            countEl.textContent = data.likes;
-          }
-          if (data.liked !== undefined) {
-            btn.classList.toggle("liked", data.liked);
-            btn.setAttribute("aria-pressed", String(data.liked));
-            if (svg)
-              svg.setAttribute("fill", data.liked ? "currentColor" : "none");
-          }
-        })
-        .catch(function () {
-          // Revert
-          btn.classList.toggle("liked", isLiked);
-          if (svg) svg.setAttribute("fill", isLiked ? "currentColor" : "none");
-          if (countEl) {
-            var c2 = parseInt(countEl.textContent) || 0;
-            countEl.textContent = isLiked ? c2 + 1 : Math.max(0, c2 - 1);
-          }
-          if (typeof showToast === "function")
-            showToast("Failed to like post", "error");
-        });
-    });
+    fetchJson("/posts/" + postId + "/save/", "POST")
+      .then(function(data) {
+        var saved = data.saved;
+        btn.classList.toggle("saved", saved);
+        btn.setAttribute("aria-pressed", String(saved));
+        btn.setAttribute("aria-label", (saved ? "Unsave" : "Save") + " post");
+        if (svg) svg.setAttribute("fill", saved ? "currentColor" : "none");
+        toast(saved ? "🔖 Post saved!" : "Post unsaved", "success", 2500);
+      })
+      .catch(function() {
+        // Revert
+        btn.classList.toggle("saved", wasSaved);
+        if (svg) svg.setAttribute("fill", wasSaved ? "currentColor" : "none");
+        toast("Failed to save post.", "error");
+      });
+  });
 
-    /* ══════════════════════════════════════
-     SAVE POST
-     ══════════════════════════════════════ */
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest(".post-action-save");
-      if (!btn) return;
-      e.preventDefault();
-
-      var postId = btn.dataset.postId;
-      var isSaved = btn.classList.contains("saved");
-
-      fetchJson("/posts/" + postId + "/save/", "POST")
-        .then(function (data) {
-          var saved = data.saved;
-          btn.classList.toggle("saved", saved);
-          var svg = btn.querySelector("svg");
-          if (svg) svg.setAttribute("fill", saved ? "currentColor" : "none");
-          if (typeof showToast === "function") {
-            showToast(
-              saved ? "🔖 Post saved!" : "Post unsaved",
-              "success",
-              2500,
-            );
-          }
-        })
-        .catch(function () {
-          if (typeof showToast === "function")
-            showToast("Failed to save post", "error");
-        });
-    });
-
-    /* ══════════════════════════════════════
+  /* ════════════════════════════════════════
      COPY LINK
-     ══════════════════════════════════════ */
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest(".copy-link-btn");
-      if (!btn) return;
-      e.preventDefault();
+     ════════════════════════════════════════ */
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".copy-link-btn");
+    if (!btn) return;
+    e.preventDefault();
+    var url = window.location.origin + (btn.dataset.url || "");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url)
+        .then(function() { toast("🔗 Link copied!", "success", 2500); })
+        .catch(function() { toast("Failed to copy link.", "error"); });
+    } else {
+      // Fallback
+      var ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast("🔗 Link copied!", "success", 2500); }
+      catch (err) { toast("Please copy manually: " + url, "info", 8000); }
+      document.body.removeChild(ta);
+    }
+  });
 
-      var url = window.location.origin + (btn.dataset.url || "");
-      navigator.clipboard
-        .writeText(url)
-        .then(function () {
-          if (typeof showToast === "function")
-            showToast("🔗 Link copied!", "success", 2500);
-        })
-        .catch(function () {
-          if (typeof showToast === "function")
-            showToast("Failed to copy link", "error");
-        });
-    });
+  /* ════════════════════════════════════════
+     DELETE POST (Custom confirm)
+     ════════════════════════════════════════ */
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".delete-post-btn");
+    if (!btn) return;
+    e.preventDefault();
 
-    /* ══════════════════════════════════════
-     DELETE POST
-     ══════════════════════════════════════ */
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest(".delete-post-btn");
-      if (!btn) return;
-      e.preventDefault();
+    var postId  = btn.dataset.postId;
+    var preview = btn.dataset.postPreview || "";
 
-      var postId = btn.dataset.postId;
-      if (!confirm("Delete this post? This cannot be undone.")) return;
-
-      fetchJson("/posts/" + postId + "/delete/", "POST")
-        .then(function (data) {
-          if (data.success || data.deleted) {
-            var card = document.getElementById("post-" + postId);
-            if (card) {
-              card.style.transition = "opacity 0.3s, transform 0.3s";
-              card.style.opacity = "0";
-              card.style.transform = "scale(0.97)";
-              setTimeout(function () {
-                card.remove();
-              }, 300);
+    showConfirm(
+      "Delete this post?",
+      preview
+        ? '"' + preview + '" will be permanently removed. This cannot be undone.'
+        : "This post will be permanently removed. This cannot be undone.",
+      function() {
+        fetchJson("/posts/" + postId + "/delete/", "POST")
+          .then(function(data) {
+            if (data.success || data.deleted) {
+              var card = document.getElementById("post-" + postId);
+              if (card) {
+                card.style.transition = "opacity 0.3s ease, transform 0.3s ease, max-height 0.4s ease";
+                card.style.opacity = "0";
+                card.style.transform = "scale(0.97)";
+                card.style.maxHeight = card.offsetHeight + "px";
+                setTimeout(function() {
+                  card.style.maxHeight = "0";
+                  card.style.margin = "0";
+                  card.style.padding = "0";
+                  card.style.border = "none";
+                  setTimeout(function() { card.remove(); }, 400);
+                }, 300);
+              }
+              toast("Post deleted.", "success");
             }
-            if (typeof showToast === "function")
-              showToast("Post deleted", "success");
-          }
-        })
-        .catch(function () {
-          if (typeof showToast === "function")
-            showToast("Failed to delete post", "error");
-        });
-    });
-
-    /* ══════════════════════════════════════
-     REPORT MODAL
-     ══════════════════════════════════════ */
-    var reportModal = document.getElementById("report-modal");
-    var reportSubmitBtn = document.getElementById("report-submit-btn");
-    var reportDescInput = document.getElementById("report-description");
-    var reportOptions = document.getElementById("report-options");
-    var selectedReason = null;
-    var currentPostId = null;
-
-    // Open report modal
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest(".report-btn");
-      if (!btn) return;
-      e.preventDefault();
-
-      currentPostId = btn.dataset.postId;
-      selectedReason = null;
-      if (reportSubmitBtn) reportSubmitBtn.disabled = true;
-
-      // Reset option selections
-      if (reportOptions) {
-        reportOptions.querySelectorAll(".report-option").forEach(function (o) {
-          o.classList.remove("selected");
-        });
+          })
+          .catch(function() { toast("Failed to delete post.", "error"); });
       }
-      if (reportDescInput) reportDescInput.value = "";
-      if (reportModal) reportModal.classList.remove("hidden");
-    });
+    );
+  });
 
-    // Select reason
+  /* ════════════════════════════════════════
+     REPORT MODAL
+     ════════════════════════════════════════ */
+  var reportModal   = document.getElementById("report-modal");
+  var reportOptions = document.getElementById("report-options");
+  var reportDesc    = document.getElementById("report-description");
+  var reportSubmit  = document.getElementById("report-submit-btn");
+  var reportText    = document.getElementById("report-submit-text");
+  var selectedReason  = null;
+  var currentReportId = null;
+
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".report-btn");
+    if (!btn) return;
+    e.preventDefault();
+    currentReportId = btn.dataset.postId;
+    selectedReason  = null;
+    if (reportSubmit) { reportSubmit.disabled = true; reportSubmit.setAttribute("aria-disabled","true"); }
     if (reportOptions) {
-      reportOptions.addEventListener("click", function (e) {
-        var opt = e.target.closest(".report-option");
-        if (!opt) return;
-        reportOptions.querySelectorAll(".report-option").forEach(function (o) {
-          o.classList.remove("selected");
-        });
-        opt.classList.add("selected");
-        selectedReason = opt.dataset.value;
-        if (reportSubmitBtn) reportSubmitBtn.disabled = false;
+      reportOptions.querySelectorAll(".report-option").forEach(function(o) {
+        o.classList.remove("selected");
+        o.setAttribute("aria-checked", "false");
       });
     }
+    if (reportDesc) reportDesc.value = "";
+    if (reportText) reportText.textContent = "Submit Report";
+    openModal("report-modal");
+  });
 
-    // Submit
-    if (reportSubmitBtn) {
-      reportSubmitBtn.addEventListener("click", function () {
-        if (!selectedReason || !currentPostId) return;
-
-        reportSubmitBtn.disabled = true;
-        reportSubmitBtn.textContent = "Submitting…";
-
-        fetchJson("/reports/create/", "POST", {
-          model: "posts.post",
-          object_id: parseInt(currentPostId),
-          reason: selectedReason,
-          description: reportDescInput ? reportDescInput.value : "",
-        })
-          .then(function (data) {
-            reportModal.classList.add("hidden");
-            document.body.style.overflow = "";
-            if (typeof showToast === "function") {
-              showToast(
-                data.success
-                  ? "✅ Report submitted. Thank you!"
-                  : data.error || "Failed to submit report",
-                data.success ? "success" : "error",
-              );
-            }
-          })
-          .catch(function () {
-            if (typeof showToast === "function")
-              showToast("Network error. Please try again.", "error");
-          })
-          .finally(function () {
-            reportSubmitBtn.disabled = false;
-            reportSubmitBtn.textContent = "Submit Report";
-          });
+  if (reportOptions) {
+    reportOptions.addEventListener("click", function(e) {
+      var opt = e.target.closest(".report-option");
+      if (!opt) return;
+      reportOptions.querySelectorAll(".report-option").forEach(function(o) {
+        o.classList.remove("selected");
+        o.setAttribute("aria-checked", "false");
       });
-    }
-
-    /* ══════════════════════════════════════
-     DROPDOWN CLOSE ON NAV ITEM CLICK
-     ══════════════════════════════════════ */
-    document.addEventListener("click", function (e) {
-      // Close modals when clicking overlay background
-      var modals = ["create-post-modal", "report-modal"];
-      modals.forEach(function (id) {
-        var m = document.getElementById(id);
-        if (m && !m.classList.contains("hidden") && e.target === m) {
-          closeModal(id);
-        }
-      });
+      opt.classList.add("selected");
+      opt.setAttribute("aria-checked", "true");
+      selectedReason = opt.dataset.value;
+      if (reportSubmit) {
+        reportSubmit.disabled = false;
+        reportSubmit.setAttribute("aria-disabled", "false");
+      }
     });
-  })();
+  }
+
+  if (reportSubmit) {
+    reportSubmit.addEventListener("click", function() {
+      if (!selectedReason || !currentReportId) return;
+      reportSubmit.disabled = true;
+      if (reportText) reportText.textContent = "Submitting…";
+
+      fetchJson("/reports/create/", "POST", {
+        model: "posts.post",
+        object_id: parseInt(currentReportId, 10),
+        reason: selectedReason,
+        description: reportDesc ? reportDesc.value.trim() : "",
+      })
+        .then(function(data) {
+          closeModal("report-modal");
+          toast(
+            data.success
+              ? "✅ Report submitted. Thank you!"
+              : (data.error || "Failed to submit report."),
+            data.success ? "success" : "error"
+          );
+        })
+        .catch(function() {
+          toast("Network error. Please try again.", "error");
+        })
+        .finally(function() {
+          reportSubmit.disabled = false;
+          if (reportText) reportText.textContent = "Submit Report";
+        });
+    });
+  }
+
+  /* ════════════════════════════════════════
+     INFINITE SCROLL (IntersectionObserver)
+     ════════════════════════════════════════ */
+  var sentinel    = document.getElementById("infinite-scroll-sentinel");
+  var scrollLoad  = document.getElementById("scroll-loading");
+  var nextPageUrl = null; // Set via backend data attribute or JS var
+
+  // Read next page from pagination if available
+  var nextLink = document.querySelector('.pagination-social a[aria-label="Go to next page"]');
+  if (nextLink) nextPageUrl = nextLink.href;
+
+  if (sentinel && nextPageUrl && "IntersectionObserver" in window) {
+    var loadingMore = false;
+    var io = new IntersectionObserver(function(entries) {
+      if (!entries[0].isIntersecting || loadingMore || !nextPageUrl) return;
+      loadingMore = true;
+      if (scrollLoad) scrollLoad.classList.add("visible");
+
+      fetch(nextPageUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(html, "text/html");
+          var newPosts = doc.querySelectorAll(".post-card");
+          var feed = document.getElementById("posts-feed");
+          if (feed && newPosts.length) {
+            newPosts.forEach(function(p) { feed.appendChild(p); });
+          }
+          // Update next page
+          var newNext = doc.querySelector('.pagination-social a[aria-label="Go to next page"]');
+          nextPageUrl = newNext ? newNext.href : null;
+          if (!nextPageUrl && sentinel) io.unobserve(sentinel);
+        })
+        .catch(function() { toast("Failed to load more posts.", "error"); })
+        .finally(function() {
+          loadingMore = false;
+          if (scrollLoad) scrollLoad.classList.remove("visible");
+        });
+    }, { rootMargin: "200px" });
+
+    io.observe(sentinel);
+  }
+
+})();
 </script>
 {% endblock %}
