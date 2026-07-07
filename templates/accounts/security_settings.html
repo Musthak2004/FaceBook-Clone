@@ -1,46 +1,2113 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "base.html" %} {% load static %} {% block title %}Security Settings —
+SocialNet{% endblock %} {% block extra_css %}
+<style>
+  /* ══════════════════════════════════════
+   SECURITY SETTINGS — Scoped Styles
+   ══════════════════════════════════════ */
 
-{% block title %}Security — SocialNet{% endblock %}
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .page-enter {
+    animation: pageEnter 0.28s ease both;
+  }
 
-{% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
-  <div class="flex items-center gap-4 mb-6">
-    <div class="w-12 h-12 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
-      <svg class="w-6 h-6 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-      </svg>
-    </div>
-    <div>
-      <h1 class="text-xl font-bold text-[var(--text-primary)]">Security Settings</h1>
-      <p class="text-sm text-[var(--text-secondary)]">Manage your account security</p>
-    </div>
-  </div>
+  /* ── Layout ── */
+  .settings-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  @media (max-width: 768px) {
+    .settings-layout {
+      flex-direction: column;
+    }
+    .settings-sidebar {
+      width: 100%;
+      position: static;
+    }
+    .settings-sidebar-nav {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 6px;
+      flex-wrap: nowrap;
+    }
+    .settings-nav-item {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
 
-  <div class="card-social-static p-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-xl brand-gradient flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-500/20">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+  /* ── Sidebar ── */
+  .settings-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(60px + 20px);
+  }
+  .settings-sidebar-nav {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 8px;
+  }
+  .settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .settings-nav-item:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .settings-nav-item.active {
+    background: var(--brand-50);
+    color: var(--brand-600);
+    font-weight: 600;
+  }
+  .dark .settings-nav-item.active {
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--brand-400);
+  }
+
+  /* ── Security Score Card ── */
+  .score-card {
+    background: linear-gradient(
+      135deg,
+      var(--brand-600) 0%,
+      var(--brand-800) 100%
+    );
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card::before {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .score-card::after {
+    content: "";
+    position: absolute;
+    bottom: -60px;
+    left: -20px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .score-ring-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+  .score-ring-wrap svg {
+    transform: rotate(-90deg);
+  }
+  .score-ring-bg {
+    stroke: rgba(255, 255, 255, 0.18);
+  }
+  .score-ring-fill {
+    stroke: white;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .score-number {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+  }
+  .score-number span {
+    font-size: 0.5rem;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+
+  /* Score items */
+  .score-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .score-item:last-child {
+    border-bottom: none;
+  }
+  .score-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .score-dot.ok {
+    background: #34d399;
+  }
+  .score-dot.warn {
+    background: #fbbf24;
+  }
+  .score-dot.bad {
+    background: #f87171;
+  }
+  .score-item-action {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    font-family: inherit;
+    transition: color 0.15s;
+  }
+  .score-item-action:hover {
+    color: white;
+  }
+
+  /* ── Settings Card ── */
+  .sec-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: box-shadow 0.18s ease;
+  }
+  .sec-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-secondary);
+  }
+  .sec-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sec-card-header h2 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .sec-card-header p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+  }
+
+  /* ── Settings Row ── */
+  .sec-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s ease;
+  }
+  .sec-row:last-child {
+    border-bottom: none;
+  }
+  .sec-row:hover {
+    background: var(--surface-secondary);
+  }
+  .sec-row-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .sec-row-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .sec-row-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .sec-row-control {
+    flex-shrink: 0;
+  }
+
+  /* ── Toggle ── */
+  .toggle-wrap {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .toggle-wrap input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border-medium);
+    border-radius: 9999px;
+    transition: background 0.22s ease;
+  }
+  .toggle-wrap input:checked + .toggle-track {
+    background: var(--brand-500);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+  }
+  .toggle-wrap input:checked ~ .toggle-thumb {
+    transform: translateX(20px);
+  }
+  .toggle-wrap input:focus-visible + .toggle-track {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+
+  /* ── Buttons ── */
+  .btn-sec-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: var(--brand-600);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+    white-space: nowrap;
+  }
+  .btn-sec-primary:hover {
+    background: var(--brand-700);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    color: white;
+    text-decoration: none;
+  }
+  .btn-sec-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    background: var(--surface-secondary);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 9px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .btn-sec-secondary:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .btn-sec-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 9px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .btn-sec-danger:hover {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+  .dark .btn-sec-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  /* ── Badge ── */
+  .sec-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+  }
+  .badge-enabled {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+  .badge-disabled {
+    background: var(--surface-tertiary);
+    color: var(--text-muted);
+  }
+  .badge-new {
+    background: var(--brand-100);
+    color: var(--brand-700);
+  }
+  .dark .badge-enabled {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .dark .badge-disabled {
+    background: var(--surface-active);
+    color: var(--text-muted);
+  }
+  .dark .badge-new {
+    background: rgba(99, 102, 241, 0.18);
+    color: var(--brand-300);
+  }
+
+  /* ── 2FA Setup Steps ── */
+  .tfa-steps {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .tfa-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    text-align: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .tfa-step.active {
+    border-color: var(--brand-400);
+    background: var(--brand-50);
+    color: var(--brand-600);
+  }
+  .dark .tfa-step.active {
+    background: rgba(99, 102, 241, 0.08);
+  }
+  .tfa-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .tfa-step.active .tfa-step-num {
+    background: var(--brand-600);
+    color: white;
+  }
+
+  /* ── Session Item ── */
+  .session-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s;
+  }
+  .session-item:last-child {
+    border-bottom: none;
+  }
+  .session-item:hover {
+    background: var(--surface-secondary);
+  }
+
+  .device-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .device-icon.current {
+    background: var(--brand-50);
+    border-color: var(--brand-200);
+    color: var(--brand-600);
+  }
+  .dark .device-icon.current {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  .session-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .session-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .session-current-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+  .dark .session-current-badge {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .session-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .session-location {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  /* ── Activity log item ── */
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+  .activity-dot-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+  .activity-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activity-dot.success {
+    background: #10b981;
+  }
+  .activity-dot.warning {
+    background: #f59e0b;
+  }
+  .activity-dot.danger {
+    background: #ef4444;
+  }
+  .activity-dot.info {
+    background: var(--brand-500);
+  }
+  .activity-line {
+    width: 1px;
+    flex: 1;
+    min-height: 20px;
+    background: var(--border-light);
+    margin-top: 4px;
+  }
+  .activity-item:last-child .activity-line {
+    display: none;
+  }
+
+  .activity-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .activity-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .activity-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .activity-detail {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── Password strength ── */
+  .pw-strength-track {
+    height: 4px;
+    background: var(--border-light);
+    border-radius: 9999px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .pw-strength-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition:
+      width 0.4s ease,
+      background 0.4s ease;
+  }
+  .pw-strength-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    padding: 0 4px;
+    margin: 20px 0 8px;
+  }
+
+  /* ── Password change form (inline) ── */
+  .pw-form-wrap {
+    padding: 16px 20px;
+    background: var(--surface-secondary);
+    border-top: 1px solid var(--border-light);
+    display: none;
+  }
+  .pw-form-wrap.open {
+    display: block;
+  }
+  .pw-field {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    outline: none;
+    transition: all 0.18s ease;
+    margin-bottom: 10px;
+  }
+  .pw-field:focus {
+    border-color: var(--brand-400);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: var(--surface-card);
+  }
+  .pw-field::placeholder {
+    color: var(--text-muted);
+  }
+  .pw-field-wrap {
+    position: relative;
+  }
+  .pw-toggle-eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px;
+    transition: color 0.15s;
+  }
+  .pw-toggle-eye:hover {
+    color: var(--text-primary);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="max-w-4xl mx-auto px-3 sm:px-4 py-6 page-enter">
+  <!-- ── Breadcrumb ── -->
+  <nav
+    class="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-5"
+    aria-label="Breadcrumb"
+  >
+    <a
+      href="{% url 'core:home' %}"
+      class="hover:text-[var(--text-primary)] transition-colors no-underline"
+      >Home</a
+    >
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+    <a
+      href="{% url 'accounts:account_settings' %}"
+      class="hover:text-[var(--text-primary)] transition-colors no-underline"
+      >Settings</a
+    >
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+    <span class="text-[var(--text-secondary)] font-medium">Security</span>
+  </nav>
+
+  <div class="settings-layout">
+    <!-- ════════════════════════════════
+         SIDEBAR NAV
+         ════════════════════════════════ -->
+    <aside class="settings-sidebar" aria-label="Settings navigation">
+      <nav class="settings-sidebar-nav">
+        <a
+          href="{% url 'accounts:account_settings' %}"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
           </svg>
-        </div>
-        <div>
-          <h3 class="font-semibold text-[var(--text-primary)]">Password</h3>
-          <p class="text-sm text-[var(--text-secondary)]">Change your password regularly to keep your account secure. Use a strong, unique password.</p>
+          Account
+        </a>
+        <a
+          href="{% url 'accounts:privacy_settings' %}"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0
+                 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+          Privacy
+        </a>
+        <a
+          href="{% url 'notifications:preferences' %}"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0
+                 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0
+                 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+          Notifications
+        </a>
+        <a href="#" class="settings-nav-item active" aria-current="page">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955
+                 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824
+                 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+          Security
+        </a>
+        <a
+          href="{% url 'accounts:account_settings' %}#appearance"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0
+                 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0
+                 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            />
+          </svg>
+          Appearance
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ════════════════════════════════
+         MAIN CONTENT
+         ════════════════════════════════ -->
+    <main class="flex-1 min-w-0" id="main-content">
+      <!-- ── Security Score ── -->
+      <div class="score-card">
+        <div class="flex items-center gap-5 relative z-10">
+          <!-- Circular score -->
+          <div class="score-ring-wrap" id="score-wrap">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle
+                class="score-ring-bg"
+                cx="40"
+                cy="40"
+                r="32"
+                fill="none"
+                stroke-width="7"
+              />
+              <circle
+                class="score-ring-fill"
+                cx="40"
+                cy="40"
+                r="32"
+                fill="none"
+                stroke-width="7"
+                stroke-dasharray="201"
+                stroke-dashoffset="201"
+                id="score-ring"
+              />
+            </svg>
+            <div class="score-number">
+              <span id="score-val">--</span>
+              <span>/ 100</span>
+            </div>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-bold text-base mb-0.5" id="score-title">
+              Calculating…
+            </p>
+            <p class="text-white/65 text-xs mb-3" id="score-desc">
+              Checking your security settings
+            </p>
+
+            <div class="space-y-0" id="score-items">
+              <div class="score-item">
+                <span class="score-dot warn"></span>
+                <span>Loading security checks…</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <a href="{% url 'password_change' %}" class="btn-ghost-social border border-[var(--border-light)] flex-shrink-0 ml-4">Change Password</a>
-    </div>
-  </div>
 
-  <div class="mt-6 flex items-center gap-3">
-    <a href="{% url 'accounts:account_settings' %}" class="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 no-underline hover:underline">
-      <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-      </svg>
-      Back to Settings
-    </a>
+      <!-- ════ PASSWORD ════ -->
+      <p class="section-label">Login Credentials</p>
+
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <div
+            class="sec-card-icon bg-[var(--brand-50)] dark:bg-[rgba(99,102,241,0.12)]"
+          >
+            <svg
+              class="w-5 h-5 text-[var(--brand-600)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1
+                   1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2>Password</h2>
+            <p>Use a strong, unique password at least 12 characters long</p>
+          </div>
+        </div>
+
+        <!-- Password row -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">Current Password</div>
+            <p class="sec-row-desc">
+              Last changed:
+              <strong class="text-[var(--text-secondary)]">
+                {% if user.last_password_change %} {{
+                user.last_password_change|timesince }} ago {% else %} Never
+                changed {% endif %}
+              </strong>
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <button
+              class="btn-sec-primary"
+              id="toggle-pw-form"
+              aria-expanded="false"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                     m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+              Change Password
+            </button>
+          </div>
+        </div>
+
+        <!-- Inline password change form -->
+        <div class="pw-form-wrap" id="pw-form-wrap">
+          <form
+            id="pw-change-form"
+            method="post"
+            action="{% url 'password_change' %}"
+            novalidate
+          >
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}" />
+
+            <!-- Current password -->
+            <label
+              class="block text-xs font-semibold text-[var(--text-secondary)] mb-1"
+            >
+              Current Password
+            </label>
+            <div class="pw-field-wrap mb-3">
+              <input
+                type="password"
+                name="old_password"
+                id="old_password"
+                class="pw-field !mb-0 !pr-10"
+                placeholder="Enter current password"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="pw-toggle-eye"
+                data-target="old_password"
+                aria-label="Show/hide"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943
+                       9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- New password -->
+            <label
+              class="block text-xs font-semibold text-[var(--text-secondary)] mb-1"
+            >
+              New Password
+            </label>
+            <div class="pw-field-wrap">
+              <input
+                type="password"
+                name="new_password1"
+                id="new_password1"
+                class="pw-field !mb-1 !pr-10"
+                placeholder="At least 12 characters"
+                autocomplete="new-password"
+                id="new-pw-input"
+              />
+              <button
+                type="button"
+                class="pw-toggle-eye"
+                data-target="new_password1"
+                aria-label="Show/hide"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943
+                       9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Strength meter -->
+            <div class="pw-strength-track mb-3">
+              <div
+                class="pw-strength-fill"
+                id="pw-strength-fill"
+                style="width: 0%; background: #ef4444"
+              ></div>
+            </div>
+            <p
+              class="pw-strength-label mb-3 text-[var(--text-muted)]"
+              id="pw-strength-label"
+            >
+              Enter a new password
+            </p>
+
+            <!-- Confirm -->
+            <label
+              class="block text-xs font-semibold text-[var(--text-secondary)] mb-1"
+            >
+              Confirm New Password
+            </label>
+            <div class="pw-field-wrap mb-4">
+              <input
+                type="password"
+                name="new_password2"
+                id="new_password2"
+                class="pw-field !mb-0 !pr-10"
+                placeholder="Repeat new password"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="pw-toggle-eye"
+                data-target="new_password2"
+                aria-label="Show/hide"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943
+                       9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="submit" class="btn-sec-primary" id="pw-submit-btn">
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Update Password
+              </button>
+              <button
+                type="button"
+                class="btn-sec-secondary"
+                id="cancel-pw-form"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ════ TWO-FACTOR AUTH ════ -->
+      <p class="section-label">Two-Factor Authentication</p>
+
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <div
+            class="sec-card-icon bg-emerald-50 dark:bg-[rgba(16,185,129,0.12)]"
+          >
+            <svg
+              class="w-5 h-5 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 18h.01M8 21h8a2 2 0 002-2v-6.586a1 1 0 00-.293-.707l-8-8a1
+                   1 0 00-1.414 0l-8 8A1 1 0 002 12.414V19a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2>Two-Factor Authentication</h2>
+            <p>Add an extra layer of security to your account</p>
+          </div>
+        </div>
+
+        <!-- Authenticator App -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">
+              Authenticator App
+              <span class="sec-badge badge-new">Recommended</span>
+            </div>
+            <p class="sec-row-desc">
+              Use an app like Google Authenticator or Authy to generate
+              time-based one-time codes.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            {% if user.totp_enabled %}
+            <button class="btn-sec-danger" id="disable-totp-btn">
+              Disable
+            </button>
+            {% else %}
+            <button class="btn-sec-primary" id="setup-totp-btn">
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Set Up
+            </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- SMS Backup -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">SMS Backup Codes</div>
+            <p class="sec-row-desc">
+              Receive a one-time code via SMS when you log in. {% if
+              user.phone_number %} Sending to
+              <strong>{{ user.phone_number|slice:"-4:" |rjust:4 }}</strong>
+              {% endif %}
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <label class="toggle-wrap" aria-label="SMS two-factor">
+              <input
+                type="checkbox"
+                id="sms-2fa-toggle"
+                {%
+                if
+                user.sms_2fa_enabled
+                %}checked{%
+                endif
+                %}
+              />
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Email verification -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">
+              Email Verification on Login
+              <span
+                class="sec-badge {% if user.email_2fa_enabled %}badge-enabled{% else %}badge-disabled{% endif %}"
+              >
+                {% if user.email_2fa_enabled %}On{% else %}Off{% endif %}
+              </span>
+            </div>
+            <p class="sec-row-desc">
+              Receive a verification link by email when logging in from a new
+              device.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <label class="toggle-wrap" aria-label="Email 2FA">
+              <input
+                type="checkbox"
+                id="email-2fa-toggle"
+                {%
+                if
+                user.email_2fa_enabled
+                %}checked{%
+                endif
+                %}
+              />
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Backup codes -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">Backup Codes</div>
+            <p class="sec-row-desc">
+              Download one-time backup codes to use if you lose access to your
+              authentication device.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <button class="btn-sec-secondary" id="gen-backup-codes">
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0
+                     0l-4-4m4 4V4"
+                />
+              </svg>
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /2fa card -->
+
+      <!-- ════ ACTIVE SESSIONS ════ -->
+      <p class="section-label">Active Sessions</p>
+
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <div
+            class="sec-card-icon bg-purple-50 dark:bg-[rgba(139,92,246,0.12)]"
+          >
+            <svg
+              class="w-5 h-5 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0
+                   002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h2>Active Sessions</h2>
+            <p>Devices currently logged into your account</p>
+          </div>
+          <button class="btn-sec-danger ml-auto" id="logout-all-btn">
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0
+                   01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Log Out All Others
+          </button>
+        </div>
+
+        <!-- Current session -->
+        <div class="session-item">
+          <div class="device-icon current">
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0
+                   002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div class="session-info">
+            <div class="session-name">
+              <span id="current-browser">This browser</span>
+              <span class="session-current-badge">Current</span>
+            </div>
+            <div class="session-meta">
+              <span class="session-location">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                       8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <span id="current-location">Detecting location…</span>
+              </span>
+              <span>· Active now</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other sessions (from context or static example) -->
+        {% if active_sessions %} {% for session in active_sessions %} {% if not
+        session.is_current %}
+        <div class="session-item" id="session-{{ session.id }}">
+          <div class="device-icon">
+            {% if 'Mobile' in session.device or 'iPhone' in session.device or
+            'Android' in session.device %}
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2
+                     2 0 002 2z"
+              />
+            </svg>
+            {% else %}
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0
+                     002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            {% endif %}
+          </div>
+          <div class="session-info">
+            <div class="session-name">
+              {{ session.device|default:"Unknown Device" }}
+            </div>
+            <div class="session-meta">
+              <span>{{ session.browser|default:"Unknown browser" }}</span>
+              <span>·</span>
+              <span class="session-location">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                         8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {{ session.location|default:"Unknown" }}
+              </span>
+              <span>·</span>
+              <span>{{ session.last_activity|timesince }} ago</span>
+            </div>
+          </div>
+          <button
+            class="btn-sec-danger revoke-session-btn"
+            data-session-id="{{ session.id }}"
+          >
+            Revoke
+          </button>
+        </div>
+        {% endif %} {% endfor %} {% else %}
+        <!-- Example fallback sessions -->
+        <div class="session-item" id="session-ex1">
+          <div class="device-icon">
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2
+                   2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div class="session-info">
+            <div class="session-name">iPhone 14 Pro</div>
+            <div class="session-meta">
+              <span>Safari · iOS 17</span>
+              <span>·</span>
+              <span class="session-location">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                       8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                London, UK
+              </span>
+              <span>·</span>
+              <span>2 hours ago</span>
+            </div>
+          </div>
+          <button
+            class="btn-sec-danger revoke-session-btn"
+            data-session-id="ex1"
+          >
+            Revoke
+          </button>
+        </div>
+        {% endif %}
+      </div>
+      <!-- /sessions -->
+
+      <!-- ════ LOGIN ACTIVITY ════ -->
+      <p class="section-label">Recent Login Activity</p>
+
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <div
+            class="sec-card-icon bg-amber-50 dark:bg-[rgba(245,158,11,0.12)]"
+          >
+            <svg
+              class="w-5 h-5 text-amber-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2>Login Activity</h2>
+            <p>Recent sign-in attempts to your account</p>
+          </div>
+        </div>
+
+        <div class="px-5 py-4">
+          {% if login_history %} {% for log in login_history|slice:":8" %}
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div
+                class="activity-dot {% if log.success %}success {% elif log.blocked %}danger {% else %}warning{% endif %}"
+              ></div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-body">
+              <p class="activity-title">
+                {% if log.success %}Successful login {% elif log.blocked
+                %}Blocked attempt {% else %}Failed login attempt{% endif %}
+              </p>
+              <p class="activity-time">{{ log.timestamp|timesince }} ago</p>
+              <p class="activity-detail">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                         8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {{ log.location|default:"Unknown" }} · {{
+                log.ip_address|default:"" }}
+              </p>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <!-- Example history -->
+          {% for item in example_activity %}
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div class="activity-dot {{ item.type }}"></div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-body">
+              <p class="activity-title">{{ item.title }}</p>
+              <p class="activity-time">{{ item.time }}</p>
+              <p class="activity-detail">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                       8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {{ item.location }}
+              </p>
+            </div>
+          </div>
+          {% empty %}
+          <!-- Static fallback -->
+          {% for item in "123"|make_list %}
+          <div class="activity-item">
+            <div class="activity-dot-wrap">
+              <div
+                class="activity-dot {% if forloop.first %}success{% elif forloop.last %}warning{% else %}info{% endif %}"
+              ></div>
+              <div class="activity-line"></div>
+            </div>
+            <div class="activity-body">
+              <p class="activity-title">
+                {% if forloop.first %}Successful login {% elif forloop.last
+                %}Login from new location {% else %}Successful login{% endif %}
+              </p>
+              <p class="activity-time">
+                {% if forloop.first %}Just now {% elif forloop.last %}3 days ago
+                {% else %}Yesterday{% endif %}
+              </p>
+              <p class="activity-detail">
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8
+                       8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                London, UK · Chrome on Windows
+              </p>
+            </div>
+          </div>
+          {% endfor %} {% endfor %} {% endif %}
+        </div>
+      </div>
+      <!-- /activity -->
+
+      <!-- ════ ADDITIONAL SECURITY ════ -->
+      <p class="section-label">Additional Protection</p>
+
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <div class="sec-card-icon bg-red-50 dark:bg-[rgba(239,68,68,0.12)]">
+            <svg
+              class="w-5 h-5 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0
+                   01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9
+                   11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12
+                   9v2m0 4h.01"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2>Additional Protection</h2>
+            <p>Extra steps to keep your account safe</p>
+          </div>
+        </div>
+
+        <!-- Login alerts -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">
+              Login Alerts
+              <span class="sec-badge badge-enabled">On</span>
+            </div>
+            <p class="sec-row-desc">
+              Get notified by email when someone logs into your account from a
+              new device or location.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <label class="toggle-wrap" aria-label="Login alerts">
+              <input type="checkbox" id="login-alerts-toggle" checked />
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Suspicious activity -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">Suspicious Activity Detection</div>
+            <p class="sec-row-desc">
+              Automatically flag and notify you of unusual login patterns.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <label
+              class="toggle-wrap"
+              aria-label="Suspicious activity detection"
+            >
+              <input type="checkbox" id="suspicious-toggle" checked />
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Trusted devices -->
+        <div class="sec-row">
+          <div class="sec-row-info">
+            <div class="sec-row-label">Remember Trusted Devices</div>
+            <p class="sec-row-desc">
+              Skip 2FA on devices you've previously verified for 30 days.
+            </p>
+          </div>
+          <div class="sec-row-control">
+            <label class="toggle-wrap" aria-label="Remember trusted devices">
+              <input
+                type="checkbox"
+                id="trusted-devices-toggle"
+                {%
+                if
+                user.remember_trusted_devices
+                %}checked{%
+                endif
+                %}
+              />
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- /additional -->
+    </main>
   </div>
 </div>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    'use strict';
+
+    /* ── CSRF ── */
+    function getCsrf() {
+      var v = '; ' + document.cookie;
+      var p = v.split('; csrftoken=');
+      return p.length === 2 ? p.pop().split(';').shift() : '';
+    }
+    function post(url) {
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrf(),
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      }).then(function (r) { return r.json(); });
+    }
+
+    /* ══════════════════════════════════════
+       SECURITY SCORE CALCULATOR
+       ══════════════════════════════════════ */
+    var checks = [
+      {
+        label: 'Strong password set',
+        ok: {{ user.has_strong_password|yesno:"true,false" }},
+        action: 'Change',
+        actionFn: function () { document.getElementById('toggle-pw-form').click(); }
+      },
+      {
+        label: 'Email verified',
+        ok: {{ user.email_verified|yesno:"true,false" }},
+        action: 'Verify',
+        actionFn: null
+      },
+      {
+        label: 'Two-factor authentication',
+        ok: {{ user.totp_enabled|yesno:"true,false" }},
+        action: 'Enable',
+        actionFn: function () {
+          document.getElementById('setup-totp-btn') &&
+            document.getElementById('setup-totp-btn').click();
+        }
+      },
+      {
+        label: 'Login alerts enabled',
+        ok: true,
+        action: null
+      },
+      {
+        label: 'Profile picture set',
+        ok: {{ user.profile_picture|yesno:"true,false" }},
+        action: 'Add',
+        actionFn: null
+      },
+    ];
+
+    var score = Math.round(
+      (checks.filter(function (c) { return c.ok; }).length / checks.length) * 100
+    );
+
+    /* Render score items */
+    var itemsWrap = document.getElementById('score-items');
+    if (itemsWrap) {
+      itemsWrap.innerHTML = checks.map(function (c) {
+        var dot = c.ok ? 'ok' : (score < 40 ? 'bad' : 'warn');
+        var action = (!c.ok && c.action)
+          ? '<button class="score-item-action" onclick="' +
+            (c.actionFn ? '(' + c.actionFn.toString() + ')()' : '') +
+            '">' + c.action + '</button>'
+          : '';
+        return '<div class="score-item">'
+          + '<span class="score-dot ' + dot + '"></span>'
+          + '<span>' + c.label + '</span>'
+          + action
+          + '</div>';
+      }).join('');
+    }
+
+    /* Animate score ring */
+    var ring  = document.getElementById('score-ring');
+    var val   = document.getElementById('score-val');
+    var title = document.getElementById('score-title');
+    var desc  = document.getElementById('score-desc');
+
+    if (ring && val) {
+      var circumference = 201;
+      var offset = circumference - (score / 100) * circumference;
+
+      setTimeout(function () {
+        ring.style.strokeDashoffset = offset;
+        var current = 0;
+        var timer = setInterval(function () {
+          current += 2;
+          if (current >= score) { current = score; clearInterval(timer); }
+          val.textContent = current;
+        }, 14);
+      }, 400);
+
+      if (title && desc) {
+        if (score >= 80) {
+          title.textContent = 'Strong Security';
+          desc.textContent  = 'Your account is well-protected. Great job!';
+        } else if (score >= 50) {
+          title.textContent = 'Good Security';
+          desc.textContent  = 'A few improvements will make your account safer.';
+        } else {
+          title.textContent = 'Security Needs Attention';
+          desc.textContent  = 'Take action to protect your account.';
+        }
+      }
+    }
+
+    /* ══════════════════════════════════════
+       PASSWORD FORM TOGGLE
+       ══════════════════════════════════════ */
+    var togglePwBtn = document.getElementById('toggle-pw-form');
+    var pwFormWrap  = document.getElementById('pw-form-wrap');
+    var cancelPwBtn = document.getElementById('cancel-pw-form');
+
+    if (togglePwBtn && pwFormWrap) {
+      togglePwBtn.addEventListener('click', function () {
+        var isOpen = pwFormWrap.classList.toggle('open');
+        togglePwBtn.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen) {
+          pwFormWrap.querySelector('input').focus();
+          togglePwBtn.textContent = 'Cancel';
+        } else {
+          togglePwBtn.innerHTML =
+            '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+            + '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"'
+            + ' d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5'
+            + ' m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'
+            + '</svg>Change Password';
+        }
+      });
+    }
+    if (cancelPwBtn && pwFormWrap && togglePwBtn) {
+      cancelPwBtn.addEventListener('click', function () {
+        pwFormWrap.classList.remove('open');
+        togglePwBtn.setAttribute('aria-expanded', 'false');
+        togglePwBtn.innerHTML =
+          '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+          + '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"'
+          + ' d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5'
+          + ' m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'
+          + '</svg>Change Password';
+      });
+    }
+
+    /* ══════════════════════════════════════
+       PASSWORD STRENGTH METER
+       ══════════════════════════════════════ */
+    var pwInput    = document.getElementById('new_password1');
+    var pwFill     = document.getElementById('pw-strength-fill');
+    var pwLabel    = document.getElementById('pw-strength-label');
+
+    function calcStrength(pw) {
+      if (!pw) return { pct: 0, label: 'Enter a new password', color: '#9CA3AF' };
+      var score = 0;
+      if (pw.length >= 8)  score++;
+      if (pw.length >= 12) score++;
+      if (pw.length >= 16) score++;
+      if (/[A-Z]/.test(pw)) score++;
+      if (/[a-z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+      if (score <= 2) return { pct: 20,  label: '⚠️ Too weak',    color: '#EF4444' };
+      if (score <= 3) return { pct: 40,  label: '🔸 Weak',        color: '#F59E0B' };
+      if (score <= 4) return { pct: 60,  label: '🔷 Fair',        color: '#3B82F6' };
+      if (score <= 5) return { pct: 80,  label: '✅ Strong',      color: '#10B981' };
+      return              { pct: 100, label: '🔒 Very strong',  color: '#059669' };
+    }
+
+    if (pwInput && pwFill && pwLabel) {
+      pwInput.addEventListener('input', function () {
+        var result = calcStrength(this.value);
+        pwFill.style.width     = result.pct + '%';
+        pwFill.style.background = result.color;
+        pwLabel.textContent    = result.label;
+        pwLabel.style.color    = result.color;
+      });
+    }
+
+    /* ══════════════════════════════════════
+       SHOW / HIDE PASSWORD
+       ══════════════════════════════════════ */
+    document.querySelectorAll('.pw-toggle-eye').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.dataset.target;
+        var input    = document.getElementById(targetId);
+        if (!input) return;
+        var isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.style.opacity = isHidden ? '0.7' : '1';
+      });
+    });
+
+    /* ══════════════════════════════════════
+       TOGGLE SECURITY SETTINGS (AJAX)
+       ══════════════════════════════════════ */
+    var securityToggles = {
+      'sms-2fa-toggle':          '/security/toggle/sms-2fa/',
+      'email-2fa-toggle':        '/security/toggle/email-2fa/',
+      'login-alerts-toggle':     '/security/toggle/login-alerts/',
+      'suspicious-toggle':       '/security/toggle/suspicious/',
+      'trusted-devices-toggle':  '/security/toggle/trusted-devices/',
+    };
+
+    Object.keys(securityToggles).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', function () {
+        var checked = el.checked;
+        post(securityToggles[id])
+          .then(function (data) {
+            if (!data.success) {
+              el.checked = !checked; /* revert */
+              if (typeof showToast === 'function')
+                showToast(data.error || 'Could not update setting.', 'error');
+            } else if (typeof showToast === 'function') {
+              showToast(
+                checked ? '✅ Setting enabled' : 'Setting disabled',
+                'success', 2500
+              );
+            }
+          })
+          .catch(function () {
+            el.checked = !checked;
+            if (typeof showToast === 'function')
+              showToast('Network error. Please try again.', 'error');
+          });
+      });
+    });
+
+    /* ══════════════════════════════════════
+       REVOKE SESSION
+       ══════════════════════════════════════ */
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.revoke-session-btn');
+      if (!btn) return;
+      var sessionId = btn.dataset.sessionId;
+      btn.textContent = 'Revoking…';
+      btn.disabled = true;
+
+      post('/security/sessions/' + sessionId + '/revoke/')
+        .then(function (data) {
+          if (data.success || data.revoked) {
+            var row = document.getElementById('session-' + sessionId);
+            if (row) {
+              row.style.transition = 'opacity 0.3s, max-height 0.3s';
+              row.style.opacity = '0';
+              row.style.maxHeight = '0';
+              row.style.overflow = 'hidden';
+              setTimeout(function () { row.remove(); }, 300);
+            }
+            if (typeof showToast === 'function')
+              showToast('Session revoked.', 'success', 2500);
+          } else {
+            btn.textContent = 'Revoke';
+            btn.disabled = false;
+            if (typeof showToast === 'function')
+              showToast(data.error || 'Could not revoke session.', 'error');
+          }
+        })
+        .catch(function () {
+          btn.textContent = 'Revoke';
+          btn.disabled = false;
+          if (typeof showToast === 'function')
+            showToast('Network error.', 'error');
+        });
+    });
+
+    /* ── Log out all others ── */
+    var logoutAllBtn = document.getElementById('logout-all-btn');
+    if (logoutAllBtn) {
+      logoutAllBtn.addEventListener('click', function () {
+        if (!confirm('Log out of all other sessions?')) return;
+        logoutAllBtn.textContent = 'Logging out…';
+        logoutAllBtn.disabled = true;
+
+        post('/security/sessions/revoke-all/')
+          .then(function (data) {
+            if (data.success) {
+              document.querySelectorAll('.revoke-session-btn').forEach(function (b) {
+                var row = b.closest('.session-item');
+                if (row) row.remove();
+              });
+              if (typeof showToast === 'function')
+                showToast('All other sessions logged out.', 'success', 3000);
+            }
+            logoutAllBtn.textContent = 'Log Out All Others';
+            logoutAllBtn.disabled = false;
+          })
+          .catch(function () {
+            logoutAllBtn.textContent = 'Log Out All Others';
+            logoutAllBtn.disabled = false;
+            if (typeof showToast === 'function')
+              showToast('Network error.', 'error');
+          });
+      });
+    }
+
+    /* ── Detect current browser for display ── */
+    var ua          = navigator.userAgent;
+    var browserName = 'Unknown browser';
+    if (ua.includes('Chrome') && !ua.includes('Edg')) browserName = 'Chrome';
+    else if (ua.includes('Firefox'))   browserName = 'Firefox';
+    else if (ua.includes('Safari') && !ua.includes('Chrome')) browserName = 'Safari';
+    else if (ua.includes('Edg'))       browserName = 'Edge';
+    else if (ua.includes('Opera'))     browserName = 'Opera';
+
+    var os = 'Unknown OS';
+    if (ua.includes('Windows')) os = 'Windows';
+    else if (ua.includes('Mac')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+    var curBrowserEl = document.getElementById('current-browser');
+    if (curBrowserEl) curBrowserEl.textContent = browserName + ' on ' + os;
+
+  })();
+</script>
 {% endblock %}
