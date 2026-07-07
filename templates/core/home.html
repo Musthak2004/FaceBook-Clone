@@ -1074,7 +1074,7 @@
               <div class="dropdown-menu hidden" style="min-width: 180px">
                 {% if post.author == user %}
                 <a
-                  href="{% url 'posts:post_edit' pk=post.id %}"
+                  href="{% url 'posts:post_update' pk=post.id %}"
                   class="dropdown-item"
                 >
                   <svg
