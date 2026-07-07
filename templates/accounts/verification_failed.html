@@ -1,23 +1,532 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}Verification Failed — SocialNet{%
+endblock %} {% block extra_css %}
+<style>
+  /* ── Page enter animation ── */
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .page-enter {
+    animation: page-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
 
-{% block title %}Verification Failed — SocialNet{% endblock %}
+  /* ── Icon pulse ring ── */
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.08);
+      opacity: 0.2;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0.6;
+    }
+  }
+  .pulse-ring {
+    animation: pulse-ring 2.4s ease-in-out infinite;
+  }
 
-{% block content %}
-<div class="min-h-[70vh] flex items-center justify-center px-4 page-enter">
-  <div class="card-social-static p-8 text-center max-w-md w-full">
-    <div class="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
-      <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-      </svg>
+  /* ── Shake animation for icon ── */
+  @keyframes shake {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    15% {
+      transform: rotate(-8deg);
+    }
+    30% {
+      transform: rotate(8deg);
+    }
+    45% {
+      transform: rotate(-5deg);
+    }
+    60% {
+      transform: rotate(5deg);
+    }
+    75% {
+      transform: rotate(-2deg);
+    }
+  }
+  .icon-shake {
+    animation: shake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.4s both;
+  }
+
+  /* ── Card ── */
+  .card-verify {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 24px;
+    box-shadow:
+      0 8px 32px -4px rgba(0, 0, 0, 0.08),
+      0 2px 8px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  [data-theme="dark"] .card-verify {
+    box-shadow:
+      0 8px 32px -4px rgba(0, 0, 0, 0.4),
+      0 2px 8px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* ── Reason chips ── */
+  .reason-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+
+  .reason-chip:hover {
+    border-color: var(--border-medium);
+    background: var(--surface-hover);
+  }
+
+  /* ── Primary button ── */
+  .btn-primary-error {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    width: 100%;
+  }
+
+  .btn-primary-error:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #f87171, #ef4444);
+  }
+
+  .btn-primary-error:active {
+    transform: scale(0.97);
+    box-shadow: none;
+  }
+
+  .btn-primary-error:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* ── Secondary button ── */
+  .btn-secondary-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 24px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 14px;
+    border: 1.5px solid var(--border-light);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .btn-secondary-ghost:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+  }
+
+  .btn-secondary-ghost:active {
+    transform: scale(0.97);
+  }
+
+  /* ── Divider ── */
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .or-divider::before,
+  .or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+
+  /* ── Countdown ring ── */
+  .countdown-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.06);
+  }
+
+  /* ── Loading spinner ── */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-ring,
+    .icon-shake,
+    .spinner {
+      animation: none;
+    }
+    .page-enter {
+      animation: none;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div
+  class="min-h-[calc(100vh-var(--nav-height,64px))] flex items-center justify-center px-4 py-10 page-enter"
+>
+  <div class="card-verify w-full max-w-[420px] overflow-hidden">
+    <!-- ── Top accent bar ── -->
+    <div
+      class="h-1 w-full bg-gradient-to-r from-red-400 via-red-500 to-orange-400"
+    ></div>
+
+    <div class="p-8 sm:p-10">
+      <!-- ── Icon ── -->
+      <div class="relative flex items-center justify-center mb-6">
+        <!-- Pulse rings -->
+        <span
+          class="absolute inset-0 flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <span
+            class="pulse-ring absolute w-20 h-20 rounded-full bg-red-200 dark:bg-red-900/40 opacity-40"
+          ></span>
+          <span
+            class="pulse-ring absolute w-28 h-28 rounded-full bg-red-100 dark:bg-red-900/20 opacity-20"
+            style="animation-delay: 0.4s"
+          ></span>
+        </span>
+
+        <!-- Icon container -->
+        <div
+          class="icon-shake relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/30 flex items-center justify-center ring-4 ring-red-100 dark:ring-red-900/30 shadow-lg shadow-red-500/10"
+        >
+          <svg
+            class="w-8 h-8 text-red-500 dark:text-red-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667
+                     1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082
+                     16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- ── Heading ── -->
+      <div class="text-center mb-6">
+        <h1
+          class="text-2xl font-extrabold text-[var(--text-primary)] mb-2 tracking-tight"
+        >
+          Verification Failed
+        </h1>
+        <p class="text-[15px] text-[var(--text-secondary)] leading-relaxed">
+          {% if error %} {{ error }} {% else %} The verification link is
+          <strong class="text-[var(--text-primary)]">invalid</strong> or has
+          <strong class="text-[var(--text-primary)]">expired</strong>. {% endif
+          %}
+        </p>
+      </div>
+
+      <!-- ── Why section ── -->
+      <div class="mb-6">
+        <p
+          class="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3"
+        >
+          Common reasons
+        </p>
+        <div class="space-y-2" role="list">
+          <div class="reason-chip" role="listitem">
+            <span
+              class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"
+            >
+              <svg
+                class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </span>
+            <span
+              >Link expired
+              <span class="text-[var(--text-muted)]"
+                >(valid for 24 hours)</span
+              ></span
+            >
+          </div>
+          <div class="reason-chip" role="listitem">
+            <span
+              class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"
+            >
+              <svg
+                class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101
+                         m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1
+                         1.1"
+                />
+              </svg>
+            </span>
+            <span>Link was already used or is broken</span>
+          </div>
+          <div class="reason-chip" role="listitem">
+            <span
+              class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"
+            >
+              <svg
+                class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7
+                         a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </span>
+            <span>Email client modified the URL</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="space-y-3">
+        <!-- Primary CTA -->
+        <a
+          href="{% url 'accounts:resend_verification' %}"
+          id="resend-btn"
+          class="btn-primary-error"
+          role="button"
+          aria-describedby="resend-help"
+        >
+          <svg
+            class="w-4 h-4 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11
+                     11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          <span id="resend-btn-text">Resend Verification Email</span>
+        </a>
+        <p
+          id="resend-help"
+          class="text-xs text-center text-[var(--text-muted)]"
+        >
+          We'll send a fresh link to your registered email address
+        </p>
+
+        <div class="or-divider">or</div>
+
+        <!-- Secondary CTA -->
+        <a href="{% url 'accounts:login' %}" class="btn-secondary-ghost">
+          <svg
+            class="w-4 h-4 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6
+                     a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+            />
+          </svg>
+          Back to Login
+        </a>
+      </div>
+
+      <!-- ── Help footer ── -->
+      <div class="mt-8 pt-6 border-t border-[var(--border-light)] text-center">
+        <p class="text-xs text-[var(--text-muted)] leading-relaxed">
+          Still having trouble?
+          <a
+            href="mailto:support@socialnet.com"
+            class="font-semibold text-[var(--brand-600)] hover:text-[var(--brand-700)] hover:underline transition-colors"
+          >
+            Contact support
+          </a>
+          or check our
+          <a
+            href="#"
+            class="font-semibold text-[var(--brand-600)] hover:text-[var(--brand-700)] hover:underline transition-colors"
+          >
+            Help Center
+          </a>
+        </p>
+      </div>
     </div>
-    <h1 class="text-xl font-bold text-[var(--text-primary)] mb-2">Verification Failed</h1>
-    <p class="text-sm text-[var(--text-secondary)] mb-6">{{ error|default:"The verification link is invalid or has expired." }}</p>
-    <a href="{% url 'accounts:resend_verification' %}" class="btn-brand inline-flex items-center justify-center px-6">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-      </svg>
-      Resend Verification Email
-    </a>
   </div>
 </div>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    "use strict";
+
+    /* ── Resend button: loading + cooldown ── */
+    var btn = document.getElementById("resend-btn");
+    var btnText = document.getElementById("resend-btn-text");
+    if (!btn || !btnText) return;
+
+    /* Check cooldown from previous click */
+    var COOLDOWN_KEY = "resend_cooldown_until";
+    var COOLDOWN_SECS = 60;
+
+    function getRemainingCooldown() {
+      var until = parseInt(localStorage.getItem(COOLDOWN_KEY) || "0", 10);
+      return Math.max(0, Math.ceil((until - Date.now()) / 1000));
+    }
+
+    function startCooldown() {
+      var until = Date.now() + COOLDOWN_SECS * 1000;
+      localStorage.setItem(COOLDOWN_KEY, String(until));
+      runCountdown();
+    }
+
+    function runCountdown() {
+      var remaining = getRemainingCooldown();
+      if (remaining <= 0) {
+        btn.removeAttribute("disabled");
+        btn.setAttribute("aria-disabled", "false");
+        btnText.textContent = "Resend Verification Email";
+        /* Restore icon */
+        var existingSpinner = btn.querySelector(".spinner");
+        if (existingSpinner) existingSpinner.remove();
+        btn.insertAdjacentHTML(
+          "afterbegin",
+          '<svg class="w-4 h-4 flex-shrink-0 btn-icon" fill="none" stroke="currentColor" ' +
+            'viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' +
+            'd="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 ' +
+            '0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>',
+        );
+        return;
+      }
+
+      /* Disable button */
+      btn.setAttribute("disabled", "true");
+      btn.setAttribute("aria-disabled", "true");
+      btn.setAttribute("aria-label", "Please wait " + remaining + " seconds");
+
+      /* Show countdown in text */
+      btnText.textContent = "Resend in " + remaining + "s";
+
+      /* Remove icon, show spinner */
+      var existingIcon = btn.querySelector(".btn-icon");
+      if (existingIcon) existingIcon.remove();
+      if (!btn.querySelector(".spinner")) {
+        btn.insertAdjacentHTML(
+          "afterbegin",
+          '<span class="spinner" aria-hidden="true"></span>',
+        );
+      }
+
+      setTimeout(runCountdown, 1000);
+    }
+
+    /* Init cooldown check */
+    runCountdown();
+
+    /* Click handler */
+    btn.addEventListener("click", function (e) {
+      if (btn.hasAttribute("disabled")) {
+        e.preventDefault();
+        return;
+      }
+      startCooldown();
+      /* Visual feedback */
+      btnText.textContent = "Sending…";
+    });
+  })();
+</script>
 {% endblock %}
