@@ -1495,10 +1495,12 @@
           </a>
         </div>
 
-        {% with photo_list=posts %} {% if photo_list %}
+        {% with photo_list=posts %}
+        {% if photo_list %}
         <div class="photo-mini-grid">
-          {% for post in photo_list %} {% if post.images.all %} {% for img in
-          post.images.all|slice:":9" %}
+          {% for post in photo_list %}
+          {% if post.images.all %}
+          {% for img in post.images.all|slice:":9" %}
           <img
             src="{{ img.image.url }}"
             alt="Photo"
@@ -1507,7 +1509,9 @@
             data-gallery-id="profile-photos"
             data-index="{{ forloop.parentloop.counter0 }}"
           />
-          {% endfor %} {% endif %} {% endfor %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
         </div>
         {% else %}
         <div class="text-center py-6">

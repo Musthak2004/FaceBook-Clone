@@ -1259,13 +1259,17 @@
           {% endif %}
 
           <!-- Poll -->
-          {% with poll=post.poll %} {% if poll %}
+          {% with poll=post.poll %}
+          {% if poll %}
           <div class="px-4 pb-3">
-            {% if poll.id in voted_poll_ids %} {% include "posts/_poll.html"
-            with poll=poll already_voted=True %} {% else %} {% include
-            "posts/_poll.html" with poll=poll already_voted=False %} {% endif %}
+            {% if poll.id in voted_poll_ids %}
+            {% include "posts/_poll.html" with poll=poll already_voted=True %}
+            {% else %}
+            {% include "posts/_poll.html" with poll=poll already_voted=False %}
+            {% endif %}
           </div>
-          {% endif %} {% endwith %}
+          {% endif %}
+          {% endwith %}
 
           <!-- Stats Bar -->
           <div class="post-stats-bar">
@@ -1452,13 +1456,15 @@
         >
           ← Prev
         </a>
-        {% endif %} {% for num in page_obj.paginator.page_range %} {% if
-        page_obj.number == num %}
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
         <span class="current" aria-current="page">{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3'
-        %}
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
         <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %} {% endfor %} {% if page_obj.has_next %}
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}" aria-label="Next page">
           Next →
         </a>

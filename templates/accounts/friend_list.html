@@ -464,7 +464,8 @@
     }
   }
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+{% block content %}
 <div class="max-w-5xl mx-auto px-3 sm:px-4 py-6 page-enter">
   <!-- ════════════════════════════════
        PAGE HEADER
@@ -904,8 +905,7 @@
     </h3>
     <p class="text-sm text-[var(--text-muted)] max-w-xs leading-relaxed mb-6">
       {% if profile_user == user %} Search for people you know or check out
-      friend suggestions. {% else %} Their friend list is empty right now. {%
-      endif %}
+      friend suggestions. {% else %} Their friend list is empty right now. {% endif %}
     </p>
     <div class="flex gap-3 flex-wrap justify-center">
       {% if profile_user == user %}
@@ -1003,14 +1003,15 @@
     {% endif %}
 
     <!-- Page numbers -->
-    {% for num in page_obj.paginator.page_range %} {% if page_obj.number == num
-    %}
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
     <span class="current-page" aria-current="page">{{ num }}</span>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
     <a href="?page={{ num }}">{{ num }}</a>
     {% elif num == 1 or num == page_obj.paginator.num_pages %}
     <a href="?page={{ num }}">{{ num }}</a>
-    {% endif %} {% endfor %}
+    {% endif %}
+    {% endfor %}
 
     <!-- Next -->
     {% if page_obj.has_next %}
@@ -1049,7 +1050,8 @@
   </nav>
   {% endif %}
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+{% block extra_js %}
 <script>
   (function () {
     "use strict";

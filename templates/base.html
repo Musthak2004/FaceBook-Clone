@@ -206,8 +206,8 @@
           role="menubar"
           aria-label="Main menu"
         >
-          {% comment %} Helper: active if url_name matches {% endcomment %} {%
-          with url_name=request.resolver_match.url_name %}
+          {% comment %} Helper: active if url_name matches {% endcomment %}
+          {% with url_name=request.resolver_match.url_name %}
 
           <!-- Home -->
           <a

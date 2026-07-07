@@ -713,7 +713,8 @@
     color: var(--text-primary);
   }
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+{% block content %}
 <div class="max-w-4xl mx-auto px-3 sm:px-4 py-6 page-enter">
   <!-- ── Breadcrumb ── -->
   <nav
@@ -1238,9 +1239,9 @@
           <div class="sec-row-info">
             <div class="sec-row-label">SMS Backup Codes</div>
             <p class="sec-row-desc">
-              Receive a one-time code via SMS when you log in. {% if
-              user.phone_number %} Sending to
-              <strong>{{ user.phone_number|slice:"-4:" |rjust:4 }}</strong>
+              Receive a one-time code via SMS when you log in.
+              {% if user.phone_number %}
+              Sending to <strong>{{ user.phone_number|slice:"-4:" |rjust:4 }}</strong>
               {% endif %}
             </p>
           </div>
@@ -1249,12 +1250,7 @@
               <input
                 type="checkbox"
                 id="sms-2fa-toggle"
-                {%
-                if
-                user.sms_2fa_enabled
-                %}checked{%
-                endif
-                %}
+                {% if user.sms_2fa_enabled %}checked{% endif %}
               />
               <span class="toggle-track"></span>
               <span class="toggle-thumb"></span>
@@ -1283,12 +1279,7 @@
               <input
                 type="checkbox"
                 id="email-2fa-toggle"
-                {%
-                if
-                user.email_2fa_enabled
-                %}checked{%
-                endif
-                %}
+                {% if user.email_2fa_enabled %}checked{% endif %}
               />
               <span class="toggle-track"></span>
               <span class="toggle-thumb"></span>
@@ -1421,12 +1412,12 @@
         </div>
 
         <!-- Other sessions (from context or static example) -->
-        {% if active_sessions %} {% for session in active_sessions %} {% if not
-        session.is_current %}
+        {% if active_sessions %}
+        {% for session in active_sessions %}
+        {% if not session.is_current %}
         <div class="session-item" id="session-{{ session.id }}">
           <div class="device-icon">
-            {% if 'Mobile' in session.device or 'iPhone' in session.device or
-            'Android' in session.device %}
+            {% if 'Mobile' in session.device or 'iPhone' in session.device or 'Android' in session.device %}
             <svg
               class="w-5 h-5"
               fill="none"
@@ -1493,7 +1484,9 @@
             Revoke
           </button>
         </div>
-        {% endif %} {% endfor %} {% else %}
+        {% endif %}
+        {% endfor %}
+        {% else %}
         <!-- Example fallback sessions -->
         <div class="session-item" id="session-ex1">
           <div class="device-icon">
@@ -1578,7 +1571,8 @@
         </div>
 
         <div class="px-5 py-4">
-          {% if login_history %} {% for log in login_history|slice:":8" %}
+          {% if login_history %}
+          {% for log in login_history|slice:":8" %}
           <div class="activity-item">
             <div class="activity-dot-wrap">
               <div
@@ -1588,8 +1582,7 @@
             </div>
             <div class="activity-body">
               <p class="activity-title">
-                {% if log.success %}Successful login {% elif log.blocked
-                %}Blocked attempt {% else %}Failed login attempt{% endif %}
+                {% if log.success %}Successful login {% elif log.blocked %}Blocked attempt {% else %}Failed login attempt{% endif %}
               </p>
               <p class="activity-time">{{ log.timestamp|timesince }} ago</p>
               <p class="activity-detail">
@@ -1612,7 +1605,8 @@
               </p>
             </div>
           </div>
-          {% endfor %} {% else %}
+          {% endfor %}
+          {% else %}
           <!-- Example history -->
           {% for item in example_activity %}
           <div class="activity-item">
@@ -1654,8 +1648,7 @@
             </div>
             <div class="activity-body">
               <p class="activity-title">
-                {% if forloop.first %}Successful login {% elif forloop.last
-                %}Login from new location {% else %}Successful login{% endif %}
+                {% if forloop.first %}Successful login {% elif forloop.last %}Login from new location {% else %}Successful login{% endif %}
               </p>
               <p class="activity-time">
                 {% if forloop.first %}Just now {% elif forloop.last %}3 days ago
@@ -1680,7 +1673,9 @@
               </p>
             </div>
           </div>
-          {% endfor %} {% endfor %} {% endif %}
+          {% endfor %}
+          {% endfor %}
+          {% endif %}
         </div>
       </div>
       <!-- /activity -->
@@ -1768,12 +1763,7 @@
               <input
                 type="checkbox"
                 id="trusted-devices-toggle"
-                {%
-                if
-                user.remember_trusted_devices
-                %}checked{%
-                endif
-                %}
+                {% if user.remember_trusted_devices %}checked{% endif %}
               />
               <span class="toggle-track"></span>
               <span class="toggle-thumb"></span>
@@ -1785,7 +1775,8 @@
     </main>
   </div>
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+{% block extra_js %}
 <script>
   (function () {
     'use strict';
