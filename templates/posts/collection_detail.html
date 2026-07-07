@@ -22,13 +22,13 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <a href="{% url 'posts:saved_posts' %}" class="btn-ghost-social border border-[var(--border-light)] btn-brand-sm">
+        <a href="{% url 'posts:saved_posts' %}" class="btn-ghost border border-[var(--border-light)]">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
           All Saved
         </a>
-        <button class="btn-danger-social btn-brand-sm" onclick="deleteCollection({{ collection.id }})">
+        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-semibold text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500" onclick="deleteCollection({{ collection.id }})">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>
@@ -98,9 +98,12 @@
 
 {% block extra_js %}
 <script>
+var DELETE_URL_TEMPLATE = '{% url 'posts:collection_delete' pk=0 %}';
+var SAVED_URL = '{% url 'posts:saved_posts' %}';
+
 function deleteCollection(id) {
   if (!confirm('Delete this collection? Posts inside will not be deleted.')) return;
-  fetch('/posts/collections/' + id + '/delete/', {
+  fetch(DELETE_URL_TEMPLATE.replace('/0/', '/' + id + '/'), {
     method: 'POST',
     headers: {
       'X-CSRFToken': (function(){ var v='; '+document.cookie; var p=v.split('; csrftoken='); return p.length===2?p.pop().split(';').shift():null; })(),
@@ -108,7 +111,7 @@ function deleteCollection(id) {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (data.deleted) window.location.href = '/posts/saved/';
+    if (data.deleted) window.location.href = SAVED_URL;
   });
 }
 </script>

@@ -1477,8 +1477,6 @@
           {{ label }}
         </button>
         {% empty %}
-        {% for value, label in "spam,🚫 Spam|harassment,😠 Harassment or bullying|hate_speech,🗣 Hate speech|nudity,🔞 Nudity or sexual content|violence,⚠️ Violence or harm|misinformation,❌ False information|other,💬 Other"|split:"|" %}
-        {% endfor %}
         <button class="report-option w-full" data-value="spam"
                 role="radio" aria-checked="false">🚫 Spam</button>
         <button class="report-option w-full" data-value="harassment"
@@ -1573,6 +1571,15 @@
 <script>
 (function () {
   "use strict";
+
+  var POST_LIKE_URL = '{% url "reactions:post_like" pk=0 %}';
+  var POST_SAVE_URL = '{% url "posts:post_save" pk=0 %}';
+  var POST_DELETE_URL = '{% url "posts:post_delete" pk=0 %}';
+  var REPORT_CREATE_URL = '{% url "reports:create" %}';
+
+  function urlForId(template, id) {
+    return template.replace('/0/', '/' + id + '/');
+  }
 
   /* ════════════════════════════════════════
      UTILS
@@ -1917,7 +1924,7 @@
       countEl.textContent = wasLiked ? Math.max(0, c - 1) : c + 1;
     }
 
-    fetchJson("/posts/" + postId + "/like/", "POST")
+    fetchJson(urlForId(POST_LIKE_URL, postId), "POST")
       .then(function(data) {
         if (data.liked !== undefined) {
           btn.classList.toggle("liked", data.liked);
@@ -1960,7 +1967,7 @@
     btn.setAttribute("aria-label", (!wasSaved ? "Unsave" : "Save") + " post");
     if (svg) svg.setAttribute("fill", wasSaved ? "none" : "currentColor");
 
-    fetchJson("/posts/" + postId + "/save/", "POST")
+    fetchJson(urlForId(POST_SAVE_URL, postId), "POST")
       .then(function(data) {
         var saved = data.saved;
         btn.classList.toggle("saved", saved);
@@ -2020,7 +2027,7 @@
         ? '"' + preview + '" will be permanently removed. This cannot be undone.'
         : "This post will be permanently removed. This cannot be undone.",
       function() {
-        fetchJson("/posts/" + postId + "/delete/", "POST")
+        fetchJson(urlForId(POST_DELETE_URL, postId), "POST")
           .then(function(data) {
             if (data.success || data.deleted) {
               var card = document.getElementById("post-" + postId);
@@ -2098,7 +2105,7 @@
       reportSubmit.disabled = true;
       if (reportText) reportText.textContent = "Submitting…";
 
-      fetchJson("/reports/create/", "POST", {
+      fetchJson(REPORT_CREATE_URL, "POST", {
         model: "posts.post",
         object_id: parseInt(currentReportId, 10),
         reason: selectedReason,

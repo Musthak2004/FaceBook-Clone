@@ -1669,7 +1669,7 @@
                 showToast("Account deactivated. Redirecting…", "info", 2500);
               }
               setTimeout(function () {
-                window.location.href = "/";
+                window.location.href = "{% url 'core:home' %}";
               }, 2500);
             } else {
               throw new Error();
@@ -1725,7 +1725,7 @@
                 showToast("Account deleted. Goodbye! 👋", "info", 3000);
               }
               setTimeout(function () {
-                window.location.href = "/";
+                window.location.href = "{% url 'core:home' %}";
               }, 3000);
             } else {
               throw new Error();

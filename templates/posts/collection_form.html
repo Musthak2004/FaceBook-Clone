@@ -3,7 +3,7 @@
 {% block title %}New Collection — SocialNet{% endblock %}
 
 {% block content %}
-<div class="max-w-lg mx-auto px-4 py-12 page-enter">
+<div class="max-w-lg mx-auto px-4 py-8 page-enter">
   <div class="card-social-static p-6">
     <div class="flex items-center gap-4 mb-6 pb-4 border-b border-[var(--border-light)]">
       <div class="w-12 h-12 rounded-xl brand-gradient flex items-center justify-center shadow-md shadow-brand-500/20">
@@ -20,16 +20,7 @@
     <form method="post" class="space-y-4">
       {% csrf_token %}
       {% for field in form %}
-      <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-        <div class="mt-1 flex items-center gap-1 text-xs text-red-500">
-          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-          {{ field.errors.0 }}
-        </div>
-        {% endif %}
-      </div>
+        {% include "components/form_field.html" with field=field %}
       {% endfor %}
       <div class="flex items-center gap-3 pt-2">
         <button type="submit" class="btn-brand flex-1 justify-center">
@@ -38,7 +29,7 @@
           </svg>
           Create Collection
         </button>
-        <a href="{% url 'posts:saved_posts' %}" class="btn-ghost-social border border-[var(--border-light)]">Cancel</a>
+        <a href="{% url 'posts:saved_posts' %}" class="btn-ghost border border-[var(--border-light)]">Cancel</a>
       </div>
     </form>
   </div>

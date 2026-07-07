@@ -15,9 +15,11 @@ function initChatPolling() {
 
   var conversationId = chatArea.getAttribute('data-conversation-id');
   var lastMessageId = chatArea.getAttribute('data-last-message-id') || 0;
+  var pollUrl = chatArea.getAttribute('data-poll-url');
 
   function pollMessages() {
-    fetch('/messages/' + conversationId + '/?since=' + lastMessageId, {
+    if (!pollUrl) return;
+    fetch(pollUrl + '?since=' + lastMessageId, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
     })
       .then(function (r) { return r.json(); })
@@ -45,6 +47,7 @@ function initMessageSend() {
   var input = form.querySelector('.message-input');
   var sendBtn = form.querySelector('.message-send-btn');
   var conversationId = form.getAttribute('data-conversation-id');
+  var sendUrl = form.getAttribute('data-send-url');
   var csrfToken = getCookie('csrftoken');
 
   function sendMessage() {
@@ -53,7 +56,7 @@ function initMessageSend() {
 
     sendBtn.disabled = true;
 
-    fetch('/messages/' + conversationId + '/send/', {
+    fetch(sendUrl, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken,

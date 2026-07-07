@@ -997,7 +997,7 @@
           <span id="add-btn-label">Add Friend</span>
         </button>
         <a
-          href="{% url 'messaging:conversation_list' %}"
+          href="{% url 'messaging:new_conversation' username=profile_user.username %}"
           class="btn-profile-message"
         >
           <svg
@@ -1156,7 +1156,7 @@
         </div>
 
         <a
-          href="{% url 'messaging:conversation_list' %}"
+          href="{% url 'messaging:new_conversation' username=profile_user.username %}"
           class="btn-profile-message"
         >
           <svg
@@ -1945,6 +1945,18 @@
   (function () {
     "use strict";
 
+    var SEND_REQUEST_URL = '{% url "friendships:send_request" pk=0 %}';
+    var ACCEPT_REQUEST_URL = '{% url "friendships:accept_request" pk=0 %}';
+    var REJECT_REQUEST_URL = '{% url "friendships:reject_request" pk=0 %}';
+    var REMOVE_FRIEND_URL = '{% url "friendships:remove_friend" pk=0 %}';
+    var BLOCK_USER_URL = '{% url "friendships:block_user" pk=0 %}';
+    var POST_LIKE_URL = '{% url "reactions:post_like" pk=0 %}';
+    var POST_DELETE_URL = '{% url "posts:post_delete" pk=0 %}';
+
+    function urlForId(template, id) {
+      return template.replace('/0/', '/' + id + '/');
+    }
+
     function getCsrf() {
       var v = "; " + document.cookie;
       var p = v.split("; csrftoken=");
@@ -1971,7 +1983,7 @@
         addBtn.disabled = true;
         document.getElementById("add-btn-label").textContent = "Sending…";
 
-        fetchJson("/friendships/send-request/" + userId + "/")
+        fetchJson(urlForId(SEND_REQUEST_URL, userId))
           .then(function (data) {
             if (
               data.success ||
@@ -2011,7 +2023,7 @@
     if (cancelBtn) {
       cancelBtn.addEventListener("click", function () {
         var userId = cancelBtn.dataset.userId;
-        fetchJson("/friendships/cancel-request/" + userId + "/").then(
+        fetchJson(urlForId(SEND_REQUEST_URL, userId)).then(
           function (data) {
             if (data.success || data.cancelled) location.reload();
             else if (typeof showToast === "function")
@@ -2026,7 +2038,7 @@
     if (acceptBtn) {
       acceptBtn.addEventListener("click", function () {
         var userId = acceptBtn.dataset.userId;
-        fetchJson("/friendships/accept/" + userId + "/").then(function (data) {
+        fetchJson(urlForId(ACCEPT_REQUEST_URL, userId)).then(function (data) {
           if (data.success || data.accepted) {
             if (typeof showToast === "function")
               showToast("You are now friends! 🎉", "success", 3000);
@@ -2045,7 +2057,7 @@
     if (declineBtn) {
       declineBtn.addEventListener("click", function () {
         var userId = declineBtn.dataset.userId;
-        fetchJson("/friendships/decline/" + userId + "/").then(function () {
+        fetchJson(urlForId(REJECT_REQUEST_URL, userId)).then(function () {
           location.reload();
         });
       });
@@ -2059,7 +2071,7 @@
       if (!confirm("Unfriend " + name + "? You can always add them again."))
         return;
       var userId = btn.dataset.userId;
-      fetchJson("/friendships/unfriend/" + userId + "/").then(function (data) {
+      fetchJson(urlForId(REMOVE_FRIEND_URL, userId)).then(function (data) {
         if (data.success || data.unfriended) {
           if (typeof showToast === "function")
             showToast("Unfriended " + name, "info", 2500);
@@ -2082,12 +2094,12 @@
       )
         return;
       var userId = btn.dataset.userId;
-      fetchJson("/friendships/block/" + userId + "/").then(function (data) {
+      fetchJson(urlForId(BLOCK_USER_URL, userId)).then(function (data) {
         if (data.success || data.blocked) {
           if (typeof showToast === "function")
             showToast(name + " has been blocked.", "success", 3000);
           setTimeout(function () {
-            location.href = "/";
+            location.href = "{% url 'core:home' %}";
           }, 2000);
         } else if (typeof showToast === "function") {
           showToast(data.error || "Could not block user.", "error");
@@ -2112,7 +2124,7 @@
         countEl.textContent = isLiked ? Math.max(0, c - 1) : c + 1;
       }
 
-      fetchJson("/posts/" + postId + "/like/")
+      fetchJson(urlForId(POST_LIKE_URL, postId))
         .then(function (data) {
           if (data.likes !== undefined && countEl)
             countEl.textContent = data.likes;
@@ -2138,7 +2150,7 @@
       if (!btn) return;
       if (!confirm("Delete this post?")) return;
       var postId = btn.dataset.postId;
-      fetchJson("/posts/" + postId + "/delete/").then(function (data) {
+      fetchJson(urlForId(POST_DELETE_URL, postId)).then(function (data) {
         if (data.success || data.deleted) {
           var card = document.getElementById("post-" + postId);
           if (card) {

@@ -32,7 +32,7 @@
             <p class="text-sm text-[var(--text-secondary)]">{{ group.member_count }} member{{ group.member_count|pluralize }}</p>
           </div>
         </div>
-        <button id="group-toggle-btn" class="btn-brand btn-brand-sm mt-6" data-group-id="{{ group.pk }}">
+        <button id="group-toggle-btn" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl brand-gradient text-white font-semibold text-sm hover:opacity-90 transition-all duration-150 mt-6" data-group-id="{{ group.pk }}">
           {% if is_member %}
             Leave Group
           {% else %}
@@ -65,7 +65,7 @@
         <div class="flex-1">
           <textarea name="content" class="input-brand" rows="2" placeholder="Write something to {{ group.name }}..."></textarea>
           <div class="flex justify-end mt-2">
-            <button type="submit" class="btn-brand btn-brand-sm">
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl brand-gradient text-white font-semibold text-sm hover:opacity-90 transition-all duration-150">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
@@ -109,13 +109,15 @@
 {% block extra_js %}
 <script>
 (function() {
+  var TOGGLE_URL_TEMPLATE = '{% url 'groups:group_toggle' pk=0 %}';
+  var POST_URL_TEMPLATE = '{% url 'groups:group_post' pk=0 %}';
   var csrfToken = (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})();
 
   var toggleBtn = document.getElementById('group-toggle-btn');
   if (toggleBtn) {
     toggleBtn.addEventListener('click', function() {
       var groupId = this.getAttribute('data-group-id');
-      fetch('/groups/' + groupId + '/toggle/', {
+      fetch(TOGGLE_URL_TEMPLATE.replace('/0/', '/' + groupId + '/'), {
         method: 'POST',
         headers: { 'X-CSRFToken': csrfToken },
       })
@@ -133,7 +135,7 @@
       var groupId = this.getAttribute('data-group-id');
       var content = this.querySelector('textarea').value.trim();
       if (!content) return;
-      fetch('/groups/' + groupId + '/post/', {
+      fetch(POST_URL_TEMPLATE.replace('/0/', '/' + groupId + '/'), {
         method: 'POST',
         headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'content=' + encodeURIComponent(content),

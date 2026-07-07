@@ -50,7 +50,7 @@
 
       <div class="flex items-center gap-3 pt-2">
         <button type="submit" class="btn-brand flex-1 justify-center">{% if object %}Save Changes{% else %}Create Page{% endif %}</button>
-        <a href="{% if object %}{% url 'pages:detail' pk=object.pk %}{% else %}{% url 'pages:list' %}{% endif %}" class="btn-ghost-social border border-[var(--border-light)]">Cancel</a>
+        <a href="{% if object %}{% url 'pages:detail' pk=object.pk %}{% else %}{% url 'pages:list' %}{% endif %}" class="btn-ghost border border-[var(--border-light)]">Cancel</a>
       </div>
     </form>
   </div>

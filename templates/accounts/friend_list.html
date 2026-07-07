@@ -1056,6 +1056,12 @@
   (function () {
     "use strict";
 
+    var SEND_REQUEST_URL = '{% url "friendships:send_request" pk=0 %}';
+
+    function urlForId(template, id) {
+      return template.replace("/0/", "/" + id + "/");
+    }
+
     /* ── CSRF ── */
     function getCsrf() {
       var v = "; " + document.cookie;
@@ -1171,7 +1177,7 @@
         'm0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>' +
         "Sending…";
 
-      fetch("/friendships/send-request/" + userId + "/", {
+      fetch(urlForId(SEND_REQUEST_URL, userId), {
         method: "POST",
         headers: {
           "X-CSRFToken": getCsrf(),

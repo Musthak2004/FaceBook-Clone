@@ -37,7 +37,7 @@
           {% endif %}
         </p>
       </a>
-      <button class="btn-brand btn-brand-sm w-full mt-3 add-friend-btn" data-user-id="{{ suggestion.id }}">
+      <button class="inline-flex items-center justify-center gap-2 w-full px-4 py-2 mt-3 rounded-xl brand-gradient text-white font-semibold text-sm hover:opacity-90 transition-all duration-150 add-friend-btn" data-user-id="{{ suggestion.id }}">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
         </svg>
@@ -64,7 +64,9 @@ document.addEventListener('click', function(e) {
   btn.disabled = true;
   btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Sending...';
 
-  fetch('/friends/requests/send/' + userId + '/', {
+  var SEND_REQUEST_URL = '{% url 'friendships:send_request' pk=0 %}';
+
+  fetch(SEND_REQUEST_URL.replace('/0/', '/' + userId + '/'), {
     method: 'POST',
     headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })
@@ -72,8 +74,7 @@ document.addEventListener('click', function(e) {
   .then(function(d){
     if (d.sent) {
       btn.classList.remove('btn-brand');
-      btn.classList.add('btn-ghost-social');
-      btn.classList.add('border', 'border-[var(--border-light)]');
+      btn.classList.add('inline-flex', 'items-center', 'gap-2', 'px-4', 'py-2', 'rounded-xl', 'border', 'border-[var(--border-light)]', 'text-sm', 'font-semibold', 'text-[var(--text-secondary)]', 'hover:bg-[var(--surface-tertiary)]', 'transition-all', 'duration-150');
       btn.innerHTML = 'Requested';
     } else {
       btn.disabled = false;

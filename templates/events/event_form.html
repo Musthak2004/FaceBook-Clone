@@ -48,7 +48,7 @@
 
       <div class="flex items-center gap-3 pt-2">
         <button type="submit" class="btn-brand flex-1 justify-center">{% if form.instance.pk %}Save Changes{% else %}Create Event{% endif %}</button>
-        <a href="{% url 'events:list' %}" class="btn-ghost-social border border-[var(--border-light)]">Cancel</a>
+        <a href="{% url 'events:list' %}" class="btn-ghost border border-[var(--border-light)]">Cancel</a>
       </div>
     </form>
   </div>

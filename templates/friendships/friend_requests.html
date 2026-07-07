@@ -38,8 +38,8 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button class="btn-brand btn-brand-sm" onclick="acceptRequest({{ request.id }})">Confirm</button>
-        <button class="btn-ghost-social border border-[var(--border-light)] text-sm !px-3 !py-1.5" onclick="rejectRequest({{ request.id }})">Delete</button>
+        <button class="btn-brand" style="padding:0.5rem 1rem;font-size:0.8125rem;" onclick="acceptRequest({{ request.id }})">Confirm</button>
+        <button class="btn-ghost border border-[var(--border-light)]" style="padding:0.5rem 1rem;font-size:0.8125rem;" onclick="rejectRequest({{ request.id }})">Delete</button>
       </div>
     </div>
     {% empty %}
@@ -53,10 +53,13 @@
 
 {% block extra_js %}
 <script>
+var ACCEPT_URL_TEMPLATE = '{% url 'friendships:accept_request' pk=0 %}';
+var REJECT_URL_TEMPLATE = '{% url 'friendships:reject_request' pk=0 %}';
+
 function acceptRequest(requestId) {
   var btn = event.target.closest('button');
   if (btn) { btn.classList.add('btn-loading'); btn.disabled = true; }
-  fetch('/friends/requests/accept/' + requestId + '/', {
+  fetch(ACCEPT_URL_TEMPLATE.replace('/0/', '/' + requestId + '/'), {
     method: 'POST',
     headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })
@@ -67,7 +70,7 @@ function acceptRequest(requestId) {
 function rejectRequest(requestId) {
   var btn = event.target.closest('button');
   if (btn) { btn.disabled = true; btn.textContent = '...'; }
-  fetch('/friends/requests/reject/' + requestId + '/', {
+  fetch(REJECT_URL_TEMPLATE.replace('/0/', '/' + requestId + '/'), {
     method: 'POST',
     headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })

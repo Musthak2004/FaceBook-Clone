@@ -136,7 +136,7 @@
     <!-- Comments Section -->
     <div class="border-t border-[var(--border-light)] px-5 py-4">
       <!-- Comment Form -->
-      <form class="comment-form flex items-center gap-3 mb-4" data-post-id="{{ post.id }}" method="post">
+      <form class="comment-form flex items-center gap-3 mb-4" data-post-id="{{ post.id }}" method="post" action="{% url 'posts:post_detail' pk=post.id %}">
         {% csrf_token %}
         <div class="flex-shrink-0">
           {% if user.profile_picture %}
@@ -212,8 +212,9 @@
 {% block extra_js %}
 <script>
 function deleteComment(commentId) {
-  if (!confirm('Delete this comment?')) return;
-  fetch('/comments/' + commentId + '/delete/', {
+  if (window.showConfirmDialog && !window.showConfirmDialog('Delete comment?', 'Are you sure you want to delete this comment?')) return;
+  if (!window.showConfirmDialog && !confirm('Delete this comment?')) return;
+  fetch('{% url 'comments:comment_delete' pk=0 %}'.replace('/0/', '/' + commentId + '/'), {
     method: 'POST',
     headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
   })

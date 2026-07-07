@@ -65,13 +65,9 @@ export function initModals() {
   });
 }
 
+// Mobile nav is now handled by base.html inline script (uses #mobile-menu-toggle, #mobile-nav-menu, #mobile-backdrop)
 export function initMobileNav() {
-  var toggle = document.querySelector('.mobile-nav-toggle');
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      document.querySelector('.nav-links').classList.toggle('show');
-    });
-  }
+  // no-op — kept for import compatibility
 }
 
 export function initTheme() {

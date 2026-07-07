@@ -74,12 +74,15 @@ export function initChatWebSocket() {
 function startPollingFallback(conversationId) {
   if (pollInterval) return;
 
+  var chatArea = document.querySelector('.messages-container');
   var lastMessageId = parseInt(
-    document.querySelector('.messages-container').getAttribute('data-last-message-id') || '0'
+    chatArea.getAttribute('data-last-message-id') || '0'
   );
+  var pollUrl = chatArea.getAttribute('data-poll-url');
 
   pollInterval = setInterval(function () {
-    fetch('/messages/' + conversationId + '/?since=' + lastMessageId, {
+    if (!pollUrl) return;
+    fetch(pollUrl + '?since=' + lastMessageId, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
     })
       .then(function (r) { return r.json(); })
@@ -103,6 +106,7 @@ export function initMessageSend() {
   var input = form.querySelector('.message-input');
   var sendBtn = form.querySelector('.message-send-btn');
   var conversationId = form.getAttribute('data-conversation-id');
+  var sendUrl = form.getAttribute('data-send-url');
   var csrfToken = getCookie('csrftoken');
 
   function sendMessage() {
@@ -111,7 +115,7 @@ export function initMessageSend() {
 
     sendBtn.disabled = true;
 
-    fetch('/messages/' + conversationId + '/send/', {
+    fetch(sendUrl, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken,

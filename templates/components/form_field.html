@@ -27,17 +27,17 @@
   </div>
   {% endif %}
   {% if type == "textarea" %}
-    <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" rows="4" placeholder="{{ placeholder }}" {% if field.field.required %}required{% endif %}{% if field.value %}>{{ field.value }}{% else %}>{% endif %}</textarea>
+    <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" rows="4" placeholder="{{ placeholder }}" {% if field.field.required %}required{% endif %}{% if help_text or field.help_text %} aria-describedby="{{ field.id_for_label }}_help"{% endif %}>{% if field.value %}{{ field.value }}{% endif %}</textarea>
   {% elif type == "select" %}
-    <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" {% if field.field.required %}required{% endif %}>
+    <select name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" {% if field.field.required %}required{% endif %}{% if help_text or field.help_text %} aria-describedby="{{ field.id_for_label }}_help"{% endif %}>
       {% for value, text in field.field.choices %}
       <option value="{{ value }}"{% if field.value == value %} selected{% endif %}>{{ text }}</option>
       {% endfor %}
     </select>
   {% else %}
-    <input type="{{ type|default:'text' }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" placeholder="{{ placeholder|default:'' }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %} autocomplete="{{ field.html_name }}">
+    <input type="{{ type|default:'text' }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" class="input-brand" placeholder="{{ placeholder|default:'' }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %} autocomplete="{{ field.html_name }}"{% if help_text or field.help_text %} aria-describedby="{{ field.id_for_label }}_help"{% endif %}>
   {% endif %}
   {% if help_text or field.help_text %}
-  <p class="text-xs text-[var(--text-muted)] mt-1">{{ help_text|default:field.help_text }}</p>
+  <p id="{{ field.id_for_label }}_help" class="text-xs text-[var(--text-muted)] mt-1">{{ help_text|default:field.help_text }}</p>
   {% endif %}
 </div>

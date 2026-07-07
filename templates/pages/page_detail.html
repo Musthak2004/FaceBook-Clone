@@ -38,14 +38,14 @@
         </div>
         <div class="pt-8">
           {% if is_admin %}
-          <a href="{% url 'pages:update' pk=page.pk %}" class="btn-ghost-social border border-[var(--border-light)]">
+          <a href="{% url 'pages:update' pk=page.pk %}" class="btn-ghost border border-[var(--border-light)]">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
             Edit
           </a>
           {% elif user.is_authenticated %}
-          <button id="follow-btn" class="btn-brand btn-brand-sm {% if is_following %}btn-ghost-social border border-[var(--border-light)]{% endif %}" data-page-id="{{ page.pk }}">
+          <button id="follow-btn" class="btn-brand {% if is_following %}btn-ghost border border-[var(--border-light)]{% endif %}" style="padding:0.5rem 1rem;font-size:0.8125rem;" data-page-id="{{ page.pk }}">
             {% if is_following %}
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               Following
@@ -90,7 +90,7 @@
         <div class="flex-1">
           <textarea name="content" class="input-brand" rows="2" placeholder="Share an update with your followers…"></textarea>
           <div class="flex justify-end mt-2">
-            <button type="submit" class="btn-brand btn-brand-sm">Post</button>
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl brand-gradient text-white font-semibold text-sm hover:opacity-90 transition-all duration-150">Post</button>
           </div>
         </div>
       </div>
@@ -129,12 +129,15 @@
 
 {% block extra_js %}
 <script>
+var FOLLOW_URL_TEMPLATE = '{% url 'pages:follow' pk=0 %}';
+var PAGE_POST_URL_TEMPLATE = '{% url 'pages:post' pk=0 %}';
+
 document.addEventListener('DOMContentLoaded', function() {
   var followBtn = document.getElementById('follow-btn');
   if (followBtn) {
     followBtn.addEventListener('click', function() {
       var pageId = this.getAttribute('data-page-id');
-      fetch('/pages/' + pageId + '/follow/', {
+      fetch(FOLLOW_URL_TEMPLATE.replace('/0/', '/' + pageId + '/'), {
         method: 'POST',
         headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})() },
       })
@@ -142,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(function(d){
         if (d.is_following !== undefined) {
           followBtn.innerHTML = d.is_following ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Following' : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Follow';
-          followBtn.className = d.is_following ? 'btn-ghost-social border border-[var(--border-light)] inline-flex items-center gap-1.5' : 'btn-brand btn-brand-sm';
+          followBtn.className = d.is_following ? 'btn-ghost border border-[var(--border-light)]' : 'btn-brand';
           var countEl = document.getElementById('follower-count');
           if (countEl) countEl.textContent = d.follower_count;
         }
@@ -157,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var pageId = this.getAttribute('data-page-id');
       var content = this.querySelector('textarea[name="content"]').value.trim();
       if (!content) return;
-      fetch('/pages/' + pageId + '/post/', {
+      fetch(PAGE_POST_URL_TEMPLATE.replace('/0/', '/' + pageId + '/'), {
         method: 'POST',
         headers: { 'X-CSRFToken': (function(){var c='; '+document.cookie;var p=c.split('; csrftoken=');return p.length===2?p.pop().split(';').shift():null;})(), 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'content=' + encodeURIComponent(content),

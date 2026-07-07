@@ -3,7 +3,7 @@
    Initializes all UI components on DOM ready.
    ============================================================ */
 
-import { initDropdowns, initModals, initMobileNav, initAjaxForms, initTheme } from './modules/ui.js';
+import { initModals, initAjaxForms } from './modules/ui.js';
 import { initNotifications } from './modules/notifications.js';
 import { initFeed } from './modules/feed.js';
 import { initMessaging } from './modules/messaging.js';
@@ -15,11 +15,8 @@ import { initHeartbeat } from './modules/online.js';
 import { initFormLoadingStates } from './modules/loading.js';
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Global UI
-  initTheme();
-  initDropdowns();
+  // Global UI (nav/dropdowns/theme handled by base.html inline)
   initModals();
-  initMobileNav();
   initAjaxForms();
 
   // Feature modules (each checks for its own DOM elements)

@@ -13,9 +13,8 @@
     size        - "sm" | "md" | "lg" | "xl" | "full" (default: "md")
     class       - Additional CSS classes for modal content
 {% endcomment %}
-<div id="{{ id }}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="{{ id }}-title"
-     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem;">
-  <div class="bg-[var(--surface-primary)] rounded-2xl shadow-2xl w-full {% if size == 'sm' %}max-w-sm{% elif size == 'lg' %}max-w-2xl{% elif size == 'xl' %}max-w-3xl{% elif size == 'full' %}max-w-5xl{% else %}max-w-lg{% endif %} mx-auto my-8 {{ class }}" style="animation:modalIn 0.2s ease-out;">
+<div id="{{ id }}" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="{{ id }}-title">
+  <div class="bg-[var(--surface-primary)] rounded-2xl shadow-2xl w-full {% if size == 'sm' %}max-w-sm{% elif size == 'lg' %}max-w-2xl{% elif size == 'xl' %}max-w-3xl{% elif size == 'full' %}max-w-5xl{% else %}max-w-lg{% endif %} mx-auto my-8 modal-enter {{ class }}">
     {% if title %}
     <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--border-light)]">
       <h2 id="{{ id }}-title" class="text-lg font-semibold text-[var(--text-primary)]">{{ title }}</h2>
@@ -31,4 +30,4 @@
     </div>
   </div>
 </div>
-<script>document.addEventListener('DOMContentLoaded',function(){var m=document.getElementById('{{ id }}');if(!m)return;var cb=function(e){if(e.target===m)m.style.display='none'};m.addEventListener('click',cb);m.querySelector('.modal-close')?.addEventListener('click',function(){m.style.display='none'});});</script>
+<script>document.addEventListener('DOMContentLoaded',function(){var m=document.getElementById('{{ id }}');if(!m)return;m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden')});m.querySelector('.modal-close')?.addEventListener('click',function(){m.classList.add('hidden')});});</script>
