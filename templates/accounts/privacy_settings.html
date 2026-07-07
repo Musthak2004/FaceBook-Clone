@@ -1,56 +1,1746 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "base.html" %} {% load static %} {% block title %}Privacy Settings —
+SocialNet{% endblock %} {% block extra_css %}
+<style>
+  /* ══════════════════════════════════════
+   PRIVACY SETTINGS — Scoped Styles
+   ══════════════════════════════════════ */
 
-{% block title %}Privacy Settings — SocialNet{% endblock %}
+  /* ── Page layout ── */
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .page-enter {
+    animation: pageEnter 0.28s ease both;
+  }
 
-{% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8 page-enter">
-  <div class="flex items-center gap-4 mb-6">
-    <div class="w-12 h-12 rounded-xl bg-[var(--surface-tertiary)] flex items-center justify-center">
-      <svg class="w-6 h-6 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-      </svg>
-    </div>
-    <div>
-      <h1 class="text-xl font-bold text-[var(--text-primary)]">Privacy Settings</h1>
-      <p class="text-sm text-[var(--text-secondary)]">Control who can see your content</p>
-    </div>
-  </div>
+  /* ── Settings layout ── */
+  .settings-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
 
-  <div class="card-social-static p-6">
-    <form method="post" class="space-y-6">
-      {% csrf_token %}
+  /* ── Sidebar nav ── */
+  .settings-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(60px + 20px);
+  }
+  .settings-sidebar-nav {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .settings-nav-item:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .settings-nav-item.active {
+    background: var(--brand-50);
+    color: var(--brand-600);
+    font-weight: 600;
+  }
+  .dark .settings-nav-item.active {
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--brand-400);
+  }
+  .settings-nav-item svg {
+    flex-shrink: 0;
+  }
 
-      {% if form.non_field_errors %}
-      <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 dark:bg-red-900/20 dark:border-red-800" role="alert">
-        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-      </div>
-      {% endif %}
+  /* ── Main content ── */
+  .settings-main {
+    flex: 1;
+    min-width: 0;
+  }
 
-      <div class="flex items-start justify-between gap-4 p-4 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-light)]">
-        <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 mt-0.5">
-            <svg class="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
-          </div>
+  /* ── Settings Card ── */
+  .settings-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s ease;
+  }
+  .settings-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  .settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-secondary);
+  }
+  .settings-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .settings-card-header h2 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .settings-card-header p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+  }
+
+  /* ── Settings Row ── */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s ease;
+  }
+  .settings-row:last-child {
+    border-bottom: none;
+  }
+  .settings-row:hover {
+    background: var(--surface-secondary);
+  }
+
+  .settings-row-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .settings-row-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .settings-row-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .settings-row-control {
+    flex-shrink: 0;
+  }
+
+  /* ── Custom Toggle Switch ── */
+  .toggle-wrap {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .toggle-wrap input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border-medium);
+    border-radius: 9999px;
+    transition: background 0.22s ease;
+  }
+  .toggle-wrap input:checked + .toggle-track {
+    background: var(--brand-500);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+  }
+  .toggle-wrap input:checked ~ .toggle-thumb {
+    transform: translateX(20px);
+  }
+  /* Focus ring */
+  .toggle-wrap input:focus-visible + .toggle-track {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+  /* Disabled */
+  .toggle-wrap input:disabled + .toggle-track {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .toggle-wrap input:disabled ~ .toggle-thumb {
+    opacity: 0.4;
+  }
+
+  /* ── Visibility Select ── */
+  .visibility-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--surface-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 9px;
+    padding: 7px 32px 7px 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.18s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238A8D91' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    min-width: 130px;
+  }
+  .visibility-select:hover {
+    border-color: var(--border-medium);
+    background-color: var(--surface-card);
+  }
+  .visibility-select:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    background-color: var(--surface-card);
+  }
+
+  /* ── Badge pill ── */
+  .setting-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    letter-spacing: 0.03em;
+  }
+  .badge-recommended {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+  .badge-important {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+  }
+  .dark .badge-recommended {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .dark .badge-important {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+  }
+
+  /* ── Save button area ── */
+  .save-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    margin-top: 4px;
+  }
+  .btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.28);
+  }
+  .btn-save:hover {
+    background: linear-gradient(135deg, var(--brand-600), var(--brand-700));
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.38);
+    transform: translateY(-1px);
+  }
+  .btn-save:active {
+    transform: scale(0.97);
+  }
+  .btn-save.saving {
+    opacity: 0.8;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-save.saved {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.28);
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .btn-back:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-color: var(--border-medium);
+  }
+
+  /* ── Save feedback ── */
+  .save-feedback {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 5px;
+  }
+  .save-feedback.show {
+    display: flex;
+  }
+  .save-feedback.success {
+    color: #10b981;
+  }
+  .save-feedback.error {
+    color: #ef4444;
+  }
+
+  /* ── Danger zone ── */
+  .danger-zone {
+    background: var(--surface-card);
+    border: 1.5px solid rgba(239, 68, 68, 0.25);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .danger-zone-header {
+    padding: 14px 20px;
+    background: rgba(239, 68, 68, 0.04);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dark .danger-zone {
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+  .dark .danger-zone-header {
+    background: rgba(239, 68, 68, 0.08);
+  }
+
+  /* ── Tooltip ── */
+  .setting-tooltip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface-tertiary);
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: help;
+    font-style: normal;
+    transition: background 0.15s;
+  }
+  .setting-tooltip:hover {
+    background: var(--brand-100);
+    color: var(--brand-600);
+  }
+
+  /* ── Section divider ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    padding: 0 4px;
+    margin: 20px 0 8px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .settings-layout {
+      flex-direction: column;
+    }
+    .settings-sidebar {
+      width: 100%;
+      position: static;
+    }
+    .settings-sidebar-nav {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 6px;
+    }
+    .settings-nav-item {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="max-w-4xl mx-auto px-3 sm:px-4 py-6 page-enter">
+  <!-- ── Breadcrumb ── -->
+  <nav
+    class="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-5"
+    aria-label="Breadcrumb"
+  >
+    <a
+      href="{% url 'core:home' %}"
+      class="hover:text-[var(--text-primary)] transition-colors no-underline"
+      >Home</a
+    >
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+    <a
+      href="{% url 'accounts:account_settings' %}"
+      class="hover:text-[var(--text-primary)] transition-colors no-underline"
+      >Settings</a
+    >
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+    <span class="text-[var(--text-secondary)] font-medium">Privacy</span>
+  </nav>
+
+  <div class="settings-layout">
+    <!-- ════════════════════════════════
+         LEFT SIDEBAR NAV
+         ════════════════════════════════ -->
+    <aside class="settings-sidebar" aria-label="Settings navigation">
+      <nav class="settings-sidebar-nav" role="navigation">
+        <a
+          href="{% url 'accounts:account_settings' %}"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          Account
+        </a>
+        <a
+          href="{% url 'accounts:privacy_settings' %}"
+          class="settings-nav-item active"
+          aria-current="page"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+          Privacy
+        </a>
+        <a
+          href="{% url 'notifications:preferences' %}"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+          Notifications
+        </a>
+        <a
+          href="{% url 'accounts:account_settings' %}#security"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955
+                 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824
+                 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+          Security
+        </a>
+        <a
+          href="{% url 'accounts:account_settings' %}#appearance"
+          class="settings-nav-item"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0
+                 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0
+                 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            />
+          </svg>
+          Appearance
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ════════════════════════════════
+         MAIN SETTINGS CONTENT
+         ════════════════════════════════ -->
+    <main class="settings-main" id="main-content">
+      <form
+        method="post"
+        id="privacy-form"
+        aria-label="Privacy settings form"
+        novalidate
+      >
+        {% csrf_token %}
+
+        <!-- ── Form errors ── -->
+        {% if form.non_field_errors %}
+        <div
+          class="flex items-center gap-3 p-4 mb-4 rounded-xl bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 text-sm text-red-700 dark:text-red-400"
+          role="alert"
+        >
+          <svg
+            class="w-5 h-5 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           <div>
-            <label for="id_is_private" class="font-semibold text-[var(--text-primary)] cursor-pointer">Private Account</label>
-            <p class="text-sm text-[var(--text-muted)] mt-1">When your account is private, only friends can see your posts and profile information.</p>
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
           </div>
         </div>
-        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-          {{ form.is_private }}
-          <span class="sr-only">Toggle private account</span>
-          <span class="w-11 h-6 bg-[var(--border-medium)] rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-brand-500 peer-focus:ring-2 peer-focus:ring-brand-500/30 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></span>
-        </label>
-      </div>
+        {% endif %}
 
-      <div class="pt-2">
-        <button type="submit" class="btn-brand">Save Changes</button>
-        <a href="{% url 'accounts:account_settings' %}" class="btn-ghost-social ml-2">Back to Settings</a>
+        <!-- ════ SECTION 1: Profile Visibility ════ -->
+        <p class="section-label">Profile Visibility</p>
+
+        <div class="settings-card" id="section-profile">
+          <div class="settings-card-header">
+            <div
+              class="settings-card-icon bg-[var(--brand-50)] dark:bg-[rgba(99,102,241,0.12)]"
+            >
+              <svg
+                class="w-5 h-5 text-[var(--brand-600)]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2>Profile &amp; Account</h2>
+              <p>Control who can view your profile and personal information</p>
+            </div>
+          </div>
+
+          <!-- Private Account -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">
+                Private Account
+                <span class="setting-badge badge-recommended">Recommended</span>
+              </div>
+              <p class="settings-row-desc">
+                Only your friends can see your posts, stories, and profile
+                details. Others will see a limited public profile.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Toggle private account">
+                {{ form.is_private }}
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Who can see profile -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">
+                Who can see your profile
+                <i
+                  class="setting-tooltip"
+                  title="Controls who can view your full profile page"
+                  >?</i
+                >
+              </div>
+              <p class="settings-row-desc">
+                Choose who can view your profile picture, bio, and posts.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <select
+                name="profile_visibility"
+                id="id_profile_visibility"
+                class="visibility-select"
+                aria-label="Who can see your profile"
+              >
+                <option
+                  value="public"
+                  {%
+                  if
+                  form.instance.profile_visibility=""
+                  ="public"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  🌍 Everyone
+                </option>
+                <option
+                  value="friends"
+                  {%
+                  if
+                  form.instance.profile_visibility=""
+                  ="friends"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  👥 Friends only
+                </option>
+                <option
+                  value="only_me"
+                  {%
+                  if
+                  form.instance.profile_visibility=""
+                  ="only_me"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  🔒 Only me
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Who can find you -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Who can find you by email</div>
+              <p class="settings-row-desc">
+                Let people find your account using your email address.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <select
+                name="searchable_by_email"
+                class="visibility-select"
+                aria-label="Who can find you by email"
+              >
+                <option value="everyone">Everyone</option>
+                <option value="friends">Friends of friends</option>
+                <option value="nobody">Nobody</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- /settings-card -->
+
+        <!-- ════ SECTION 2: Posts & Content ════ -->
+        <p class="section-label">Posts &amp; Content</p>
+
+        <div class="settings-card" id="section-posts">
+          <div class="settings-card-header">
+            <div
+              class="settings-card-icon bg-emerald-50 dark:bg-[rgba(16,185,129,0.12)]"
+            >
+              <svg
+                class="w-5 h-5 text-emerald-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0
+                     01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2>Posts &amp; Content</h2>
+              <p>Manage default post visibility and tagging preferences</p>
+            </div>
+          </div>
+
+          <!-- Default post visibility -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Default post visibility</div>
+              <p class="settings-row-desc">
+                New posts will default to this visibility. You can change it
+                per-post.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <select
+                name="default_post_visibility"
+                class="visibility-select"
+                aria-label="Default post visibility"
+              >
+                <option
+                  value="public"
+                  {%
+                  if
+                  form.instance.default_post_visibility=""
+                  ="public"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  🌍 Public
+                </option>
+                <option
+                  value="friends"
+                  {%
+                  if
+                  form.instance.default_post_visibility=""
+                  ="friends"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  👥 Friends
+                </option>
+                <option
+                  value="only_me"
+                  {%
+                  if
+                  form.instance.default_post_visibility=""
+                  ="only_me"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  🔒 Only me
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Allow tagging -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Allow others to tag you</div>
+              <p class="settings-row-desc">
+                Friends can tag you in their posts and photos.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Allow tagging">
+                <input
+                  type="checkbox"
+                  name="allow_tagging"
+                  {%
+                  if
+                  form.instance.allow_tagging
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Tag review -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">
+                Review tags before they appear
+                <i
+                  class="setting-tooltip"
+                  title="You must approve tags before they show on your timeline"
+                  >?</i
+                >
+              </div>
+              <p class="settings-row-desc">
+                Tags from non-friends must be approved before appearing on your
+                profile.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Review tags">
+                <input
+                  type="checkbox"
+                  name="tag_review"
+                  {%
+                  if
+                  form.instance.tag_review
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- /settings-card -->
+
+        <!-- ════ SECTION 3: Social Interactions ════ -->
+        <p class="section-label">Social Interactions</p>
+
+        <div class="settings-card" id="section-social">
+          <div class="settings-card-header">
+            <div
+              class="settings-card-icon bg-purple-50 dark:bg-[rgba(139,92,246,0.12)]"
+            >
+              <svg
+                class="w-5 h-5 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7
+                     20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0
+                     0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2>Social Interactions</h2>
+              <p>Control friend requests, messages, and follower settings</p>
+            </div>
+          </div>
+
+          <!-- Who can send friend requests -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">
+                Who can send you friend requests
+              </div>
+              <p class="settings-row-desc">
+                Limit who can send you friend requests.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <select
+                name="friend_request_privacy"
+                class="visibility-select"
+                aria-label="Who can send friend requests"
+              >
+                <option value="everyone">Everyone</option>
+                <option value="friends_of_friends">Friends of friends</option>
+                <option value="nobody">Nobody</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Who can message you -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Who can message you</div>
+              <p class="settings-row-desc">
+                Non-friends messages will go to your message requests folder.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <select
+                name="message_privacy"
+                class="visibility-select"
+                aria-label="Who can message you"
+              >
+                <option value="everyone">Everyone</option>
+                <option value="friends">Friends only</option>
+                <option value="nobody">Nobody</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Show online status -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Show online status</div>
+              <p class="settings-row-desc">
+                Let your friends see when you're active on SocialNet.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Show online status">
+                {{ form.show_online_status }}
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Show last seen -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Show last seen time</div>
+              <p class="settings-row-desc">
+                Display how recently you were active.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Show last seen">
+                <input
+                  type="checkbox"
+                  name="show_last_seen"
+                  {%
+                  if
+                  form.instance.show_last_seen
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- /settings-card -->
+
+        <!-- ════ SECTION 4: Data & Activity ════ -->
+        <p class="section-label">Data &amp; Activity</p>
+
+        <div class="settings-card" id="section-data">
+          <div class="settings-card-header">
+            <div
+              class="settings-card-icon bg-amber-50 dark:bg-[rgba(245,158,11,0.12)]"
+            >
+              <svg
+                class="w-5 h-5 text-amber-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0
+                     01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622
+                     5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2>Data &amp; Activity</h2>
+              <p>Manage how your activity data is used</p>
+            </div>
+          </div>
+
+          <!-- Personalized ads -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">
+                Allow personalized content
+                <i
+                  class="setting-tooltip"
+                  title="We use your activity to show relevant content in your feed"
+                  >?</i
+                >
+              </div>
+              <p class="settings-row-desc">
+                Use your activity to personalise your feed and content
+                suggestions.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Personalized content">
+                <input
+                  type="checkbox"
+                  name="personalized_content"
+                  {%
+                  if
+                  form.instance.personalized_content
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Activity status -->
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-row-label">Share activity status</div>
+              <p class="settings-row-desc">
+                Allow SocialNet to use your activity for trending and analytics.
+              </p>
+            </div>
+            <div class="settings-row-control">
+              <label class="toggle-wrap" aria-label="Share activity status">
+                <input
+                  type="checkbox"
+                  name="share_activity"
+                  {%
+                  if
+                  form.instance.share_activity
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- /settings-card -->
+
+        <!-- ════ SAVE BAR ════ -->
+        <div class="save-bar">
+          <button type="submit" class="btn-save" id="save-btn">
+            <svg
+              class="w-4 h-4"
+              id="save-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span id="save-label">Save Changes</span>
+          </button>
+
+          <a href="{% url 'accounts:account_settings' %}" class="btn-back">
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back
+          </a>
+
+          <!-- Save feedback -->
+          <div class="save-feedback success" id="save-feedback-ok">
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Saved!
+          </div>
+          <div class="save-feedback error" id="save-feedback-err">
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Save failed. Try again.
+          </div>
+        </div>
+      </form>
+      <!-- /privacy-form -->
+
+      <!-- ════ DANGER ZONE ════ -->
+      <p class="section-label" style="color: #ef4444">Danger Zone</p>
+
+      <div class="danger-zone">
+        <div class="danger-zone-header">
+          <svg
+            class="w-5 h-5 text-red-500 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667
+                 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732
+                 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+          <div>
+            <p class="text-sm font-bold text-red-600 dark:text-red-400">
+              Danger Zone
+            </p>
+            <p class="text-xs text-[var(--text-muted)]">
+              These actions are permanent and cannot be undone.
+            </p>
+          </div>
+        </div>
+
+        <!-- Deactivate -->
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label text-[var(--text-primary)]">
+              Deactivate Account
+            </div>
+            <p class="settings-row-desc">
+              Temporarily hide your profile and posts. You can reactivate
+              anytime.
+            </p>
+          </div>
+          <div class="settings-row-control">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-400 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg transition-all active:scale-95"
+              id="deactivate-btn"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0
+                     015.636 5.636m12.728 12.728L5.636 5.636"
+                />
+              </svg>
+              Deactivate
+            </button>
+          </div>
+        </div>
+
+        <!-- Delete -->
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">
+              <span class="text-red-600 dark:text-red-400 font-bold">
+                Delete Account
+              </span>
+              <span class="setting-badge badge-important">Permanent</span>
+            </div>
+            <p class="settings-row-desc">
+              Permanently delete your account, posts, and all data. This cannot
+              be undone.
+            </p>
+          </div>
+          <div class="settings-row-control">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-all active:scale-95"
+              id="delete-account-btn"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0
+                     01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0
+                     00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Delete Account
+            </button>
+          </div>
+        </div>
       </div>
-    </form>
+      <!-- /danger-zone -->
+    </main>
   </div>
 </div>
+
+<!-- ════════════════════════════════
+     DEACTIVATE CONFIRM MODAL
+     ════════════════════════════════ -->
+<div
+  id="deactivate-modal"
+  class="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="deactivate-modal-title"
+>
+  <div
+    class="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-light)] shadow-[var(--shadow-xl)] w-[95%] max-w-[400px] overflow-hidden"
+  >
+    <div
+      class="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-light)] bg-amber-50 dark:bg-amber-900/20"
+    >
+      <svg
+        class="w-6 h-6 text-amber-500 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667
+             1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732
+             0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+        />
+      </svg>
+      <h3
+        id="deactivate-modal-title"
+        class="font-bold text-amber-800 dark:text-amber-300"
+      >
+        Deactivate Account?
+      </h3>
+    </div>
+    <div class="p-5 space-y-4">
+      <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+        Your profile and posts will be hidden from others while your account is
+        deactivated. You can reactivate at any time by logging back in.
+      </p>
+      <div class="flex gap-3">
+        <button
+          type="button"
+          class="flex-1 py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30 border border-amber-200 rounded-xl transition-all"
+          id="confirm-deactivate"
+        >
+          Yes, deactivate
+        </button>
+        <button
+          type="button"
+          class="flex-1 py-2.5 text-sm font-semibold bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--border-light)] rounded-xl transition-all"
+          data-modal-close="deactivate-modal"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     DELETE CONFIRM MODAL
+     ════════════════════════════════ -->
+<div
+  id="delete-modal"
+  class="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="delete-modal-title"
+>
+  <div
+    class="bg-[var(--surface-card)] rounded-2xl border border-[var(--border-light)] shadow-[var(--shadow-xl)] w-[95%] max-w-[420px] overflow-hidden"
+  >
+    <div
+      class="flex items-center gap-3 px-5 py-4 border-b border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20"
+    >
+      <svg
+        class="w-6 h-6 text-red-500 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0
+             01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0
+             00-1 1v3M4 7h16"
+        />
+      </svg>
+      <h3
+        id="delete-modal-title"
+        class="font-bold text-red-700 dark:text-red-400"
+      >
+        Delete Account Permanently?
+      </h3>
+    </div>
+    <div class="p-5 space-y-4">
+      <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+        This will permanently delete your account, all your posts, messages, and
+        data.
+        <strong class="text-[var(--text-primary)]"
+          >This action cannot be undone.</strong
+        >
+      </p>
+      <!-- Confirm by typing username -->
+      <div>
+        <label
+          class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5"
+        >
+          Type
+          <code
+            class="px-1.5 py-0.5 bg-[var(--surface-secondary)] rounded text-red-600 font-mono text-xs"
+            >DELETE</code
+          >
+          to confirm
+        </label>
+        <input
+          type="text"
+          id="delete-confirm-input"
+          class="w-full px-3 py-2.5 bg-[var(--surface-secondary)] border-2 border-[var(--border-light)] focus:border-red-400 focus:ring-2 focus:ring-red-400/10 rounded-xl text-sm outline-none transition-all font-mono tracking-wide"
+          placeholder="DELETE"
+          autocomplete="off"
+        />
+      </div>
+      <div class="flex gap-3">
+        <button
+          type="button"
+          class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          id="confirm-delete"
+          disabled
+        >
+          Permanently Delete
+        </button>
+        <button
+          type="button"
+          class="flex-1 py-2.5 text-sm font-semibold bg-[var(--surface-secondary)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--border-light)] rounded-xl transition-all"
+          data-modal-close="delete-modal"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    "use strict";
+
+    /* ══════════════════════════════════════
+     TOGGLE SWITCH — ensure hidden inputs
+     work correctly with Django form
+     ══════════════════════════════════════ */
+    document
+      .querySelectorAll('.toggle-wrap input[type="checkbox"]')
+      .forEach(function (cb) {
+        /* If Django renders it as a different element, normalise */
+        cb.classList.add("sr-only");
+        cb.style.cssText = "position:absolute;opacity:0;width:0;height:0;";
+      });
+
+    /* ══════════════════════════════════════
+     MODAL HELPERS
+     ══════════════════════════════════════ */
+    function openModal(id) {
+      var m = document.getElementById(id);
+      if (!m) return;
+      m.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+      var first = m.querySelector("button, input");
+      if (first)
+        setTimeout(function () {
+          first.focus();
+        }, 60);
+    }
+    function closeModal(id) {
+      var m = document.getElementById(id);
+      if (!m) return;
+      m.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    /* Close via data-modal-close */
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-modal-close]");
+      if (btn) closeModal(btn.dataset.modalClose);
+      /* Close on overlay click */
+      if (e.target.id === "deactivate-modal") closeModal("deactivate-modal");
+      if (e.target.id === "delete-modal") closeModal("delete-modal");
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeModal("deactivate-modal");
+        closeModal("delete-modal");
+      }
+    });
+
+    /* ══════════════════════════════════════
+     SAVE FORM — AJAX with feedback
+     ══════════════════════════════════════ */
+    var form = document.getElementById("privacy-form");
+    var saveBtn = document.getElementById("save-btn");
+    var saveLabel = document.getElementById("save-label");
+    var saveIcon = document.getElementById("save-icon");
+    var feedbackOk = document.getElementById("save-feedback-ok");
+    var feedbackErr = document.getElementById("save-feedback-err");
+
+    function getCsrf() {
+      var v = "; " + document.cookie;
+      var p = v.split("; csrftoken=");
+      return p.length === 2 ? p.pop().split(";").shift() : "";
+    }
+
+    function showFeedback(type) {
+      feedbackOk.classList.remove("show");
+      feedbackErr.classList.remove("show");
+      if (type === "ok") feedbackOk.classList.add("show");
+      if (type === "err") feedbackErr.classList.add("show");
+      setTimeout(function () {
+        feedbackOk.classList.remove("show");
+        feedbackErr.classList.remove("show");
+      }, 3500);
+    }
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        /* Loading state */
+        saveBtn.classList.add("saving");
+        saveBtn.disabled = true;
+        saveLabel.textContent = "Saving…";
+        saveIcon.innerHTML =
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"' +
+          ' d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11' +
+          ' 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>';
+        saveIcon.classList.add("animate-spin");
+
+        var data = new FormData(form);
+
+        fetch(window.location.href, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrf(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: data,
+        })
+          .then(function (r) {
+            if (r.ok) {
+              /* Success */
+              saveBtn.classList.remove("saving");
+              saveBtn.classList.add("saved");
+              saveBtn.disabled = false;
+              saveLabel.textContent = "Saved!";
+              saveIcon.classList.remove("animate-spin");
+              saveIcon.innerHTML =
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+              showFeedback("ok");
+
+              if (typeof showToast === "function") {
+                showToast("✅ Privacy settings saved!", "success", 3000);
+              }
+
+              /* Reset button after delay */
+              setTimeout(function () {
+                saveBtn.classList.remove("saved");
+                saveLabel.textContent = "Save Changes";
+              }, 3000);
+            } else {
+              throw new Error("Server error");
+            }
+          })
+          .catch(function () {
+            saveBtn.classList.remove("saving");
+            saveBtn.disabled = false;
+            saveLabel.textContent = "Save Changes";
+            saveIcon.classList.remove("animate-spin");
+            saveIcon.innerHTML =
+              '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+            showFeedback("err");
+
+            if (typeof showToast === "function") {
+              showToast("Failed to save settings. Please try again.", "error");
+            }
+          });
+      });
+    }
+
+    /* ══════════════════════════════════════
+     TRACK UNSAVED CHANGES
+     ══════════════════════════════════════ */
+    var isDirty = false;
+
+    if (form) {
+      form.addEventListener("change", function () {
+        isDirty = true;
+      });
+      form.addEventListener("submit", function () {
+        isDirty = false;
+      });
+
+      window.addEventListener("beforeunload", function (e) {
+        if (isDirty) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+    }
+
+    /* ══════════════════════════════════════
+     SMOOTH SCROLL TO SECTION
+     ══════════════════════════════════════ */
+    document
+      .querySelectorAll('.settings-nav-item[href^="#"]')
+      .forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          var id = this.getAttribute("href").slice(1);
+          var el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            el.classList.add(
+              "ring-2",
+              "ring-[var(--brand-400)]",
+              "ring-offset-2",
+            );
+            setTimeout(function () {
+              el.classList.remove(
+                "ring-2",
+                "ring-[var(--brand-400)]",
+                "ring-offset-2",
+              );
+            }, 1800);
+          }
+        });
+      });
+
+    /* ══════════════════════════════════════
+     DEACTIVATE MODAL
+     ══════════════════════════════════════ */
+    var deactivateBtn = document.getElementById("deactivate-btn");
+    var confirmDeact = document.getElementById("confirm-deactivate");
+
+    if (deactivateBtn) {
+      deactivateBtn.addEventListener("click", function () {
+        openModal("deactivate-modal");
+      });
+    }
+    if (confirmDeact) {
+      confirmDeact.addEventListener("click", function () {
+        confirmDeact.textContent = "Deactivating…";
+        confirmDeact.disabled = true;
+
+        fetch("/accounts/deactivate/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrf(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then(function (r) {
+            if (r.ok) {
+              closeModal("deactivate-modal");
+              if (typeof showToast === "function") {
+                showToast("Account deactivated. Redirecting…", "info", 2500);
+              }
+              setTimeout(function () {
+                window.location.href = "/";
+              }, 2500);
+            } else {
+              throw new Error();
+            }
+          })
+          .catch(function () {
+            confirmDeact.textContent = "Yes, deactivate";
+            confirmDeact.disabled = false;
+            if (typeof showToast === "function") {
+              showToast("Failed to deactivate. Please try again.", "error");
+            }
+          });
+      });
+    }
+
+    /* ══════════════════════════════════════
+     DELETE MODAL — type "DELETE" to enable
+     ══════════════════════════════════════ */
+    var deleteBtn = document.getElementById("delete-account-btn");
+    var deleteInput = document.getElementById("delete-confirm-input");
+    var confirmDelete = document.getElementById("confirm-delete");
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", function () {
+        if (deleteInput) deleteInput.value = "";
+        if (confirmDelete) confirmDelete.disabled = true;
+        openModal("delete-modal");
+      });
+    }
+
+    if (deleteInput && confirmDelete) {
+      deleteInput.addEventListener("input", function () {
+        confirmDelete.disabled = deleteInput.value.trim() !== "DELETE";
+      });
+    }
+
+    if (confirmDelete) {
+      confirmDelete.addEventListener("click", function () {
+        confirmDelete.textContent = "Deleting…";
+        confirmDelete.disabled = true;
+
+        fetch("/accounts/delete/", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrf(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then(function (r) {
+            if (r.ok) {
+              closeModal("delete-modal");
+              if (typeof showToast === "function") {
+                showToast("Account deleted. Goodbye! 👋", "info", 3000);
+              }
+              setTimeout(function () {
+                window.location.href = "/";
+              }, 3000);
+            } else {
+              throw new Error();
+            }
+          })
+          .catch(function () {
+            confirmDelete.textContent = "Permanently Delete";
+            confirmDelete.disabled = false;
+            if (typeof showToast === "function") {
+              showToast(
+                "Failed to delete account. Please contact support.",
+                "error",
+              );
+            }
+          });
+      });
+    }
+  })();
+</script>
 {% endblock %}
