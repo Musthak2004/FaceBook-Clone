@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, DetailView, UpdateView
 
-from .forms import SignUpForm
+from .forms import SignUpForm, ProfileEditForm
 from .models import CustomUser
 from .utils import send_verification_email, verify_token
 
@@ -67,7 +67,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
 
 class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = CustomUser
-    fields = ['first_name', 'last_name', 'date_of_birth']
+    form_class = ProfileEditForm
     template_name = 'accounts/profile_edit.html'
     slug_field = 'username'
     slug_url_kwarg = 'username'

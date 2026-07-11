@@ -6,6 +6,19 @@ from django.urls import reverse
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
+
+    # Profile fields
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')],
+        blank=True
+    )
+    website = models.URLField(blank=True)
+
     date_of_birth = models.DateField(null=True, blank=True)
     last_seen = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

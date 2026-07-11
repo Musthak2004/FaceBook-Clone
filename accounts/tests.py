@@ -144,6 +144,47 @@ class ProfileViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'accounts/profile_edit.html')
 
+    def test_profile_edit_other_user(self):
+        other = self.User.objects.create_user(
+            email='other@example.com', username='otheruser', password='pass123'
+        )
+        self.client.login(email='profile@example.com', password='pass123')
+        response = self.client.get(
+            reverse('accounts:profile_edit', kwargs={'username': 'otheruser'})
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_profile_edit_saves_bio(self):
+        self.client.login(email='profile@example.com', password='pass123')
+        response = self.client.post(
+            reverse('accounts:profile_edit', kwargs={'username': 'profiletest'}),
+            {'first_name': 'Profile', 'last_name': 'Test', 'bio': 'Hello, this is my bio!'}
+        )
+        self.assertRedirects(
+            response,
+            reverse('accounts:profile', kwargs={'username': 'profiletest'})
+        )
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.bio, 'Hello, this is my bio!')
+
+    def test_profile_shows_bio(self):
+        self.user.bio = 'My awesome bio'
+        self.user.location = 'New York'
+        self.user.save()
+        self.client.login(email='profile@example.com', password='pass123')
+        response = self.client.get(
+            reverse('accounts:profile', kwargs={'username': 'profiletest'})
+        )
+        self.assertContains(response, 'My awesome bio')
+        self.assertContains(response, 'New York')
+
+    def test_profile_default_avatar(self):
+        self.client.login(email='profile@example.com', password='pass123')
+        response = self.client.get(
+            reverse('accounts:profile', kwargs={'username': 'profiletest'})
+        )
+        self.assertContains(response, 'default-avatar.svg')
+
 
 class EmailVerificationTests(TestCase):
 

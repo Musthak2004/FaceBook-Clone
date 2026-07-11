@@ -58,6 +58,12 @@
                             <i class="bi bi-geo-alt me-2"></i>{{ profile_user.location }}
                         </li>
                         {% endif %}
+                        {% if profile_user.website %}
+                        <li class="mb-2">
+                            <i class="bi bi-link-45deg me-2"></i>
+                            <a href="{{ profile_user.website }}" target="_blank">{{ profile_user.website }}</a>
+                        </li>
+                        {% endif %}
                         {% if profile_user.date_of_birth %}
                         <li class="mb-2">
                             <i class="bi bi-cake me-2"></i>{{ profile_user.date_of_birth }}
@@ -66,6 +72,11 @@
                         <li class="mb-2">
                             <i class="bi bi-envelope me-2"></i>{{ profile_user.email }}
                         </li>
+                        {% if profile_user.gender %}
+                        <li class="mb-2">
+                            <i class="bi bi-person me-2"></i>{{ profile_user.get_gender_display }}
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
