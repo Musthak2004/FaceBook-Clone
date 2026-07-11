@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Groups — FaceClone{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-people-fill"></i> Groups
+            </h1>
+            <a href="{% url 'groups:create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> New Group
+            </a>
+        </div>
+
+        {% if groups %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for group in groups %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            {% if group.cover %}
+                                <img src="{{ group.cover.url }}" class="card-img-top" alt="{{ group.name }}" style="height: 140px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 140px;">
+                                    <i class="bi bi-people-fill fs-1"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ group.name }}</h5>
+                                <p class="card-text text-muted small">
+                                    {{ group.description|truncatechars:100 }}
+                                </p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i> {{ group.member_count }} member{{ group.member_count|pluralize }}
+                                    </small>
+                                </p>
+                                <a href="{% url 'groups:detail' group.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                                    View Group
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if is_paginated %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&lsaquo;</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&rsaquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1"></i>
+                <p class="mt-2">No groups yet.</p>
+                <a href="{% url 'groups:create' %}" class="btn btn-primary">Create the first group</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

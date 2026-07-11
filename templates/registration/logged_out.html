@@ -1,17 +1,18 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Logged Out - FaceBook Clone{% endblock %}
+{% block title %}Logged Out{% endblock title %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4 text-center">
+<div class="row">
+    <div class="col-md-6 mx-auto text-center mt-5">
         <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="mb-3">You've been logged out</h2>
-                <p class="text-muted">Thank you for visiting. See you again!</p>
+            <div class="card-body py-5">
+                <i class="bi bi-box-arrow-right display-1 text-muted"></i>
+                <h4 class="mt-3">You've been logged out</h4>
+                <p class="text-muted">Thanks for stopping by!</p>
                 <a href="{% url 'login' %}" class="btn btn-primary">Log In Again</a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

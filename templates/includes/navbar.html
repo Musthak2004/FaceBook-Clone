@@ -1,41 +1,96 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-            <i class="bi bi-facebook"></i> FB Clone
+            <i class="bi bi-facebook"></i> FaceClone
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
+            <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'friendships:friend_list' %}">
-                        <i class="bi bi-people"></i> Friends
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="bi bi-house-door-fill"></i> Home
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'friendships:friend_requests' %}">
-                        <i class="bi bi-person-plus"></i> Requests
+                    <a class="nav-link" href="{% url 'friend_list' %}">
+                        <i class="bi bi-people-fill"></i> Friends
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'friendships:friend_suggestions' %}">
-                        <i class="bi bi-search"></i> Discover
+                    <a class="nav-link" href="{% url 'friend_suggestions' %}">
+                        <i class="bi bi-person-plus-fill"></i> Suggestions
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:profile' user.username %}">
-                        <i class="bi bi-person-circle"></i>
-                        {{ user.get_full_name|default:user.username }}
+                    <a class="nav-link position-relative" href="{% url 'friend_requests' %}">
+                        <i class="bi bi-person-check-fill"></i> Requests
+                        {% if pending_request_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ pending_request_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'groups:list' %}">
+                        <i class="bi bi-people-fill"></i> Groups
                     </a>
                 </li>
                 <li class="nav-item">
-                    <form method="post" action="{% url 'logout' %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-link btn btn-link">
-                            <i class="bi bi-box-arrow-right"></i> Log Out
-                        </button>
-                    </form>
+                    <a class="nav-link" href="{% url 'events:list' %}">
+                        <i class="bi bi-calendar-event-fill"></i> Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'stories:list' %}">
+                        <i class="bi bi-camera-fill"></i> Stories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'messaging:list' %}">
+                        <i class="bi bi-chat-dots-fill"></i> Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="{% url 'notifications:list' %}">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if unread_notifications > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ unread_notifications }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <img src="{{ user.avatar_url }}" alt="Avatar" class="rounded-circle me-1" width="28" height="28">
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'profile' user.username %}">
+                                <i class="bi bi-person-circle"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'profile_edit' user.username %}">
+                                <i class="bi bi-gear"></i> Edit Profile
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">
+                                    <i class="bi bi-box-arrow-right"></i> Log Out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>

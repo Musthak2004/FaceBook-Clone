@@ -1,29 +1,37 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Log In - FaceBook Clone{% endblock %}
+{% block title %}Log In{% endblock title %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="text-center mb-4">Log In</h2>
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow-sm mt-5">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0"><i class="bi bi-facebook"></i> FaceClone</h4>
+                <small>Log in to connect with friends</small>
+            </div>
+            <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
                     {{ form|crispy }}
                     <button type="submit" class="btn btn-primary w-100 mt-2">Log In</button>
                 </form>
                 <div class="text-center mt-3">
-                    <p class="mb-1">
-                        <a href="{% url 'password_reset' %}">Forgot password?</a>
-                    </p>
-                    <p class="mb-0">Don't have an account?
-                        <a href="{% url 'accounts:signup' %}">Sign Up</a>
-                    </p>
+                    <a href="{% url 'password_reset' %}" class="text-decoration-none small">Forgot password?</a>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <a href="{% url 'signup' %}" class="btn btn-success">Create New Account</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
+
+{% block extra_css %}
+<style>
+    body { background-color: #f0f2f5; }
+</style>
+{% endblock extra_css %}

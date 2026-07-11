@@ -1,132 +1,133 @@
-from django.contrib import messages
+"""
+Friendship views: send request, accept, reject, list friends, suggestions.
+"""
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, View
-
-from accounts.models import CustomUser
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import ListView, TemplateView
 from .models import Friendship
 
 
 class FriendRequestView(LoginRequiredMixin, View):
-    """Send a friend request to another user."""
+    """Send a friend request."""
 
-    def post(self, request, user_id):
-        to_user = get_object_or_404(CustomUser, pk=user_id)
-        if request.user == to_user:
-            messages.error(request, "You cannot send a friend request to yourself.")
-            return redirect('accounts:profile', username=to_user.username)
-
-        status = Friendship.friend_status(request.user, to_user)
-        if status == 'pending':
-            messages.info(request, "Friend request already sent.")
-        elif status == 'accepted':
-            messages.info(request, "You are already friends with this user.")
-        elif status == 'rejected':
-            Friendship.objects.filter(
-                Q(from_user=request.user, to_user=to_user) |
-                Q(from_user=to_user, to_user=request.user)
-            ).delete()
-            Friendship.objects.create(from_user=request.user, to_user=to_user)
-            messages.success(request, f"Friend request sent to {to_user.get_full_name()}.")
-        else:
-            Friendship.objects.create(from_user=request.user, to_user=to_user)
-            messages.success(request, f"Friend request sent to {to_user.get_full_name()}.")
-
-        return redirect('accounts:profile', username=to_user.username)
+    def post(self, request, *args, **kwargs):
+        to_user = get_object_or_404(
+            get_user_model(),
+            username=kwargs["username"],
+        )
+        if to_user != request.user:
+            Friendship.objects.get_or_create(
+                from_user=request.user,
+                to_user=to_user,
+                defaults={"status": "pending"},
+            )
+        return redirect(request.META.get("HTTP_REFERER", "home"))
 
 
-class AcceptFriendRequestView(LoginRequiredMixin, View):
-    """Accept a received friend request."""
+class FriendAcceptView(LoginRequiredMixin, View):
+    """Accept a friend request."""
 
-    def post(self, request, request_id):
+    def post(self, request, *args, **kwargs):
         friendship = get_object_or_404(
-            Friendship, pk=request_id, to_user=request.user, status='pending'
+            Friendship,
+            id=kwargs["pk"],
+            to_user=request.user,
+            status="pending",
         )
-        friendship.status = 'accepted'
-        friendship.save()
-        messages.success(
-            request,
-            f"You are now friends with {friendship.from_user.get_full_name()}."
-        )
-        return redirect('friendships:friend_requests')
+        friendship.accept()
+        return redirect(request.META.get("HTTP_REFERER", "friend_requests"))
 
 
-class RejectFriendRequestView(LoginRequiredMixin, View):
-    """Reject a received friend request."""
+class FriendRejectView(LoginRequiredMixin, View):
+    """Reject a friend request."""
 
-    def post(self, request, request_id):
+    def post(self, request, *args, **kwargs):
         friendship = get_object_or_404(
-            Friendship, pk=request_id, to_user=request.user, status='pending'
+            Friendship,
+            id=kwargs["pk"],
+            to_user=request.user,
+            status="pending",
         )
-        friendship.status = 'rejected'
-        friendship.save()
-        messages.info(request, "Friend request rejected.")
-        return redirect('friendships:friend_requests')
+        friendship.reject()
+        return redirect(request.META.get("HTTP_REFERER", "friend_requests"))
 
 
-class CancelFriendRequestView(LoginRequiredMixin, View):
-    """Cancel a sent friend request."""
-
-    def post(self, request, request_id):
-        friendship = get_object_or_404(
-            Friendship, pk=request_id, from_user=request.user, status='pending'
-        )
-        friendship.delete()
-        messages.info(request, "Friend request cancelled.")
-        return redirect('friendships:friend_requests')
-
-
-class UnfriendView(LoginRequiredMixin, View):
+class FriendRemoveView(LoginRequiredMixin, View):
     """Remove a friend."""
 
-    def post(self, request, user_id):
-        to_user = get_object_or_404(CustomUser, pk=user_id)
+    def post(self, request, *args, **kwargs):
+        friend = get_object_or_404(
+            get_user_model(),
+            username=kwargs["username"],
+        )
+        # Remove both directions
         Friendship.objects.filter(
-            Q(from_user=request.user, to_user=to_user) |
-            Q(from_user=to_user, to_user=request.user),
-            status='accepted',
+            Q(from_user=request.user, to_user=friend) |
+            Q(from_user=friend, to_user=request.user),
+            status="accepted",
         ).delete()
-        messages.success(request, f"Unfriended {to_user.get_full_name()}.")
-        return redirect('accounts:profile', username=to_user.username)
+        request.user.friends.remove(friend)
+        return redirect(request.META.get("HTTP_REFERER", "friend_list"))
 
 
 class FriendListView(LoginRequiredMixin, ListView):
     """List all friends of the current user."""
-    template_name = 'friendships/friend_list.html'
-    context_object_name = 'friends'
+    template_name = "friendships/friend_list.html"
+    context_object_name = "friends"
 
     def get_queryset(self):
-        user_ids = Friendship.get_friend_ids(self.request.user)
-        return CustomUser.objects.filter(pk__in=user_ids)
+        return self.request.user.friends.all()
 
 
 class FriendRequestsView(LoginRequiredMixin, ListView):
-    """List pending friend requests received by the current user."""
-    template_name = 'friendships/friend_requests.html'
-    context_object_name = 'requests'
+    """Show pending friend requests received by current user."""
+    template_name = "friendships/friend_requests.html"
+    context_object_name = "friend_requests"
 
     def get_queryset(self):
         return Friendship.objects.filter(
-            to_user=self.request.user, status='pending'
-        ).select_related('from_user')
+            to_user=self.request.user,
+            status="pending",
+        ).select_related("from_user")
 
 
 class SentRequestsView(LoginRequiredMixin, ListView):
-    """List pending friend requests sent by the current user."""
-    template_name = 'friendships/sent_requests.html'
-    context_object_name = 'requests'
+    """Show pending friend requests sent by current user."""
+    template_name = "friendships/sent_requests.html"
+    context_object_name = "sent_requests"
 
     def get_queryset(self):
         return Friendship.objects.filter(
-            from_user=self.request.user, status='pending'
-        ).select_related('to_user')
+            from_user=self.request.user,
+            status="pending",
+        ).select_related("to_user")
 
 
-class FriendSuggestionsView(LoginRequiredMixin, ListView):
-    """Suggest friends for the current user."""
-    template_name = 'friendships/friend_suggestions.html'
-    context_object_name = 'suggestions'
+class FriendSuggestionsView(LoginRequiredMixin, TemplateView):
+    """Show friend suggestions: users who are not already friends."""
+    template_name = "friendships/friend_suggestions.html"
 
-    def get_queryset(self):
-        return Friendship.get_suggestions(self.request.user)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        User = get_user_model()
+
+        # IDs of existing connections (friends + pending)
+        friend_ids = set(self.request.user.friends.values_list("id", flat=True))
+        sent_ids = set(Friendship.objects.filter(
+            from_user=self.request.user
+        ).values_list("to_user_id", flat=True))
+        received_ids = set(Friendship.objects.filter(
+            to_user=self.request.user
+        ).values_list("from_user_id", flat=True))
+
+        exclude_ids = friend_ids | sent_ids | received_ids | {self.request.user.id}
+
+        # Suggest users not already connected
+        suggestions = User.objects.exclude(id__in=exclude_ids)[:20]
+        context["suggestions"] = suggestions
+        context["suggestion_count"] = suggestions.count()
+        return context

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{% if object %}Edit Event{% else %}Create Event{% endif %} - FaceBook Clone{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h1 class="card-title h3 mb-4">{% if object %}Edit Event{% else %}Create Event{% endif %}</h1>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> {% if object %}Save Changes{% else %}Create Event{% endif %}
+              </button>
+              <a href="{% if object %}{% url 'events:detail' object.pk %}{% else %}{% url 'events:list' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

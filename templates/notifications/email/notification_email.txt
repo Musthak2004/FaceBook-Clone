@@ -1,0 +1,10 @@
+Hi {{ recipient.username }},
+
+{{ actor_name }} {{ verb_display }} on FaceClone.
+
+{% if notification.target %}
+You can view it here: {{ notification.target.get_absolute_url }}
+{% endif %}
+
+---
+FaceClone — Your social network

@@ -1,79 +1,72 @@
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect
+"""
+Account views: profile, edit profile, signup.
+Follows Django for Beginners Ch 7-9 patterns with class-based views.
+"""
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, DetailView, UpdateView
-
-from .forms import SignUpForm, ProfileEditForm
+from django.views.generic import DetailView, UpdateView, CreateView
+from .forms import CustomUserCreationForm, ProfileEditForm
 from .models import CustomUser
-from .utils import send_verification_email, verify_token
+from posts.models import Post
 
 
 class SignUpView(CreateView):
-    form_class = SignUpForm
-    template_name = 'registration/signup.html'
-    success_url = reverse_lazy('login')
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        try:
-            send_verification_email(self.request, self.object)
-            messages.success(
-                self.request,
-                'Account created successfully! Check your email to verify your account.'
-            )
-        except Exception:
-            messages.warning(
-                self.request,
-                'Account created, but we could not send a verification email. '
-                'You may need to contact support.'
-            )
-        return response
+    """User registration. Follows Ch 7 SignUpView pattern."""
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
 
 
-class VerifyEmailView(TemplateView):
-    template_name = 'registration/verification_failed.html'
-
-    def get(self, request, *args, **kwargs):
-        user = verify_token(kwargs['uidb64'], kwargs['token'])
-        if user is None:
-            return self.render_to_response({
-                'error': 'Invalid or expired verification link.'
-            })
-        if user.is_email_verified:
-            messages.info(request, 'Email already verified.')
-        else:
-            user.is_email_verified = True
-            user.save()
-            messages.success(request, 'Email verified! You can now log in.')
-        return redirect('login')
-
-
-class ProfileDetailView(LoginRequiredMixin, DetailView):
+class ProfileView(DetailView):
+    """Display a user's profile with their posts."""
     model = CustomUser
-    template_name = 'accounts/profile.html'
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
-    context_object_name = 'profile_user'
+    template_name = "accounts/profile.html"
+    slug_field = "username"
+    slug_url_kwarg = "username"
+    context_object_name = "profile_user"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
-        context['is_own_profile'] = (self.request.user == profile_user)
-        context['friends_count'] = 0  # Placeholder for Phase 3
-        context['posts_count'] = 0    # Placeholder for Phase 4
+        context["posts"] = Post.objects.filter(
+            author=profile_user, group__isnull=True,
+        ).select_related("author").prefetch_related(
+            "likes", "comments"
+        ).order_by("-created_at")
+
+        # Check for active stories
+        from stories.models import Story
+        context["has_active_stories"] = Story.active_stories.filter(
+            user=profile_user,
+        ).exists()
+
+        # Friendship status for logged-in user viewing this profile
+        if self.request.user.is_authenticated and self.request.user != profile_user:
+            from friendships.models import Friendship
+            friendship = Friendship.objects.filter(
+                from_user=self.request.user,
+                to_user=profile_user,
+            ).first()
+            if friendship:
+                context["friendship_status"] = friendship.status
+                context["friendship_id"] = friendship.id
+            else:
+                context["friendship_status"] = None
+        elif self.request.user == profile_user:
+            context["is_own_profile"] = True
+
         return context
 
 
-class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProfileEditView(LoginRequiredMixin, UpdateView):
+    """Edit own profile. Follows Ch 6 UpdateView pattern."""
     model = CustomUser
     form_class = ProfileEditForm
-    template_name = 'accounts/profile_edit.html'
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
+    template_name = "accounts/profile_edit.html"
 
-    def test_func(self):
-        return self.get_object() == self.request.user
+    def get_object(self, queryset=None):
+        return self.request.user
 
     def get_success_url(self):
-        return reverse_lazy('accounts:profile', kwargs={'username': self.object.username})
+        return reverse_lazy("profile", kwargs={"username": self.request.user.username})

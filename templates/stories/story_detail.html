@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Story - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow story-viewer">
+        <!-- Header -->
+        <div class="card-header bg-white d-flex align-items-center">
+          <a href="{% url 'stories:list' %}" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+          </a>
+          <img src="{{ story.user.avatar_url }}" class="rounded-circle me-2" width="36" height="36" alt="">
+          <div class="flex-grow-1">
+            <strong>{{ story.user.get_full_name|default:story.user.username }}</strong>
+            <br>
+            <small class="text-muted">{{ story.created_at|timesince }} ago</small>
+          </div>
+          {% if user == story.user %}
+            <small class="text-muted">{{ story_index|add:1 }}/{{ total_stories }}</small>
+          {% endif %}
+        </div>
+
+        <!-- Image / Content -->
+        <div class="story-content" style="min-height: 400px;">
+          {% if story.image %}
+            <img src="{{ story.image.url }}" class="w-100" alt="{{ story.caption }}" style="max-height: 70vh; object-fit: contain;">
+          {% else %}
+            <div class="bg-dark d-flex align-items-center justify-content-center" style="min-height: 400px;">
+              <p class="text-white h4">{{ story.caption }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Caption -->
+        {% if story.caption %}
+          <div class="card-body">
+            <p class="card-text">{{ story.caption }}</p>
+          </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div class="card-footer bg-white d-flex justify-content-between">
+          <div>
+            {% if story_index > 0 %}
+              <a href="{% url 'stories:detail' user_stories.0.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-skip-start"></i> First
+              </a>
+              <a href="{% url 'stories:detail' user_stories.story_index.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-skip-backward"></i> Previous
+              </a>
+            {% endif %}
+          </div>
+          <div>
+            {% if next_story %}
+              <a href="{% url 'stories:detail' next_story.pk %}" class="btn btn-primary btn-sm" id="next-story-btn">
+                Next <i class="bi bi-skip-forward"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'stories:list' %}" class="btn btn-outline-secondary btn-sm">
+                All Stories <i class="bi bi-grid"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-advance to next story after 5 seconds
+  (function() {
+    var nextBtn = document.getElementById('next-story-btn');
+    if (nextBtn) {
+      setTimeout(function() {
+        window.location.href = nextBtn.href;
+      }, 5000);
+    }
+  })();
+</script>
+{% endblock %}

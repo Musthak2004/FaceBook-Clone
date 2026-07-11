@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static messaging_tags %}
+
+{% block title %}Messages — FaceClone{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-chat-dots-fill"></i> Messages
+                {% if total_unread > 0 %}
+                    <span class="badge bg-danger ms-2">{{ total_unread }} unread</span>
+                {% endif %}
+            </h1>
+            <a href="{% url 'messaging:create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> New Message
+            </a>
+        </div>
+
+        {% if conversations %}
+            <div class="list-group">
+                {% for conversation in conversations %}
+                    <a href="{% url 'messaging:detail' conversation.pk %}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div class="me-3">
+                            <strong>
+                                {% for participant in conversation.participants.all %}
+                                    {% if participant != user %}
+                                        {{ participant.username }}{% if not forloop.last %}, {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </strong>
+                            {% if conversation.last_message %}
+                                <br>
+                                <small class="text-muted">
+                                    {{ conversation.last_message.sender.username }}: {{ conversation.last_message.content|truncatechars:40 }}
+                                </small>
+                            {% endif %}
+                        </div>
+                        <div class="text-end" style="min-width: 80px;">
+                            <small class="text-muted d-block">
+                                {% if conversation.last_message %}
+                                    {{ conversation.last_message.created_at|timesince }} ago
+                                {% endif %}
+                            </small>
+                            {% with count=unread_counts|get_item:conversation.pk %}
+                                {% if count > 0 %}
+                                    <span class="badge bg-danger rounded-pill">{{ count }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-chat-dots fs-1"></i>
+                <p class="mt-2">No conversations yet.</p>
+                <a href="{% url 'messaging:create' %}" class="btn btn-primary">
+                    Start a conversation
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

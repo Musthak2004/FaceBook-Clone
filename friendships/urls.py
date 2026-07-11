@@ -1,16 +1,25 @@
+"""
+Friendship URL patterns.
+"""
 from django.urls import path
-from . import views
-
-app_name = 'friendships'
+from .views import (
+    FriendListView,
+    FriendRequestsView,
+    FriendSuggestionsView,
+    SentRequestsView,
+    FriendRequestView,
+    FriendAcceptView,
+    FriendRejectView,
+    FriendRemoveView,
+)
 
 urlpatterns = [
-    path('', views.FriendListView.as_view(), name='friend_list'),
-    path('requests/', views.FriendRequestsView.as_view(), name='friend_requests'),
-    path('sent/', views.SentRequestsView.as_view(), name='sent_requests'),
-    path('suggestions/', views.FriendSuggestionsView.as_view(), name='friend_suggestions'),
-    path('request/<int:user_id>/', views.FriendRequestView.as_view(), name='send_request'),
-    path('accept/<int:request_id>/', views.AcceptFriendRequestView.as_view(), name='accept'),
-    path('reject/<int:request_id>/', views.RejectFriendRequestView.as_view(), name='reject'),
-    path('cancel/<int:request_id>/', views.CancelFriendRequestView.as_view(), name='cancel'),
-    path('unfriend/<int:user_id>/', views.UnfriendView.as_view(), name='unfriend'),
+    path("", FriendListView.as_view(), name="friend_list"),
+    path("requests/", FriendRequestsView.as_view(), name="friend_requests"),
+    path("sent/", SentRequestsView.as_view(), name="sent_requests"),
+    path("suggestions/", FriendSuggestionsView.as_view(), name="friend_suggestions"),
+    path("request/<username>/", FriendRequestView.as_view(), name="friend_request"),
+    path("accept/<int:pk>/", FriendAcceptView.as_view(), name="friend_accept"),
+    path("reject/<int:pk>/", FriendRejectView.as_view(), name="friend_reject"),
+    path("remove/<username>/", FriendRemoveView.as_view(), name="friend_remove"),
 ]

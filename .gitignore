@@ -1,22 +1,32 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
 # Python
 __pycache__/
 *.py[cod]
+*.so
 *.egg-info/
 dist/
+build/
+
+# Django
 *.sqlite3
+staticfiles/
+media/
 
 # Environment
 .env
-.venv/
-venv/
-
-# Media
-media/
+*.env
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS
+*~
 .DS_Store
 Thumbs.db
+*.log

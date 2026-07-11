@@ -1,54 +1,62 @@
-/* Profile Page */
-.profile-container {
-    max-width: 940px;
-    margin: 0 auto;
+/* Profile-specific styles */
+.profile-header {
+    margin-top: -50px;
 }
 
-.cover-photo {
-    height: 350px;
+.profile-cover-wrapper {
+    height: 300px;
+    background-color: #e4e6eb;
     border-radius: 8px 8px 0 0;
     overflow: hidden;
-    background: linear-gradient(135deg, #1877f2, #42b72a);
 }
 
-.cover-img {
+.profile-cover-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.profile-avatar {
-    margin-top: -84px;
+.profile-avatar-wrapper {
+    position: relative;
+    display: inline-block;
 }
 
-.profile-avatar img {
+.profile-avatar-wrapper img {
     width: 168px;
     height: 168px;
-    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-@media (max-width: 768px) {
-    .cover-photo {
-        height: 200px;
-    }
+.profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+}
 
-    .profile-avatar {
-        margin-top: -50px;
-    }
+.profile-stat {
+    text-align: center;
+    padding: 0.5rem 1rem;
+}
 
-    .profile-avatar img {
-        width: 100px;
-        height: 100px;
-    }
+.profile-stat strong {
+    display: block;
+    font-size: 1.25rem;
+}
 
-    .profile-header .d-flex {
-        flex-direction: column;
-        align-items: center !important;
-        text-align: center;
-    }
+.profile-stat span {
+    color: #65676b;
+    font-size: 0.875rem;
+}
 
-    .profile-avatar {
-        margin-right: 0 !important;
-        margin-bottom: 1rem;
-    }
+/* Post images grid */
+.post-images-grid {
+    display: grid;
+    gap: 2px;
+}
+
+.post-images-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
 }

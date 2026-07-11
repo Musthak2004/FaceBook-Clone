@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} — FaceClone{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            {% if group.cover %}
+                <img src="{{ group.cover.url }}" class="card-img-top" alt="{{ group.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 200px;">
+                    <i class="bi bi-people-fill fs-1"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="card-title mb-1">{{ group.name }}</h3>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-person"></i> {{ group.member_count }} member{{ group.member_count|pluralize }}
+                            &middot; Created by {{ group.admin.username }}
+                        </p>
+                    </div>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'groups:join' group.pk %}">
+                            {% csrf_token %}
+                            {% if is_member %}
+                                {% if is_admin %}
+                                    <span class="badge bg-warning text-dark">Admin</span>
+                                {% else %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-box-arrow-right"></i> Leave
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Join
+                                </button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+                {% if group.description %}
+                    <p class="card-text mt-2">{{ group.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Members</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for member in members %}
+                        <a href="{% url 'profile' member.username %}" class="text-decoration-none">
+                            <img src="{{ member.avatar_url }}" alt="{{ member.username }}"
+                                 class="rounded-circle" width="36" height="36"
+                                 title="{{ member.username }}">
+                        </a>
+                    {% empty %}
+                        <p class="text-muted mb-0">No members.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% if is_member %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Create Post</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'post_new' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="group" value="{{ group.pk }}">
+                        <div class="mb-2">
+                            <textarea name="content" class="form-control" rows="2" placeholder="Share something with {{ group.name }}..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <h5 class="mb-3"><i class="bi bi-file-text"></i> Posts</h5>
+        {% if posts %}
+            {% for post in posts %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{{ post.author.avatar_url }}" alt="{{ post.author.username }}"
+                                 class="rounded-circle me-2" width="36" height="36">
+                            <div>
+                                <strong>{{ post.author.username }}</strong>
+                                <small class="text-muted d-block">{{ post.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                        <p class="card-text">{{ post.content }}</p>
+                        <div class="d-flex gap-3">
+                            <span class="text-muted small"><i class="bi bi-heart"></i> {{ post.like_count }}</span>
+                            <span class="text-muted small"><i class="bi bi-chat"></i> {{ post.comment_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <p>No posts in this group yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

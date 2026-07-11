@@ -1,44 +1,63 @@
+"""
+Custom User Model for Facebook Clone.
+Follows Django for Beginners Ch 8 pattern: AbstractUser-based custom user model.
+"""
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
-    is_email_verified = models.BooleanField(default=False)
-
-    # Profile fields
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
-    bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=100, blank=True)
-    gender = models.CharField(
-        max_length=10,
-        choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')],
-        blank=True
+    """Custom user model with profile fields."""
+    bio = models.TextField(
+        max_length=500,
+        blank=True,
+        help_text="Tell us about yourself",
     )
-    website = models.URLField(blank=True)
-
+    location = models.CharField(max_length=100, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    last_seen = models.DateTimeField(null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to="profile_pics/",
+        blank=True,
+        help_text="Profile picture",
+    )
+    cover_photo = models.ImageField(
+        upload_to="profile_pics/",
+        blank=True,
+        help_text="Cover photo",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    friends = models.ManyToManyField(
+        "self",
+        through="friendships.Friendship",
+        symmetrical=False,
+        related_name="friends_set",
+    )
 
     def __str__(self):
-        return self.email
+        return self.username
 
     def get_absolute_url(self):
-        return reverse('accounts:profile', kwargs={'username': self.username})
+        return reverse("profile", kwargs={"username": self.username})
 
-    def get_profile_picture_url(self):
-        if hasattr(self, 'profile_picture') and self.profile_picture:
-            return self.profile_picture.url
-        return '/static/images/default-avatar.svg'
+    @property
+    def post_count(self):
+        return self.posts.count()
 
-    def get_cover_photo_url(self):
-        if hasattr(self, 'cover_photo') and self.cover_photo:
+    @property
+    def friend_count(self):
+        return self.friends.count()
+
+    @property
+    def avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        return "/static/images/default-avatar.svg"
+
+    @property
+    def cover_photo_url(self):
+        if self.cover_photo:
             return self.cover_photo.url
-        return '/static/images/default-cover.svg'
+        return "/static/images/default-cover.svg"

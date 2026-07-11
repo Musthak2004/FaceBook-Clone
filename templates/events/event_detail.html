@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'events:list' %}">Events</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ event.title }}</li>
+    </ol>
+  </nav>
+
+  <div class="card shadow-sm mb-4">
+    {% if event.cover %}
+      <img src="{{ event.cover.url }}" class="card-img-top" alt="{{ event.title }}" style="height: 300px; object-fit: cover;">
+    {% endif %}
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 class="card-title h2">{{ event.title }}</h1>
+          <p class="text-muted mb-1">
+            <i class="bi bi-calendar"></i> {{ event.date|date:"F j, Y" }}
+            {% if event.date|time:"H:i" != "00:00" %}
+              at {{ event.date|date:"g:i A" }}
+            {% endif %}
+          </p>
+          {% if event.location %}
+            <p class="text-muted mb-1">
+              <i class="bi bi-geo-alt"></i> {{ event.location }}
+            </p>
+          {% endif %}
+          <p class="text-muted mb-0">
+            <i class="bi bi-person"></i> Created by
+            <a href="{% url 'profile' event.creator.username %}" class="text-decoration-none">{{ event.creator.username }}</a>
+          </p>
+        </div>
+        <div>
+          {% if is_creator %}
+            <a href="{% url 'events:update' event.pk %}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a href="{% url 'events:delete' event.pk %}" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i> Delete
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">About this event</h5>
+          {% if event.description %}
+            <p class="card-text">{{ event.description|linebreaksbr }}</p>
+          {% else %}
+            <p class="text-muted">No description provided.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <!-- RSVP Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Are you going?</h5>
+          <div class="d-grid gap-2">
+            <form method="post" action="{% url 'events:rsvp' event.pk %}">
+              {% csrf_token %}
+              <div class="btn-group w-100" role="group">
+                <button type="submit" name="status" value="going"
+                        class="btn {% if my_rsvp.status == 'going' %}btn-success{% else %}btn-outline-success{% endif %}">
+                  <i class="bi bi-check-circle"></i> Going
+                </button>
+                <button type="submit" name="status" value="maybe"
+                        class="btn {% if my_rsvp.status == 'maybe' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                  <i class="bi bi-question-circle"></i> Maybe
+                </button>
+                <button type="submit" name="status" value="not_going"
+                        class="btn {% if my_rsvp.status == 'not_going' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                  <i class="bi bi-x-circle"></i> Not Going
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendees Card -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="bi bi-people"></i> Attendees
+            <span class="badge bg-secondary">{{ going|length|add:maybe|length }}</span>
+          </h5>
+
+          {% if going %}
+            <h6 class="text-success mb-2">Going ({{ going|length }})</h6>
+            <ul class="list-unstyled mb-3">
+              {% for attendee in going %}
+                <li class="mb-1">
+                  <a href="{% url 'profile' attendee.user.username %}" class="text-decoration-none">
+                    {% if attendee.user.avatar %}
+                      <img src="{{ attendee.user.avatar.url }}" class="rounded-circle me-1" width="24" height="24" alt="">
+                    {% endif %}
+                    {{ attendee.user.get_full_name|default:attendee.user.username }}
+                  </a>
+                  {% if attendee.user == event.creator %}
+                    <span class="badge bg-primary">Host</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% if maybe %}
+            <h6 class="text-warning mb-2">Maybe ({{ maybe|length }})</h6>
+            <ul class="list-unstyled mb-3">
+              {% for attendee in maybe %}
+                <li class="mb-1">
+                  <a href="{% url 'profile' attendee.user.username %}" class="text-decoration-none">
+                    {{ attendee.user.get_full_name|default:attendee.user.username }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

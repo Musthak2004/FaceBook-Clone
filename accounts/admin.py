@@ -1,26 +1,32 @@
+"""
+Admin configuration for CustomUser.
+Follows Django for Beginners Ch 8 admin pattern.
+"""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 
-@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
+    """Custom admin to display all profile fields."""
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
     model = CustomUser
-    list_display = ['email', 'username', 'is_email_verified', 'is_active', 'date_joined', 'last_seen']
-    list_filter = ['is_email_verified', 'is_active', 'date_joined', 'is_staff']
-    search_fields = ['email', 'username', 'first_name', 'last_name']
-    ordering = ['-date_joined']
-
+    list_display = [
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "location",
+        "is_staff",
+    ]
     fieldsets = UserAdmin.fieldsets + (
-        ('Additional Info', {
-            'fields': (
-                'is_email_verified', 'date_of_birth', 'last_seen',
-                'profile_picture', 'cover_photo', 'bio', 'location',
-                'gender', 'website',
-            ),
-        }),
+        ("Profile Info", {"fields": ("bio", "location", "date_of_birth", "avatar", "cover_photo")}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("Profile Info", {"fields": ("bio", "location", "date_of_birth")}),
     )
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Additional Info', {'fields': ('is_email_verified', 'date_of_birth')}),
-    )
+
+admin.site.register(CustomUser, CustomUserAdmin)
