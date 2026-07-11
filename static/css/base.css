@@ -1,0 +1,107 @@
+/* Base Styles */
+body {
+    background-color: #f0f2f5;
+    min-height: 100vh;
+}
+
+main {
+    min-height: calc(100vh - 80px);
+}
+
+/* Navbar */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 8px;
+}
+
+.card.shadow-sm {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Messages */
+.messages {
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #1877f2;
+    border-color: #1877f2;
+}
+
+.btn-primary:hover {
+    background-color: #166fe5;
+    border-color: #166fe5;
+}
+
+.btn-success {
+    background-color: #42b72a;
+    border-color: #42b72a;
+}
+
+.btn-success:hover {
+    background-color: #36a420;
+    border-color: #36a420;
+}
+
+/* Links */
+a {
+    color: #1877f2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #1877f2;
+    box-shadow: 0 0 0 0.2rem rgba(24, 119, 242, 0.25);
+}
+
+/* Avatar */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-lg {
+    width: 168px;
+    height: 168px;
+}
+
+/* Cover photo placeholder */
+.cover-placeholder {
+    height: 350px;
+    background: linear-gradient(135deg, #1877f2, #42b72a);
+    border-radius: 8px 8px 0 0;
+}

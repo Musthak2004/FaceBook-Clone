@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} - FaceBook Clone{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Cover Photo -->
+    <div class="cover-photo">
+        <img src="{{ profile_user.get_cover_photo_url }}" alt="Cover Photo" class="cover-img">
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header bg-white rounded-bottom shadow-sm p-3 mb-4">
+        <div class="d-flex align-items-end">
+            <div class="profile-avatar me-3">
+                <img src="{{ profile_user.get_profile_picture_url }}"
+                     alt="{{ profile_user.username }}"
+                     class="avatar-lg rounded-circle border border-4 border-white">
+            </div>
+            <div class="flex-grow-1">
+                <h2 class="mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h2>
+                <p class="text-muted mb-0">
+                    <span class="me-3"><strong>{{ friends_count }}</strong> friends</span>
+                    <span><strong>{{ posts_count }}</strong> posts</span>
+                </p>
+            </div>
+            <div>
+                {% if is_own_profile %}
+                    <a href="{% url 'accounts:profile_edit' profile_user.username %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">About</h5>
+                    <p class="card-text">
+                        {% if profile_user.bio %}
+                            {{ profile_user.bio }}
+                        {% else %}
+                            <span class="text-muted">No bio yet.</span>
+                        {% endif %}
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        {% if profile_user.location %}
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>{{ profile_user.location }}
+                        </li>
+                        {% endif %}
+                        {% if profile_user.date_of_birth %}
+                        <li class="mb-2">
+                            <i class="bi bi-cake me-2"></i>{{ profile_user.date_of_birth }}
+                        </li>
+                        {% endif %}
+                        <li class="mb-2">
+                            <i class="bi bi-envelope me-2"></i>{{ profile_user.email }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center py-5">
+                    <p class="text-muted mb-0">Posts will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/profile.js' %}"></script>
+{% endblock %}
