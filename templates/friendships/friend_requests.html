@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Friend Requests - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Friend Requests</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'friendships:sent_requests' %}" class="btn btn-outline-primary">
+            Sent Requests
+        </a>
+    </div>
+</div>
+
+{% if requests %}
+<div class="list-group shadow-sm">
+    {% for req in requests %}
+    <div class="list-group-item d-flex align-items-center">
+        <a href="{% url 'accounts:profile' req.from_user.username %}">
+            <img src="{{ req.from_user.get_profile_picture_url }}"
+                 alt="{{ req.from_user.username }}"
+                 class="avatar rounded-circle me-3">
+        </a>
+        <div class="flex-grow-1">
+            <a href="{% url 'accounts:profile' req.from_user.username %}" class="text-decoration-none fw-bold">
+                {{ req.from_user.get_full_name|default:req.from_user.username }}
+            </a>
+            <br>
+            <small class="text-muted">{{ req.created_at|timesince }} ago</small>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="post" action="{% url 'friendships:accept' req.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-check-lg"></i> Accept
+                </button>
+            </form>
+            <form method="post" action="{% url 'friendships:reject' req.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-person-plus display-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-0">No pending friend requests.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

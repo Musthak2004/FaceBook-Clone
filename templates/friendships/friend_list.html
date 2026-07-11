@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Friends - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>My Friends</h2>
+    </div>
+</div>
+
+{% if friends %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for friend in friends %}
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <a href="{% url 'accounts:profile' friend.username %}">
+                    <img src="{{ friend.get_profile_picture_url }}"
+                         alt="{{ friend.username }}"
+                         class="avatar-lg rounded-circle mb-3">
+                </a>
+                <h5 class="card-title">
+                    <a href="{% url 'accounts:profile' friend.username %}" class="text-decoration-none text-dark">
+                        {{ friend.get_full_name|default:friend.username }}
+                    </a>
+                </h5>
+                <form method="post" action="{% url 'friendships:unfriend' friend.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-person-x"></i> Unfriend
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-people display-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-0">No friends yet. Start connecting with people!</p>
+        <a href="{% url 'friendships:friend_suggestions' %}" class="btn btn-primary mt-3">
+            Find Friends
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

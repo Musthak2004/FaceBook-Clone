@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Friend Suggestions - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>People You May Know</h2>
+    </div>
+</div>
+
+{% if suggestions %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for suggestion in suggestions %}
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <a href="{% url 'accounts:profile' suggestion.username %}">
+                    <img src="{{ suggestion.get_profile_picture_url }}"
+                         alt="{{ suggestion.username }}"
+                         class="avatar-lg rounded-circle mb-3">
+                </a>
+                <h5 class="card-title">
+                    <a href="{% url 'accounts:profile' suggestion.username %}" class="text-decoration-none text-dark">
+                        {{ suggestion.get_full_name|default:suggestion.username }}
+                    </a>
+                </h5>
+                <p class="text-muted small">
+                    {% if suggestion.mutual_count %}
+                        {{ suggestion.mutual_count }} mutual friend{{ suggestion.mutual_count|pluralize }}
+                    {% endif %}
+                </p>
+                <form method="post" action="{% url 'friendships:send_request' suggestion.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-person-plus"></i> Add Friend
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-0">No suggestions available right now.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

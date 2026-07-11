@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'channels',
     # Local
     'accounts.apps.AccountsConfig',
+    'friendships.apps.FriendshipsConfig',
 ]
 
 MIDDLEWARE = [

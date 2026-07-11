@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sent Requests - FaceBook Clone{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Sent Requests</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'friendships:friend_requests' %}" class="btn btn-outline-primary">
+            Received Requests
+        </a>
+    </div>
+</div>
+
+{% if requests %}
+<div class="list-group shadow-sm">
+    {% for req in requests %}
+    <div class="list-group-item d-flex align-items-center">
+        <a href="{% url 'accounts:profile' req.to_user.username %}">
+            <img src="{{ req.to_user.get_profile_picture_url }}"
+                 alt="{{ req.to_user.username }}"
+                 class="avatar rounded-circle me-3">
+        </a>
+        <div class="flex-grow-1">
+            <a href="{% url 'accounts:profile' req.to_user.username %}" class="text-decoration-none fw-bold">
+                {{ req.to_user.get_full_name|default:req.to_user.username }}
+            </a>
+            <br>
+            <small class="text-muted">{{ req.created_at|timesince }} ago</small>
+        </div>
+        <form method="post" action="{% url 'friendships:cancel' req.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-x-lg"></i> Cancel
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-send display-1 text-muted"></i>
+        <p class="text-muted mt-3 mb-0">No pending sent requests.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
