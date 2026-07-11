@@ -1,9 +1,0 @@
-Hi {{ recipient.username }},
-
-{{ sender.username }} sent you a friend request on SocialNet.
-
-You can view your friend requests here:
-{{ site_url }}{% url 'friendships:friend_requests' %}
-
-—
-SocialNet
