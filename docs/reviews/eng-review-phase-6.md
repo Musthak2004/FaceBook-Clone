@@ -95,6 +95,8 @@ All 15 Phase 6 P1 tasks (T1–T15) were fully implemented but listed as unchecke
 
 ---
 
-## Quality Score: **8/10**
+## Quality Score: **8.5/10**
 
-Deducted points for N+1 query (preventable with annotation), missing error handling on user-facing input, and missing polyfill guard. All four mechanical issues were auto-fixed. No unaddressed CRITICAL findings remain.
+Deducted points for N+1 query (preventable with annotation), missing error handling on user-facing input, and missing polyfill guard. All four mechanical issues from the review were auto-fixed. **QA found and fixed one additional issue:** the AJAX load-more URL pointed at `/api/posts/` instead of the actual route `/posts/api/posts/`, causing a 404 on "View more posts" clicks. No unaddressed CRITICAL findings remain.
+
+**Post-review QA commit:** `c22cc29` — `fix: correct AJAX load-more URL`
