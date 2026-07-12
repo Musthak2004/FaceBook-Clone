@@ -9,7 +9,7 @@
     var FEED_SELECTOR     = '.news-feed';
     var CARD_SELECTOR     = '.post-card';
     var LOAD_MORE_BTN     = '#load-more-btn';
-    var LOAD_MORE_URL     = '/api/posts/';
+    var LOAD_MORE_URL     = '/posts/api/posts/';
     var LOAD_MORE_CONTAINER = '#load-more-container';
 
     // VanillaTilt configuration matching the design spec
