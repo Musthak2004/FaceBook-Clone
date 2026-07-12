@@ -12,6 +12,9 @@
     var LOAD_MORE_URL     = '/posts/api/posts/';
     var LOAD_MORE_CONTAINER = '#load-more-container';
 
+    // Toast dismiss duration in milliseconds
+    var TOAST_DURATION = 4000;
+
     // VanillaTilt configuration matching the design spec
     var TILT_CONFIG = {
         max: 8,
@@ -179,6 +182,7 @@
 
         var loading = false;
         var offset = 0;
+        var url = btn.getAttribute('data-load-more-url') || LOAD_MORE_URL;
 
         btn.addEventListener('click', function() {
             if (loading) return;
@@ -187,7 +191,7 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="load-more-spinner"></span> Loading...';
 
-            fetch(LOAD_MORE_URL + '?offset=' + offset, {
+            fetch(url + '?offset=' + offset, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
@@ -250,7 +254,7 @@
 
         setTimeout(function() {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 4000);
+        }, TOAST_DURATION);
     }
 
     // ─── Dark mode persistence ───

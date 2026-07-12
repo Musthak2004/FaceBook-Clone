@@ -7,12 +7,6 @@
 /* JS-disabled: flat, fully functional UI with Django pagination */
 /* JS-enabled:  progressive 3D depth effects added via .js selectors */
 
-.js .post-card {
-    will-change: transform;
-    transition: transform 400ms cubic-bezier(0.03, 0.98, 0.52, 0.99),
-                box-shadow 400ms ease;
-}
-
 .no-js .post-card {
     /* Flat cards — no 3D transforms, no perspective */
     transform: none !important;
@@ -226,15 +220,6 @@ small.text-muted,
 .post-card :focus-visible {
     outline: 2px solid #1877f2;
     outline-offset: 2px;
-}
-
-/* ---------------------------------- */
-/*  Glass effect fallback             */
-/* ---------------------------------- */
-@supports not (backdrop-filter: blur(1px)) {
-    .navbar-glass {
-        background: rgba(24, 119, 242, 0.95) !important;
-    }
 }
 
 /* ---------------------------------- */

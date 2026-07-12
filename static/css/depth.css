@@ -51,12 +51,24 @@
 }
 
 /* ---------------------------------- */
+/*  Z-Index custom properties         */
+/* ---------------------------------- */
+:root {
+    --z-overlay: 1040;
+    --z-sticky: 1050;
+    --z-modal-backdrop: 1060;
+    --z-modal: 1070;
+    --z-tooltip: 1080;
+    --z-toast: 1090;
+}
+
+/* ---------------------------------- */
 /*  Glass Navbar                      */
 /* ---------------------------------- */
 .navbar-glass {
     position: sticky;
     top: 0;
-    z-index: 1050;
+    z-index: var(--z-sticky);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(24, 119, 242, 0.75);
@@ -159,6 +171,12 @@
     background: rgba(212, 168, 87, 0.05);
 }
 
+.load-more-btn:focus-visible {
+    outline: 2px solid #1877f2;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(212, 168, 87, 0.25);
+}
+
 .load-more-btn:disabled {
     opacity: 0.5;
     cursor: default;
@@ -192,7 +210,7 @@
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1090;
+    z-index: var(--z-toast);
     background: #B85C4A;
     color: #fff;
     padding: 0.75rem 1.25rem;
@@ -235,10 +253,10 @@
 /* ---------------------------------- */
 /* Modals, dropdowns, and popovers sit above the perspective
    container to avoid clipping issues with 3D transforms. */
-.modal    { z-index: 1070; }
-.modal-backdrop { z-index: 1060; }
-.dropdown-menu { z-index: 1040; }
-.tooltip  { z-index: 1080; }
+.modal    { z-index: var(--z-modal); }
+.modal-backdrop { z-index: var(--z-modal-backdrop); }
+.dropdown-menu { z-index: var(--z-overlay); }
+.tooltip  { z-index: var(--z-tooltip); }
 
 /* ---------------------------------- */
 /*  Empty state for AJAX-loaded feed  */

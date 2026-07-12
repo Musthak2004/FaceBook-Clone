@@ -163,7 +163,6 @@ class PostFeedAPIView(LoginRequiredMixin, View):
                 "show_comment_preview": True,
             }, request=request))
 
-        from django.http import JsonResponse
         return JsonResponse({
             "html": "".join(html_parts),
             "next_offset": offset + len(posts),
