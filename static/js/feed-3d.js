@@ -72,6 +72,7 @@
 
     function initParallax(container) {
         if (prefersReducedMotion()) return;
+        if (typeof IntersectionObserver === 'undefined') return;
 
         var cards = container.querySelectorAll(CARD_SELECTOR);
         if (!cards.length) return;
@@ -152,6 +153,7 @@
     }
 
     function observeParallaxForNode(card) {
+        if (typeof IntersectionObserver === 'undefined') return;
         try {
             if (prefersReducedMotion()) return;
             var observer = new IntersectionObserver(function(entries) {
@@ -253,8 +255,22 @@
 
     // ─── Dark mode persistence ───
 
+    function persistTheme(name) {
+        try {
+            localStorage.setItem('fc-theme', name);
+        } catch (e) {
+            // Safari private browsing throws — non-critical
+        }
+    }
+
     function setupThemeToggle() {
-        var saved = localStorage.getItem('fc-theme');
+        var saved;
+        try {
+            saved = localStorage.getItem('fc-theme');
+        } catch (e) {
+            // Safari private browsing — read fails silently
+        }
+
         if (saved === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         } else if (saved === 'light') {
@@ -263,7 +279,7 @@
             // Respect OS preference
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('fc-theme', 'dark');
+                persistTheme('dark');
             }
         }
 
@@ -275,7 +291,7 @@
                 var current = html.getAttribute('data-theme') || 'light';
                 var next = current === 'dark' ? 'light' : 'dark';
                 html.setAttribute('data-theme', next);
-                localStorage.setItem('fc-theme', next);
+                persistTheme(next);
             }
         });
     }

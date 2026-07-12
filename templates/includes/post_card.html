@@ -41,7 +41,7 @@ Optional:
     </div>
     <div class="card-body">
         <p class="card-text">{{ post.content|linebreaksbr }}</p>
-        {% if post.has_images %}
+        {% if post.images.all %}
             <div class="post-images mt-2">
                 {% for img in post.images.all %}
                     <img src="{{ img.image.url }}" class="img-fluid rounded mb-1" alt="Post image">

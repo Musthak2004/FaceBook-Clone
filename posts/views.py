@@ -3,7 +3,8 @@ Post views: list, detail, create, update, delete, like/unlike.
 Follows Django for Beginners Ch 5-6, 13-15 patterns.
 """
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import JsonResponse
+from django.db.models import Count
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -119,7 +120,11 @@ class PostFeedAPIView(LoginRequiredMixin, View):
     BATCH_SIZE = 10
 
     def get(self, request, *args, **kwargs):
-        offset = int(request.GET.get("offset", 0))
+        try:
+            offset = int(request.GET.get("offset", 0))
+        except (ValueError, TypeError):
+            return HttpResponseBadRequest("Invalid offset parameter")
+
         from friendships.models import Friendship
 
         friend_ids = Friendship.objects.filter(
@@ -131,7 +136,10 @@ class PostFeedAPIView(LoginRequiredMixin, View):
         posts = Post.objects.filter(
             author_id__in=user_ids, group__isnull=True,
         ).select_related("author").prefetch_related(
-            "likes", "comments", "images"
+            "comments", "images"
+        ).annotate(
+            _like_count=Count("likes"),
+            _comment_count=Count("comments"),
         ).order_by("-created_at")[offset:offset + self.BATCH_SIZE + 1]
 
         has_more = len(posts) > self.BATCH_SIZE
