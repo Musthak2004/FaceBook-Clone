@@ -5,7 +5,7 @@ Follows Django for Beginners Ch 5/6 testing patterns.
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from .models import Post
+from .models import Post, Like, Comment
 
 
 class PostTests(TestCase):
@@ -114,3 +114,107 @@ class PostTests(TestCase):
         )
         data = response.json()
         self.assertFalse(data["has_more"])
+
+    # ─── Edge case: invalid / non-numeric offset ───
+
+    def test_post_feed_api_invalid_offset(self):
+        """Non-numeric offset returns 400 Bad Request."""
+        self.client.login(username="testuser", password="secret")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=abc",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    # ─── Edge case: empty feed — no posts at all ───
+
+    def test_post_feed_api_empty_feed(self):
+        """With zero posts, API returns empty html and has_more=false."""
+        self.client.login(username="testuser", password="secret")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["html"], "")
+        self.assertFalse(data["has_more"])
+        self.assertEqual(data["next_offset"], 0)
+
+    # ─── Edge case: offset beyond all available posts ───
+
+    def test_post_feed_api_offset_beyond_end(self):
+        """Offset past the last post returns empty html and has_more=false."""
+        self.client.login(username="testuser", password="secret")
+        Post.objects.create(author=self.user, content="Only one")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=100",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["html"], "")
+        self.assertFalse(data["has_more"])
+        self.assertEqual(data["next_offset"], 100)
+
+    # ─── Edge case: negative offset ───
+
+    def test_post_feed_api_negative_offset(self):
+        """Negative offset returns 400 Bad Request."""
+        self.client.login(username="testuser", password="secret")
+        self._create_posts(5)
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=-1",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    # ─── Edge case: exactly BATCH_SIZE posts → has_more=false ───
+
+    def test_post_feed_api_exact_batch_size(self):
+        """When total posts equal BATCH_SIZE exactly, has_more is false."""
+        self.client.login(username="testuser", password="secret")
+        self._create_posts(10)
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertFalse(data["has_more"])
+        self.assertEqual(data["next_offset"], 10)
+
+    # ─── Edge case: user with no friends only sees own posts ───
+
+    def test_post_feed_api_no_friends(self):
+        """User with no accepted friends sees only their own posts."""
+        other = get_user_model().objects.create_user(
+            username="other", password="secret",
+        )
+        Post.objects.create(author=other, content="Other's post")
+        Post.objects.create(author=self.user, content="My post")
+        self.client.login(username="testuser", password="secret")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("My post", data["html"])
+        self.assertNotIn("Other's post", data["html"])
+
+    # ─── Annotation-based like_count / comment_count ───
+
+    def test_like_count_with_annotation(self):
+        """like_count returns annotated value when _like_count is set."""
+        post = Post.objects.create(author=self.user, content="Count test")
+        Like.objects.create(user=self.user, post=post)
+        post._like_count = 99  # Simulate annotation from query
+        self.assertEqual(post.like_count, 99)
+
+    def test_comment_count_with_annotation(self):
+        """comment_count returns annotated value when _comment_count is set."""
+        post = Post.objects.create(author=self.user, content="Comment count test")
+        Comment.objects.create(post=post, author=self.user, content="A comment")
+        post._comment_count = 42  # Simulate annotation from query
+        self.assertEqual(post.comment_count, 42)

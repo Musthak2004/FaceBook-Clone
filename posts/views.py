@@ -124,6 +124,8 @@ class PostFeedAPIView(LoginRequiredMixin, View):
             offset = int(request.GET.get("offset", 0))
         except (ValueError, TypeError):
             return HttpResponseBadRequest("Invalid offset parameter")
+        if offset < 0:
+            return HttpResponseBadRequest("Offset cannot be negative")
 
         from friendships.models import Friendship
 
