@@ -22,4 +22,35 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // AJAX like/unlike toggle (shared by post_card include on all pages)
+    document.querySelectorAll('.like-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.liked) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary');
+                    btn.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> Like';
+                } else {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-secondary');
+                    btn.innerHTML = '<i class="bi bi-hand-thumbs-up"></i> Like';
+                }
+            })
+            .catch(function() {
+                // Silently fail — the page will show the result on next load
+            });
+        });
+    });
 });

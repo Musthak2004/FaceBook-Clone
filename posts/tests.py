@@ -19,6 +19,12 @@ class PostTests(TestCase):
             password="secret",
         )
 
+    def _create_posts(self, count, author=None):
+        """Helper to bulk-create posts."""
+        author = author or self.user
+        for i in range(count):
+            Post.objects.create(author=author, content=f"Post {i} content")
+
     def test_create_post(self):
         self.client.login(username="testuser", password="secret")
         response = self.client.post(
@@ -63,3 +69,48 @@ class PostTests(TestCase):
         )
         # Should get 403 Forbidden
         self.assertEqual(response.status_code, 403)
+
+    # ─── AJAX load-more API tests ───
+
+    def test_post_feed_api_requires_login(self):
+        """Unauthenticated requests to the AJAX endpoint should redirect."""
+        response = self.client.get(reverse("post_feed_api") + "?offset=0")
+        self.assertEqual(response.status_code, 302)
+
+    def test_post_feed_api_returns_html(self):
+        """Authenticated request returns JSON with rendered card HTML."""
+        self.client.login(username="testuser", password="secret")
+        Post.objects.create(author=self.user, content="API test post")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("html", data)
+        self.assertIn("next_offset", data)
+        self.assertIn("has_more", data)
+        self.assertIn("API test post", data["html"])
+
+    def test_post_feed_api_pagination(self):
+        """With more posts than BATCH_SIZE, has_more is true and next_offset advances."""
+        self.client.login(username="testuser", password="secret")
+        self._create_posts(12)
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        data = response.json()
+        self.assertTrue(data["has_more"])
+        self.assertEqual(data["next_offset"], 10)
+
+    def test_post_feed_api_no_more(self):
+        """When fewer posts than BATCH_SIZE remain, has_more is false."""
+        self.client.login(username="testuser", password="secret")
+        Post.objects.create(author=self.user, content="Only post")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        data = response.json()
+        self.assertFalse(data["has_more"])

@@ -9,6 +9,7 @@ from .views import (
     PostCreateView,
     PostUpdateView,
     PostDeleteView,
+    PostFeedAPIView,
     LikeToggleView,
     CommentCreateView,
     CommentDeleteView,
@@ -16,6 +17,7 @@ from .views import (
 
 urlpatterns = [
     path("", PostListView.as_view(), name="post_list"),
+    path("api/posts/", PostFeedAPIView.as_view(), name="post_feed_api"),
     path("new/", PostCreateView.as_view(), name="post_new"),
     path("<int:pk>/", PostDetailView.as_view(), name="post_detail"),
     path("<int:pk>/edit/", PostUpdateView.as_view(), name="post_edit"),
