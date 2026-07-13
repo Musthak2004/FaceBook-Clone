@@ -3,7 +3,8 @@ Post views: list, detail, create, update, delete, like/unlike.
 Follows Django for Beginners Ch 5-6, 13-15 patterns.
 """
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import JsonResponse
+from django.db.models import Count
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -111,6 +112,62 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         obj = self.get_object()
         return obj.author == self.request.user
+
+
+class PostFeedAPIView(LoginRequiredMixin, View):
+    """AJAX JSON endpoint for load-more posts. GET /api/posts/?offset=N"""
+
+    BATCH_SIZE = 10
+
+    def get(self, request, *args, **kwargs):
+        try:
+            offset = int(request.GET.get("offset", 0))
+        except (ValueError, TypeError):
+            return HttpResponseBadRequest("Invalid offset parameter")
+        if offset < 0:
+            return HttpResponseBadRequest("Offset cannot be negative")
+
+        from friendships.models import Friendship
+
+        friend_ids = Friendship.objects.filter(
+            from_user=request.user,
+            status="accepted",
+        ).values_list("to_user_id", flat=True)
+        user_ids = list(friend_ids) + [request.user.id]
+
+        posts = Post.objects.filter(
+            author_id__in=user_ids, group__isnull=True,
+        ).select_related("author").prefetch_related(
+            "comments", "images"
+        ).annotate(
+            _like_count=Count("likes"),
+            _comment_count=Count("comments"),
+        ).order_by("-created_at")[offset:offset + self.BATCH_SIZE + 1]
+
+        has_more = len(posts) > self.BATCH_SIZE
+        posts = list(posts[:self.BATCH_SIZE])
+
+        # Mark which posts the current user liked
+        user_likes = set(Like.objects.filter(
+            user=request.user,
+            post_id__in=[p.id for p in posts],
+        ).values_list("post_id", flat=True))
+
+        from django.template.loader import render_to_string
+        html_parts = []
+        for post in posts:
+            html_parts.append(render_to_string("includes/post_card.html", {
+                "post": post,
+                "user": request.user,
+                "user_likes": user_likes,
+                "show_comment_preview": True,
+            }, request=request))
+
+        return JsonResponse({
+            "html": "".join(html_parts),
+            "next_offset": offset + len(posts),
+            "has_more": has_more,
+        })
 
 
 class LikeToggleView(LoginRequiredMixin, View):

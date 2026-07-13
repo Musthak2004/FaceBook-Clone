@@ -1,0 +1,305 @@
+/* ─── FaceClone — 3D Depth Effects ─── */
+/* Design system: "The Archive" (see DESIGN.md §6 — Z-Depth Presets) */
+/* All effects gated behind .js, prefers-reduced-motion, and @supports */
+
+/* ---------------------------------- */
+/*  Card Tilt (VanillaTilt container) */
+/* ---------------------------------- */
+.js .post-card {
+    transform-style: preserve-3d;
+    transition: transform 400ms cubic-bezier(0.03, 0.98, 0.52, 0.99),
+                box-shadow 400ms ease;
+}
+
+/* Tilt-inner wraps card content so it participates in 3D space */
+.js .post-card .card-body,
+.js .post-card .card-footer,
+.js .post-card .card-header {
+    transform: translateZ(10px);
+}
+
+/* Elements that should float above the card surface */
+.post-card .avatar-float {
+    transform: translateZ(20px);
+    transition: transform 200ms ease;
+}
+
+.post-card:hover .avatar-float {
+    transform: translateZ(28px);
+}
+
+/* Card background pushed slightly back for depth illusion */
+.post-card .card-body {
+    transform: translateZ(5px);
+}
+
+/* ---------------------------------- */
+/*  Avatar placeholder initials       */
+/* ---------------------------------- */
+.avatar-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(212, 168, 87, 0.15);
+    color: #D4A857;
+    font-family: 'Satoshi', -apple-system, sans-serif;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    transform: translateZ(20px);
+}
+
+/* ---------------------------------- */
+/*  Z-Index custom properties         */
+/* ---------------------------------- */
+:root {
+    --z-overlay: 1040;
+    --z-sticky: 1050;
+    --z-modal-backdrop: 1060;
+    --z-modal: 1070;
+    --z-tooltip: 1080;
+    --z-toast: 1090;
+}
+
+/* ---------------------------------- */
+/*  Glass Navbar                      */
+/* ---------------------------------- */
+.navbar-glass {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(24, 119, 242, 0.75);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background 300ms ease, box-shadow 300ms ease;
+}
+
+/* Solid fallback when backdrop-filter is unsupported */
+@supports not (backdrop-filter: blur(1px)) {
+    .navbar-glass {
+        background: rgba(24, 119, 242, 0.95) !important;
+    }
+}
+
+/* Dark mode glass navbar */
+[data-theme="dark"] .navbar-glass {
+    background: rgba(24, 25, 26, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+    [data-theme="dark"] .navbar-glass {
+        background: rgba(24, 25, 26, 0.95) !important;
+    }
+}
+
+/* ---------------------------------- */
+/*  Safari CSS-only tilt fallback     */
+/* ---------------------------------- */
+/* Safari has known VanillaTilt rendering bug (#22).
+   When .safari is present on <html>, we provide a subtle CSS transform
+   instead of the JS-driven tilt. */
+.js.safari .post-card {
+    transition: transform 400ms ease, box-shadow 400ms ease;
+}
+
+.js.safari .post-card:hover,
+.js.safari .post-card:focus-within {
+    transform: perspective(1000px) rotateX(1deg) rotateY(1deg) scale(1.01);
+}
+
+/* ---------------------------------- */
+/*  Touch device — CSS float anim     */
+/* ---------------------------------- */
+/* On touch devices, animate a gentle float instead of tilt.
+   VanillaTilt is bypassed via feature detection in feed-3d.js. */
+@media (hover: none) and (pointer: coarse) {
+    .js .post-card {
+        animation: card-float 4s ease-in-out infinite;
+        transform: none !important; /* override any tilt transform */
+    }
+
+    .js .post-card:nth-child(odd) {
+        animation-delay: -2s;
+    }
+
+    @keyframes card-float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-3px); }
+    }
+}
+
+/* ---------------------------------- */
+/*  Scroll parallax (IntersectionObs) */
+/* ---------------------------------- */
+.post-card[data-depth] {
+    transition: transform 600ms ease-out;
+}
+
+.post-card[data-depth="-1"] { transform: translateZ(-10px); }
+.post-card[data-depth="0"]  { transform: translateZ(0); }
+.post-card[data-depth="1"]  { transform: translateZ(10px); }
+.post-card[data-depth="2"]  { transform: translateZ(20px); }
+.post-card[data-depth="3"]  { transform: translateZ(30px); }
+
+/* ---------------------------------- */
+/*  AJAX Load-more button             */
+/* ---------------------------------- */
+.load-more-container {
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+.load-more-btn {
+    font-family: 'Satoshi', -apple-system, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    border: 1px solid #C4BEB6;
+    background: #FFFFFF;
+    color: #1A1817;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.load-more-btn:hover {
+    border-color: #D4A857;
+    color: #D4A857;
+    background: rgba(212, 168, 87, 0.05);
+}
+
+.load-more-btn:focus-visible {
+    outline: 2px solid #1877f2;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(212, 168, 87, 0.25);
+}
+
+.load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Loading spinner */
+.load-more-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #E0DBD4;
+    border-top-color: #D4A857;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hidden exhausted state */
+.load-more-hidden {
+    display: none !important;
+}
+
+/* Toast for errors */
+.toast-error {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-toast);
+    background: #B85C4A;
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 4px;
+    font-family: 'Satoshi', -apple-system, sans-serif;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    animation: toast-in 0.3s ease-out;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(1rem); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---------------------------------- */
+/*  Login page depth                  */
+/* ---------------------------------- */
+.login-glass-card {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.login-logo {
+    transform: perspective(500px) translateZ(20px);
+    display: inline-block;
+}
+
+[data-theme="dark"] .login-glass-card {
+    background: rgba(47, 43, 40, 0.85);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------------------------- */
+/*  Overlay z-stack                   */
+/* ---------------------------------- */
+/* Modals, dropdowns, and popovers sit above the perspective
+   container to avoid clipping issues with 3D transforms. */
+.modal    { z-index: var(--z-modal); }
+.modal-backdrop { z-index: var(--z-modal-backdrop); }
+.dropdown-menu { z-index: var(--z-overlay); }
+.tooltip  { z-index: var(--z-tooltip); }
+
+/* ---------------------------------- */
+/*  Empty state for AJAX-loaded feed  */
+/* ---------------------------------- */
+.feed-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #8A847C;
+}
+
+.feed-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.feed-empty h5 {
+    font-family: 'Satoshi', -apple-system, sans-serif;
+    font-weight: 500;
+    color: #5A554F;
+}
+
+/* ---------------------------------- */
+/*  Dark mode overrides for depth     */
+/* ---------------------------------- */
+[data-theme="dark"] .post-card {
+    background: #2F2B28;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .post-card .card-header,
+[data-theme="dark"] .post-card .card-footer {
+    background: #2F2B28;
+    border-color: #3A3532;
+}
+
+[data-theme="dark"] .load-more-btn {
+    background: #2F2B28;
+    border-color: #4A4440;
+    color: #EBE5DE;
+}
+
+[data-theme="dark"] .load-more-btn:hover {
+    border-color: #D4A857;
+    color: #D4A857;
+}

@@ -36,10 +36,14 @@ class Post(models.Model):
 
     @property
     def like_count(self):
+        if hasattr(self, '_like_count'):
+            return self._like_count
         return self.likes.count()
 
     @property
     def comment_count(self):
+        if hasattr(self, '_comment_count'):
+            return self._comment_count
         return self.comments.count()
 
     @property

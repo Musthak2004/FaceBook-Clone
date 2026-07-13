@@ -6,32 +6,25 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6 mx-auto">
-        <div class="card shadow-sm mt-5">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0"><i class="bi bi-facebook"></i> FaceClone</h4>
-                <small>Log in to connect with friends</small>
+        <div class="login-glass-card mt-5 p-4 text-center">
+            <div class="login-logo mb-4">
+                <i class="bi bi-facebook" style="font-size: 2.5rem; color: #D4A857;"></i>
+                <h3 class="mt-2" style="font-family: 'Satoshi', sans-serif; font-weight: 700; letter-spacing: -0.02em; color: #1A1817;">FaceClone</h3>
+                <p style="font-family: 'Instrument Serif', Georgia, serif; font-size: 0.9375rem; color: #5A554F;">Log in to connect with friends</p>
             </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <button type="submit" class="btn btn-primary w-100 mt-2">Log In</button>
-                </form>
-                <div class="text-center mt-3">
-                    <a href="{% url 'password_reset' %}" class="text-decoration-none small">Forgot password?</a>
-                </div>
-                <hr>
-                <div class="text-center">
-                    <a href="{% url 'signup' %}" class="btn btn-success">Create New Account</a>
-                </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-primary w-100 mt-2">Log In</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{% url 'password_reset' %}" class="text-decoration-none small" style="color: #8AB4D6;">Forgot password?</a>
+            </div>
+            <hr style="border-color: #E0DBD4;">
+            <div class="text-center">
+                <a href="{% url 'signup' %}" class="btn" style="background: #D4A857; color: #1A1817; border: none;">Create New Account</a>
             </div>
         </div>
     </div>
 </div>
 {% endblock content %}
-
-{% block extra_css %}
-<style>
-    body { background-color: #f0f2f5; }
-</style>
-{% endblock extra_css %}
