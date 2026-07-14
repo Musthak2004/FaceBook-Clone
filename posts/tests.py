@@ -3,9 +3,10 @@ Tests for posts app.
 Follows Django for Beginners Ch 5/6 testing patterns.
 """
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from .models import Post, Like, Comment
+from friendships.models import Friendship
 
 
 class PostTests(TestCase):
@@ -218,3 +219,240 @@ class PostTests(TestCase):
         Comment.objects.create(post=post, author=self.user, content="A comment")
         post._comment_count = 42  # Simulate annotation from query
         self.assertEqual(post.comment_count, 42)
+
+    # ─── LikeToggleView ───
+
+    def test_like_toggle_ajax_like(self):
+        """AJAX POST to like endpoint creates a like and returns JSON with liked=true."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Like me")
+        response = self.client.post(
+            reverse("post_like", kwargs={"pk": post.pk}),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["liked"])
+        self.assertEqual(data["like_count"], 1)
+        self.assertEqual(Like.objects.count(), 1)
+
+    def test_like_toggle_ajax_unlike(self):
+        """AJAX POST to unlike endpoint deletes the like and returns liked=false."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Unlike me")
+        Like.objects.create(user=self.user, post=post)
+        response = self.client.post(
+            reverse("post_like", kwargs={"pk": post.pk}),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertFalse(data["liked"])
+        self.assertEqual(data["like_count"], 0)
+        self.assertEqual(Like.objects.count(), 0)
+
+    def test_like_toggle_redirect_like(self):
+        """Non-AJAX POST to like endpoint redirects to post detail."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Redirect like")
+        response = self.client.post(
+            reverse("post_like", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertURLEqual(response.url, post.get_absolute_url())
+
+    def test_like_toggle_redirect_unlike(self):
+        """Non-AJAX POST to unlike endpoint redirects to post detail."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Redirect unlike")
+        Like.objects.create(user=self.user, post=post)
+        response = self.client.post(
+            reverse("post_like", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertURLEqual(response.url, post.get_absolute_url())
+
+    def test_like_toggle_nonexistent_post(self):
+        """POST to like a non-existent post returns 404."""
+        self.client.login(username="testuser", password="secret")
+        response = self.client.post(
+            reverse("post_like", kwargs={"pk": 99999}),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    # ─── CommentCreateView ───
+
+    def test_comment_create(self):
+        """POST to comment creation creates a comment and redirects."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Comment target")
+        response = self.client.post(
+            reverse("comment_new", kwargs={"post_pk": post.pk}),
+            {"content": "Nice post!"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 1)
+        comment = Comment.objects.first()
+        self.assertEqual(comment.content, "Nice post!")
+        self.assertEqual(comment.author, self.user)
+        self.assertEqual(comment.post, post)
+
+    def test_comment_create_nonexistent_post(self):
+        """Comment on non-existent post returns 404."""
+        self.client.login(username="testuser", password="secret")
+        response = self.client.post(
+            reverse("comment_new", kwargs={"post_pk": 99999}),
+            {"content": "Hello"},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    # ─── CommentDeleteView ───
+
+    def test_comment_delete_by_author(self):
+        """Comment author can delete their own comment."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Post")
+        comment = Comment.objects.create(
+            post=post, author=self.user, content="My comment",
+        )
+        response = self.client.post(
+            reverse("comment_delete", kwargs={"pk": comment.pk}),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 0)
+
+    def test_comment_delete_by_non_author(self):
+        """Non-author cannot delete a comment — returns 403."""
+        other = get_user_model().objects.create_user(
+            username="other", password="secret",
+        )
+        post = Post.objects.create(author=self.user, content="Post")
+        comment = Comment.objects.create(
+            post=post, author=other, content="Their comment",
+        )
+        self.client.login(username="testuser", password="secret")
+        response = self.client.post(
+            reverse("comment_delete", kwargs={"pk": comment.pk}),
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    # ─── PostUpdateView ───
+
+    def test_post_update_by_author(self):
+        """Author can edit their own post."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Original content")
+        response = self.client.post(
+            reverse("post_edit", kwargs={"pk": post.pk}),
+            {"content": "Updated content"},
+        )
+        self.assertEqual(response.status_code, 302)
+        post.refresh_from_db()
+        self.assertEqual(post.content, "Updated content")
+
+    def test_post_update_by_non_author(self):
+        """Non-author cannot edit another user's post — returns 403."""
+        other = get_user_model().objects.create_user(
+            username="other", password="secret",
+        )
+        post = Post.objects.create(author=other, content="Other's post")
+        self.client.login(username="testuser", password="secret")
+        response = self.client.get(
+            reverse("post_edit", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 403)
+
+    # ─── PostFeedAPIView with friend relationships (positive path) ───
+
+    def test_post_feed_api_with_friends(self):
+        """User sees friend's posts when bidirectional accepted friendship exists."""
+        self.client.login(username="testuser", password="secret")
+        friend = get_user_model().objects.create_user(
+            username="friend", password="secret",
+        )
+        Friendship.objects.create(
+            from_user=self.user, to_user=friend, status="accepted",
+        )
+        Friendship.objects.create(
+            from_user=friend, to_user=self.user, status="accepted",
+        )
+        Post.objects.create(author=friend, content="Friend's post")
+        Post.objects.create(author=self.user, content="My post")
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("Friend&#x27;s post", data["html"])
+        self.assertIn("My post", data["html"])
+
+    # ─── PostFeedAPIView user_likes context ───
+
+    def test_post_feed_api_user_likes_in_html(self):
+        """When user has liked a post, rendered HTML shows btn-primary not btn-outline-secondary."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Liked post")
+        Like.objects.create(user=self.user, post=post)
+        response = self.client.get(
+            reverse("post_feed_api") + "?offset=0",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("btn-primary", data["html"])
+
+    # ─── PostDetailView context ───
+
+    def test_post_detail_liked_context(self):
+        """Post detail shows user_liked=True when user has liked the post."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Detail liked")
+        Like.objects.create(user=self.user, post=post)
+        response = self.client.get(
+            reverse("post_detail", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["user_liked"])
+
+    def test_post_detail_unliked_context(self):
+        """Post detail shows user_liked=False when user has not liked the post."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Detail unliked")
+        response = self.client.get(
+            reverse("post_detail", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["user_liked"])
+
+    def test_post_detail_comment_form_in_context(self):
+        """Post detail includes comment_form in context."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="Detail with form")
+        response = self.client.get(
+            reverse("post_detail", kwargs={"pk": post.pk}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("comment_form", response.context)
+
+    # ─── PostListView context ───
+
+    def test_post_list_has_post_form(self):
+        """Post list includes post_form in context."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="List post")
+        response = self.client.get(reverse("post_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("post_form", response.context)
+
+    def test_post_list_user_likes_context(self):
+        """Post list includes user_likes set in context."""
+        self.client.login(username="testuser", password="secret")
+        post = Post.objects.create(author=self.user, content="List like check")
+        Like.objects.create(user=self.user, post=post)
+        response = self.client.get(reverse("post_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("user_likes", response.context)
+        self.assertIn(post.pk, response.context["user_likes"])
